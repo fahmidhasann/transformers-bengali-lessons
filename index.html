@@ -12,10 +12,9 @@
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.documentElement.classList.add('light');
-            } else if (savedTheme === 'dark') {
+            } else {
+                // Default to dark theme for first-time visitors
                 document.documentElement.classList.remove('light');
-            } else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
-                document.documentElement.classList.add('light');
             }
         })();
     </script>
@@ -3043,17 +3042,10 @@
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'light') {
                 document.documentElement.classList.add('light');
-            } else if (savedTheme === 'dark') {
-                document.documentElement.classList.remove('light');
             } else {
-                const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                if (prefersLight) {
-                    document.documentElement.classList.add('light');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    document.documentElement.classList.remove('light');
-                    localStorage.setItem('theme', 'dark');
-                }
+                // Default to dark theme for first-time visitors
+                document.documentElement.classList.remove('light');
+                if (!savedTheme) localStorage.setItem('theme', 'dark');
             }
             syncIFrameTheme();
         }
