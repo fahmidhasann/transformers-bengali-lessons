@@ -219,6 +219,12 @@
             opacity: 0.9;
         }
 
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .sim-output {
             min-height: 200px;
             border: 1px dashed var(--border-color);
@@ -901,31 +907,144 @@
 
         let activeTab = 'token';
         let currentPromptKey = '';
+        let simTimeouts = [];
+        let isSimulating = false;
 
         document.getElementById('run-sim-btn').addEventListener('click', () => {
             const select = document.getElementById('prompt-select');
             currentPromptKey = select.value;
-            runSimulation(currentPromptKey);
+            startSimulation(currentPromptKey);
         });
 
-        function runSimulation(key) {
+        function startSimulation(key) {
+            stopSimulation();
+
             const data = simData[key];
+            if (!data) return;
+
+            isSimulating = true;
+            const runBtn = document.getElementById('run-sim-btn');
             
-            // Highlight step nodes one by one
-            document.querySelectorAll('.step-node').forEach(n => n.classList.remove('active'));
-            
-            // 1. Token display
-            const tokenDiv = document.getElementById('token-display');
-            tokenDiv.innerHTML = data.tokens.map(t => `
+            const steps = [
+                {
+                    id: 'token',
+                    btnText: 'Running: Tokenizer...',
+                    populate: () => {
+                        const tokenDiv = document.getElementById('token-display');
+                        tokenDiv.innerHTML = data.tokens.map(t => `
+                            <div class="token-box">
+                                <span>"${t.word}"</span>
+                                <span class="token-id">ID: ${t.id}</span>
+                            </div>
+                        `).join('');
+                    }
+                },
+                {
+                    id: 'embed',
+                    btnText: 'Running: Embedding...',
+                    populate: () => {
+                        const embedDiv = document.getElementById('embed-display');
+                        embedDiv.innerHTML = data.embeddings.map((emb, idx) => `
+                            <div class="embed-box">
+                                <strong style="color:var(--accent-purple)">"${data.tokens[idx].word}"</strong>
+                                <div style="margin-top:0.2rem; font-size:0.75rem; color:var(--text-secondary)">
+                                    [${emb.slice(0, 3).map(v => v.toFixed(2)).join(', ')}, ..., ${emb.slice(-1)[0].toFixed(2)}]
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                },
+                {
+                    id: 'trans',
+                    btnText: 'Running: Attention...',
+                    populate: () => {
+                        const transDiv = document.getElementById('trans-display');
+                        transDiv.innerHTML = data.attention.map(a => `
+                            <div class="attn-row">
+                                <span class="attn-word">"${a.word}"</span>
+                                <div class="attn-bar-container">
+                                    <div class="attn-bar" id="bar-${a.word.trim()}" style="width: 0%"></div>
+                                </div>
+                                <span style="font-size:0.85rem; width:40px; text-align:right;">${a.val}%</span>
+                            </div>
+                        `).join('');
+
+                        setTimeout(() => {
+                            data.attention.forEach(a => {
+                                const el = document.getElementById(`bar-${a.word.trim()}`);
+                                if (el) el.style.width = `${a.val}%`;
+                            });
+                        }, 50);
+                    }
+                },
+                {
+                    id: 'softmax',
+                    btnText: 'Running: Prediction...',
+                    populate: () => {
+                        const predDiv = document.getElementById('prediction-display');
+                        predDiv.innerHTML = data.predictions.map((p, idx) => `
+                            <li class="prediction-item ${idx === 0 ? 'top' : ''}">
+                                <span>"${p.word}"</span>
+                                <span>${p.prob}</span>
+                            </li>
+                        `).join('');
+                    }
+                }
+            ];
+
+            // Clear all displays at the start of simulation
+            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+
+            const delay = 2200;
+            steps.forEach((step, index) => {
+                const timeoutId = setTimeout(() => {
+                    if (!isSimulating) return;
+                    
+                    runBtn.innerText = step.btnText;
+                    runBtn.disabled = true;
+                    
+                    switchTab(step.id, false);
+                    step.populate();
+
+                    if (index === steps.length - 1) {
+                        const finishTimeout = setTimeout(() => {
+                            isSimulating = false;
+                            runBtn.innerText = 'Run Step-by-Step';
+                            runBtn.disabled = false;
+                        }, delay);
+                        simTimeouts.push(finishTimeout);
+                    }
+                }, index * delay);
+                simTimeouts.push(timeoutId);
+            });
+        }
+
+        function stopSimulation() {
+            isSimulating = false;
+            simTimeouts.forEach(clearTimeout);
+            simTimeouts = [];
+            const runBtn = document.getElementById('run-sim-btn');
+            runBtn.innerText = 'Run Step-by-Step';
+            runBtn.disabled = false;
+        }
+
+        function populateAll(key) {
+            const data = simData[key];
+            if (!data) return;
+
+            // Tokenizer
+            document.getElementById('token-display').innerHTML = data.tokens.map(t => `
                 <div class="token-box">
                     <span>"${t.word}"</span>
                     <span class="token-id">ID: ${t.id}</span>
                 </div>
             `).join('');
 
-            // 2. Embedding display
-            const embedDiv = document.getElementById('embed-display');
-            embedDiv.innerHTML = data.embeddings.map((emb, idx) => `
+            // Embedding
+            document.getElementById('embed-display').innerHTML = data.embeddings.map((emb, idx) => `
                 <div class="embed-box">
                     <strong style="color:var(--accent-purple)">"${data.tokens[idx].word}"</strong>
                     <div style="margin-top:0.2rem; font-size:0.75rem; color:var(--text-secondary)">
@@ -934,44 +1053,38 @@
                 </div>
             `).join('');
 
-            // 3. Attention display
-            const transDiv = document.getElementById('trans-display');
-            transDiv.innerHTML = data.attention.map(a => `
+            // Attention
+            document.getElementById('trans-display').innerHTML = data.attention.map(a => `
                 <div class="attn-row">
                     <span class="attn-word">"${a.word}"</span>
                     <div class="attn-bar-container">
-                        <div class="attn-bar" id="bar-${a.word.trim()}" style="width: 0%"></div>
+                        <div class="attn-bar" id="bar-${a.word.trim()}" style="width: ${a.val}%"></div>
                     </div>
                     <span style="font-size:0.85rem; width:40px; text-align:right;">${a.val}%</span>
                 </div>
             `).join('');
 
-            // Trigger attention animation
-            setTimeout(() => {
-                data.attention.forEach(a => {
-                    const el = document.getElementById(`bar-${a.word.trim()}`);
-                    if (el) el.style.width = `${a.val}%`;
-                });
-            }, 100);
-
-            // 4. Prediction display
-            const predDiv = document.getElementById('prediction-display');
-            predDiv.innerHTML = data.predictions.map((p, idx) => `
+            // Prediction
+            document.getElementById('prediction-display').innerHTML = data.predictions.map((p, idx) => `
                 <li class="prediction-item ${idx === 0 ? 'top' : ''}">
                     <span>"${p.word}"</span>
                     <span>${p.prob}</span>
                 </li>
             `).join('');
-
-            // Update node highlights as active tab changes
-            highlightNode(activeTab);
         }
 
-        function switchTab(tabId) {
+        function switchTab(tabId, isManual = true) {
+            if (isManual && isSimulating) {
+                stopSimulation();
+                if (currentPromptKey) {
+                    populateAll(currentPromptKey);
+                }
+            }
+
             activeTab = tabId;
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if(btn.getAttribute('onclick').includes(tabId)) {
+                if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
                     btn.classList.add('active');
                 }
             });
