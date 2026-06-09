@@ -7,13 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        (function() {
-            // Light theme temporarily disabled — force dark mode for everyone.
-            // (Light theme CSS/JS is kept below so it can be re-enabled later.)
-            document.documentElement.classList.remove('light');
-        })();
-    </script>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -71,7 +64,6 @@
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
             transition: padding 0.3s ease;
         }
-        :root.light .sidebar { box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08); }
 
         .sidebar-brand {
             display: flex;
@@ -199,16 +191,7 @@
             text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
         }
 
-        :root.light .sidebar-footer {
-            background: rgba(255, 255, 255, 0.55);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-        }
 
-        :root.light .sidebar-footer:hover {
-            border-color: rgba(6, 182, 212, 0.2);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-            background: rgba(255, 255, 255, 0.8);
-        }
 
         /* Main Content Panel */
         .main-panel {
@@ -1224,167 +1207,35 @@
             }
         }
 
-        /* Light Theme Overrides */
-        :root.light {
-            --bg-color: #f8fafc;
-            --sidebar-bg: #f1f5f9;
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --border-color: rgba(15, 23, 42, 0.08);
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --accent-cyan: #0891b2;
-            --accent-purple: #9333ea;
-            --accent-green: #059669;
-            --accent-pink: #db2777;
-            --accent-orange: #d97706;
-            --shadow: 0 12px 40px 0 rgba(15, 23, 42, 0.04);
-            --glow: 0 0 15px rgba(8, 145, 178, 0.08);
-        }
 
-        :root.light body {
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
-        }
 
-        :root.light .sidebar-brand-name {
-            background: linear-gradient(135deg, #0f172a, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
 
-        :root.light .header-title h1 {
-            background: linear-gradient(135deg, #0f172a, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
 
-        :root.light .nav-item button:hover {
-            background: rgba(0, 0, 0, 0.03);
-        }
 
-        :root.light .card:hover {
-            border-color: rgba(0, 0, 0, 0.12);
-        }
 
-        :root.light .progress-circle-bg {
-            stroke: rgba(0, 0, 0, 0.05);
-        }
 
-        :root.light .goal-item {
-            background: rgba(255, 255, 255, 0.45);
-        }
 
-        :root.light .goal-item:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: rgba(0, 0, 0, 0.12);
-        }
 
-        :root.light .roadmap-card:hover {
-            border-color: rgba(8, 145, 178, 0.25);
-            box-shadow: 0 8px 30px rgba(8, 145, 178, 0.04);
-        }
 
-        :root.light .roadmap-card-badge {
-            background: rgba(0, 0, 0, 0.03);
-        }
 
-        :root.light .status-dropdown,
-        :root.light .category-filter,
-        :root.light .search-input {
-            background: #ffffff;
-            border-color: rgba(0, 0, 0, 0.1);
-            color: #0f172a;
-        }
 
-        :root.light .status-dropdown:hover,
-        :root.light .category-filter:hover,
-        :root.light .search-input:hover {
-            border-color: rgba(0, 0, 0, 0.25);
-        }
 
-        :root.light .search-input:focus {
-            background: #ffffff;
-            border-color: var(--accent-cyan);
-        }
 
-        :root.light .status-dropdown option,
-        :root.light .category-filter option {
-            background: #ffffff;
-            color: #0f172a;
-        }
 
-        :root.light .glossary-card-def {
-            color: #334155;
-        }
 
-        :root.light .btn-secondary {
-            background: rgba(0, 0, 0, 0.03);
-            border-color: rgba(0, 0, 0, 0.1);
-            color: var(--text-primary);
-        }
 
-        :root.light .btn-secondary:hover {
-            background: rgba(0, 0, 0, 0.06);
-            border-color: rgba(0, 0, 0, 0.25);
-        }
 
-        :root.light .quiz-option-item:hover {
-            background: rgba(0, 0, 0, 0.04);
-            border-color: var(--accent-cyan);
-        }
 
-        :root.light .quiz-option-item.selected {
-            background: rgba(147, 51, 234, 0.08);
-            border-color: var(--accent-purple);
-        }
 
-        :root.light .glossary-card:hover {
-            border-color: rgba(147, 51, 234, 0.25);
-            box-shadow: 0 8px 30px rgba(147, 51, 234, 0.04);
-        }
 
-        :root.light .resource-card:hover {
-            border-color: rgba(5, 150, 105, 0.25);
-            box-shadow: 0 8px 30px rgba(5, 150, 105, 0.04);
-        }
 
-        :root.light .resource-link:hover {
-            color: #047857;
-            text-shadow: 0 0 5px rgba(5, 150, 105, 0.2);
-        }
 
-        :root.light .certificate-wrapper {
-            background: linear-gradient(135deg, #fefbf3, #fdf6e2);
-            border: 6px double #d97706;
-            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.04);
-        }
 
-        :root.light .cert-statement {
-            color: #475569;
-        }
 
-        :root.light #cert-user-name {
-            color: #0f172a !important;
-        }
 
-        :root.light .preview-drawer {
-            background-color: #f8fafc;
-            box-shadow: -10px 0 40px rgba(15, 23, 42, 0.05);
-        }
 
-        :root.light .close-btn:hover {
-            color: #0f172a;
-            background: rgba(0, 0, 0, 0.05);
-        }
 
-        :root.light .mobile-hamburger {
-            color: #0f172a;
-        }
 
-        :root.light .nav-menu {
-            box-shadow: 0 10px 15px rgba(15, 23, 42, 0.04);
-        }
 
         /* Theme & Language Toggle Button Styles */
         .header-controls {
@@ -1416,68 +1267,16 @@
             transform: scale(1.05);
         }
         
-        :root.light .lang-toggle-btn {
-            background: rgba(0, 0, 0, 0.03);
-            border-color: rgba(0, 0, 0, 0.1);
-        }
         
-        :root.light .lang-toggle-btn:hover {
-            background: rgba(0, 0, 0, 0.08);
-            border-color: rgba(0, 0, 0, 0.15);
-        }
 
-        .theme-toggle-btn {
-            /* Toggle hidden while light theme is temporarily disabled */
-            display: none !important;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
         
-        .theme-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
         
-        :root.light .theme-toggle-btn {
-            background: rgba(0, 0, 0, 0.03);
-        }
         
-        :root.light .theme-toggle-btn:hover {
-            background: rgba(0, 0, 0, 0.08);
-            border-color: rgba(0, 0, 0, 0.15);
-        }
 
-        .theme-toggle-btn svg {
-            width: 20px;
-            height: 20px;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-        }
 
-        .theme-toggle-btn .icon-sun {
-            display: block;
-        }
         
-        .theme-toggle-btn .icon-moon {
-            display: none;
-        }
 
-        :root.light .theme-toggle-btn .icon-sun {
-            display: none;
-        }
         
-        :root.light .theme-toggle-btn .icon-moon {
-            display: block;
-        }
 
         /* Apply transitions globally to key elements */
         body, aside, main, .card, button, input, select, .sidebar, .nav-item button, .glossary-card, .resource-card, .roadmap-card, .goal-item, .pe-word-btn, .step-node, .vector-visualizer, .vector-table, .close-btn {
@@ -1583,10 +1382,6 @@
             </div>
             <div class="header-controls">
                 <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
-                <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle light or dark theme">
-                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                </button>
             </div>
         </header>
 
@@ -3082,41 +2877,9 @@
             startQuiz();
         }
 
-        // --- Theme Toggle Logic ---
-        function initTheme() {
-            // Light theme temporarily disabled — always force dark mode.
-            document.documentElement.classList.remove('light');
-            syncIFrameTheme();
-        }
 
-        function toggleTheme() {
-            const isLight = document.documentElement.classList.toggle('light');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            syncIFrameTheme();
-            
-            // If inside iframe, notify parent (for completeness, though index.html is the top parent)
-            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
-                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
-            }
-        }
 
-        function syncThemeFromChild(theme) {
-            // Light theme temporarily disabled — always force dark mode.
-            document.documentElement.classList.remove('light');
-            syncIFrameTheme();
-        }
 
-        function syncIFrameTheme() {
-            const iframe = document.getElementById('preview-iframe');
-            if (iframe && iframe.contentDocument && iframe.contentDocument.documentElement) {
-                const isLight = document.documentElement.classList.contains('light');
-                if (isLight) {
-                    iframe.contentDocument.documentElement.classList.add('light');
-                } else {
-                    iframe.contentDocument.documentElement.classList.remove('light');
-                }
-            }
-        }
 
         // --- Bilingual Language System ---
         function toggleLanguage() {
@@ -3252,21 +3015,8 @@
             }
         }
 
-        // Initialize theme immediately
-        initTheme();
 
-        // Listen for storage events to sync tabs instantly
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'theme') {
-                initTheme();
-            }
-        });
 
-        // Listen for iframe load events to apply theme dynamically
-        const previewIframe = document.getElementById('preview-iframe');
-        if (previewIframe) {
-            previewIframe.addEventListener('load', syncIFrameTheme);
-        }
     </script>
 </body>
 </html>

@@ -7,12 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script>
-        (function() {
-            // Light theme temporarily disabled — force dark mode for everyone.
-            document.documentElement.classList.remove('light');
-        })();
-    </script>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -556,311 +550,62 @@
             font-size: 0.85rem;
         }
 
-        /* Light Theme Overrides */
-        :root.light {
-            --bg-color: #f8fafc;
-            --card-bg: rgba(255, 255, 255, 0.75);
-            --border-color: rgba(15, 23, 42, 0.08);
-            --text-primary: #0f172a;
-            --text-secondary: #475569;
-            --accent-cyan: #0891b2;
-            --accent-purple: #9333ea;
-            --accent-green: #059669;
-            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
-        }
 
-        :root.light body {
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
-        }
 
-        :root.light h1 {
-            background: linear-gradient(135deg, #0f172a, #475569);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
 
-        :root.light p, :root.light ul, :root.light ol, :root.light li {
-            color: #334155;
-        }
 
-        :root.light [style*="color: #cbd5e1"],
-        :root.light [style*="color:#cbd5e1"] {
-            color: #334155 !important;
-        }
 
-        :root.light [style*="color: var(--text-secondary)"] {
-            color: #475569 !important;
-        }
 
-        :root.light .tech-term {
-            background: rgba(0, 0, 0, 0.04);
-            color: #0f172a;
-            border-color: rgba(0, 0, 0, 0.06);
-        }
 
-        :root.light .step-node {
-            background: rgba(255, 255, 255, 0.5);
-            border-left-color: var(--accent-purple);
-        }
 
-        :root.light .step-node.active {
-            background: rgba(255, 255, 255, 0.9);
-            border-left-color: var(--accent-cyan);
-            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
-        }
 
-        :root.light .simulator,
-        :root.light .attention-visualization-container,
-        :root.light .analogy-card,
-        :root.light .quiz-question {
-            background: rgba(255, 255, 255, 0.5);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
 
-        :root.light .analogy-card:hover {
-            background: rgba(255, 255, 255, 0.85);
-            border-color: var(--accent-purple);
-        }
 
-        :root.light .sim-output {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
 
-        :root.light select, :root.light input {
-            background: #ffffff;
-            border-color: rgba(0, 0, 0, 0.1);
-            color: #0f172a;
-        }
 
-        :root.light button {
-            color: #ffffff !important;
-        }
 
-        :root.light .token-box {
-            background: rgba(147, 51, 234, 0.1);
-            border-color: var(--accent-purple);
-        }
 
-        :root.light .token-id {
-            color: #475569;
-        }
 
-        :root.light .embed-box {
-            background: rgba(0, 0, 0, 0.02);
-            border-color: rgba(0, 0, 0, 0.06);
-        }
 
-        :root.light .attn-bar-container,
-        :root.light .weight-bar-bg {
-            background: rgba(0, 0, 0, 0.05);
-        }
 
-        :root.light .prediction-item {
-            background: rgba(5, 150, 105, 0.08);
-            border-color: rgba(5, 150, 105, 0.2);
-            color: #047857;
-        }
 
-        :root.light .prediction-item.top {
-            background: rgba(8, 145, 178, 0.1);
-            border-color: rgba(8, 145, 178, 0.3);
-            color: #0891b2;
-        }
 
-        :root.light .quiz-option {
-            background: rgba(0, 0, 0, 0.02);
-            border-color: rgba(0, 0, 0, 0.08);
-            color: #334155;
-        }
 
-        :root.light .quiz-option:hover {
-            background: rgba(0, 0, 0, 0.05);
-            border-color: var(--accent-cyan);
-        }
 
-        :root.light .quiz-option.correct {
-            background: rgba(5, 150, 105, 0.1);
-            border-color: var(--accent-green);
-            color: #047857;
-        }
 
-        :root.light .quiz-option.incorrect {
-            background: rgba(239, 68, 68, 0.10);
-            border-color: #ef4444;
-            color: #b91c1c;
-        }
 
-        :root.light .quiz-feedback.success {
-            background: rgba(5, 150, 105, 0.08);
-            color: #047857;
-            border-color: rgba(5, 150, 105, 0.15);
-        }
 
-        :root.light .quiz-feedback.error {
-            background: rgba(239, 68, 68, 0.08);
-            color: #b91c1c;
-            border-color: rgba(239, 68, 68, 0.15);
-        }
 
-        :root.light .citations {
-            border-top-color: rgba(0, 0, 0, 0.08);
-        }
 
         /* Simulator controls and network nodes custom overrides (Lesson 5) */
-        :root.light .math-block {
-            background: rgba(0, 0, 0, 0.03);
-            color: #0f172a;
-        }
 
-        :root.light .control-panel,
-        :root.light .sim-graph-card,
-        :root.light .explanation-panel {
-            background: rgba(255, 255, 255, 0.5);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
 
-        :root.light .toggle-switch {
-            background: rgba(0, 0, 0, 0.03);
-            border-color: rgba(0, 0, 0, 0.06);
-        }
 
-        :root.light .toggle-switch button {
-            color: #475569;
-        }
 
-        :root.light .toggle-switch button.active {
-            color: #ffffff;
-        }
 
-        :root.light .graph-line {
-            stroke: #94a3b8;
-        }
 
-        :root.light .graph-node {
-            fill: #ffffff;
-            stroke: #cbd5e1;
-        }
 
-        :root.light .graph-node.active {
-            fill: rgba(8, 145, 178, 0.05);
-        }
 
-        :root.light .graph-node.active-ln {
-            fill: rgba(147, 51, 234, 0.05);
-        }
 
-        :root.light .node-text {
-            fill: #0f172a;
-        }
 
-        :root.light .node-subtext {
-            fill: #475569;
-        }
 
-        :root.light .console-steps li {
-            background: rgba(0, 0, 0, 0.02);
-            color: #475569;
-        }
 
-        :root.light .console-steps li.active {
-            background: rgba(8, 145, 178, 0.1);
-            border-color: rgba(8, 145, 178, 0.2);
-            color: #0f172a;
-        }
 
-        :root.light .console-steps li.completed {
-            background: rgba(5, 150, 105, 0.08);
-            border-color: rgba(5, 150, 105, 0.2);
-            color: #047857;
-        }
 
-        :root.light .val-inspect-row {
-            background: rgba(0, 0, 0, 0.01);
-            border-color: rgba(0, 0, 0, 0.05);
-        }
 
-        :root.light .val-lbl {
-            color: #475569;
-        }
 
-        :root.light .vector-bar-wrapper {
-            background: rgba(0, 0, 0, 0.05);
-        }
 
-        :root.light .vector-val {
-            color: #475569;
-        }
 
-        :root.light .quiz-question-card {
-            background: rgba(255, 255, 255, 0.5);
-            border-color: rgba(0, 0, 0, 0.08);
-        }
 
-        :root.light .quiz-question-card h3 {
-            color: #0f172a;
-        }
 
-        /* Theme Toggle Button Styles */
-        .theme-toggle-btn {
-            /* Toggle hidden while light theme is temporarily disabled */
-            display: none !important;
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
         
-        .theme-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
         
-        :root.light .theme-toggle-btn {
-            background: rgba(0, 0, 0, 0.03);
-            border-color: rgba(0, 0, 0, 0.1);
-        }
         
-        :root.light .theme-toggle-btn:hover {
-            background: rgba(0, 0, 0, 0.08);
-            border-color: rgba(0, 0, 0, 0.15);
-        }
 
-        .theme-toggle-btn svg {
-            width: 20px;
-            height: 20px;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-        }
 
-        .theme-toggle-btn .icon-sun {
-            display: block;
-        }
         
-        .theme-toggle-btn .icon-moon {
-            display: none;
-        }
 
-        :root.light .theme-toggle-btn .icon-sun {
-            display: none;
-        }
         
-        :root.light .theme-toggle-btn .icon-moon {
-            display: block;
-        }
 
         /* Transitions */
         *, *::before, *::after {
@@ -945,7 +690,6 @@
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
         }
-        :root.light .site-nav { box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08); }
         .site-nav-inner {
             position: relative;
             max-width: 1180px;
@@ -995,7 +739,6 @@
             align-items: center;
             justify-content: center;
         }
-        :root.light .site-nav-toggle { background: rgba(0, 0, 0, 0.03); }
         .site-nav-menu {
             display: flex;
             align-items: center;
@@ -1020,7 +763,6 @@
             transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
         .site-nav-link:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.07); }
-        :root.light .site-nav-link:hover { background: rgba(0, 0, 0, 0.05); }
         .site-nav-caret { font-size: 0.7em; opacity: 0.85; }
         /* Syllabus dropdown */
         .site-nav-dropdown { position: relative; }
@@ -1058,7 +800,6 @@
             border: 1px solid transparent;
         }
         .site-nav-dropdown-menu a:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
-        :root.light .site-nav-dropdown-menu a:hover { background: rgba(0, 0, 0, 0.05); }
         .site-nav-dropdown-menu a.active {
             background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.15));
             color: var(--text-primary);
@@ -1099,10 +840,6 @@
             transition: background 0.25s ease, border-color 0.25s ease;
         }
         .site-nav-icon-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); }
-        :root.light .site-nav-icon-btn { background: rgba(0, 0, 0, 0.03); }
-        :root.light .site-nav-icon-btn:hover { background: rgba(0, 0, 0, 0.08); }
-        /* Theme toggle reused inside the navbar (neutralise its absolute positioning) */
-        .site-nav .theme-toggle-btn { position: static; top: auto; right: auto; width: 40px; padding: 0; }
         /* Mobile */
         @media (max-width: 900px) {
             .site-nav-toggle { display: inline-flex; }
@@ -1135,7 +872,6 @@
                 background: rgba(255, 255, 255, 0.03);
                 margin-top: 0.25rem;
             }
-            :root.light .site-nav-dropdown-menu { background: rgba(0, 0, 0, 0.03); }
             .site-nav-dropdown.open .site-nav-dropdown-menu { display: block; }
             .site-nav-pager { width: 100%; gap: 0.5rem; }
             .site-nav-pager .site-nav-link { justify-content: center; border: 1px solid var(--border-color); flex: 1; }
@@ -1152,7 +888,48 @@
             .site-nav { margin: -1.25rem -0.85rem 2rem; }
         }
 
-    </style>
+    
+/* tb-map styles */
+.tb-architecture-map .tb-map-svg {
+    width: 100%; max-width: 420px; height: auto; display: block;
+    margin: 0.5rem auto 1rem; overflow: visible;
+}
+.tb-map-svg text { text-anchor: middle; font-family: 'Outfit', sans-serif; font-size: 12px; }
+.tb-map-svg .tb-sub { font-size: 9.5px; }
+.tb-node rect, .tb-node circle {
+    fill: rgba(15, 23, 42, 0.75); stroke: var(--accent-purple); stroke-width: 1.5;
+    transition: all 0.35s ease;
+}
+.tb-node text { fill: var(--text-secondary); transition: all 0.35s ease; }
+.tb-node.active rect, .tb-node.active circle {
+    fill: rgba(6, 182, 212, 0.18); stroke: var(--accent-cyan); stroke-width: 2.5;
+    filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.55));
+}
+.tb-node.active text { fill: var(--text-primary); font-weight: 600; }
+.tb-node.dim { opacity: 0.3; }
+.tb-block .tb-block-outline {
+    fill: none; stroke: rgba(168, 85, 247, 0.45); stroke-width: 1.5;
+    stroke-dasharray: 6 4; transition: all 0.35s ease;
+}
+.tb-block .tb-block-label { fill: var(--accent-purple); font-size: 11px; font-weight: 600; transition: all 0.35s ease; }
+.tb-block.active .tb-block-outline { stroke: var(--accent-cyan); stroke-width: 2; filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.5)); }
+.tb-block.active .tb-block-label { fill: var(--accent-cyan); }
+.tb-block.dim { opacity: 0.3; }
+.tb-flow { fill: none; stroke: #64748b; stroke-width: 1.6; }
+.tb-skip {
+    fill: none; stroke: #64748b; stroke-width: 1.5; stroke-dasharray: 4 3;
+    transition: all 0.35s ease;
+}
+.tb-skip.active { stroke: var(--accent-green); stroke-width: 2.2; filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.55)); }
+.tb-skip.dim { opacity: 0.28; }
+.tb-map-caption { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0; }
+.tb-map-legend { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-secondary); margin: 0.2rem 0 1rem; }
+.tb-map-legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.tb-legend-dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.tb-legend-active { background: rgba(6, 182, 212, 0.5); box-shadow: 0 0 6px rgba(6, 182, 212, 0.7); border: 1px solid var(--accent-cyan); }
+.tb-legend-rest { background: rgba(15, 23, 42, 0.75); border: 1px solid var(--accent-purple); opacity: 0.45; }
+
+        </style>
 </head>
 <body>
     <!-- ===== Shared Site Navbar (auto-configured from URL) ===== -->
@@ -1178,10 +955,6 @@
                 </div>
                 <div class="site-nav-controls">
                     <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language">🌐 <span id="langToggleLabel">EN</span></button>
-                    <button class="site-nav-icon-btn theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme" aria-label="Toggle light or dark theme">
-                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                    </button>
                 </div>
             </div>
         </div>
@@ -1192,6 +965,85 @@
             <h1>FFN, Residual Connections, and Layer Normalization</h1>
             <p class="subtitle">Stability, Flow Control, and Feature Extraction inside the Transformer</p>
         </header>
+
+        <!-- Transformer Block Map -->
+        <div class="card tb-architecture-map">
+            <h2>Transformer Block Map — where you are</h2>
+            <svg class="tb-map-svg" viewBox="0 0 380 500" role="img" aria-label="Transformer block architecture map">
+  <defs>
+    <marker id="tb-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 1.5 L8 5 L0 8.5 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- flow arrows (bottom -> top) -->
+  <line class="tb-flow" x1="190" y1="444" x2="190" y2="430" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="390" x2="190" y2="376" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="340" x2="190" y2="318" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="246" x2="190" y2="236" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="204" x2="190" y2="194" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="152" x2="190" y2="142" marker-end="url(#tb-arrow)"/>
+  <line class="tb-flow" x1="190" y1="84"  x2="190" y2="64"  marker-end="url(#tb-arrow)"/>
+
+  <!-- residual / skip connections -->
+  <path class="tb-skip active" d="M 110 320 Q 30 320 30 240 L 30 224 Q 30 219 84 219" marker-end="url(#tb-arrow)"/>
+  <path class="tb-skip active" d="M 110 206 Q 22 206 22 142 L 22 130 Q 22 125 84 125" marker-end="url(#tb-arrow)"/>
+
+  <!-- output -->
+  <g class="tb-node dim">
+    <rect x="70" y="16" width="240" height="46" rx="10"/>
+    <text x="190" y="37">Linear + Softmax</text>
+    <text x="190" y="52" class="tb-sub">&#8594; Next Token</text>
+  </g>
+
+  <!-- transformer block container -->
+  <g class="tb-block dim">
+    <rect class="tb-block-outline" x="44" y="84" width="292" height="232" rx="14"/>
+    <text class="tb-block-label" x="190" y="101">Transformer Block &#215; N</text>
+  </g>
+
+  <!-- add & norm (after FFN) -->
+  <g class="tb-node active">
+    <rect x="86" y="112" width="208" height="30" rx="8"/>
+    <text x="190" y="131">Add &amp; Norm</text>
+  </g>
+  <!-- feed-forward network -->
+  <g class="tb-node active">
+    <rect x="86" y="154" width="208" height="40" rx="8"/>
+    <text x="190" y="178">Feed-Forward Network</text>
+  </g>
+  <!-- add & norm (after attention) -->
+  <g class="tb-node active">
+    <rect x="86" y="206" width="208" height="30" rx="8"/>
+    <text x="190" y="225">Add &amp; Norm</text>
+  </g>
+  <!-- multi-head self-attention -->
+  <g class="tb-node dim">
+    <rect x="86" y="248" width="208" height="48" rx="8"/>
+    <text x="190" y="270">Multi-Head Self-Attention</text>
+    <text x="190" y="286" class="tb-sub">Causal Mask</text>
+  </g>
+
+  <!-- positional encoding -->
+  <g class="tb-node dim">
+    <rect x="70" y="340" width="240" height="34" rx="10"/>
+    <text x="190" y="361">+ Positional Encoding</text>
+  </g>
+  <!-- token embedding -->
+  <g class="tb-node dim">
+    <rect x="70" y="390" width="240" height="38" rx="10"/>
+    <text x="190" y="413">Token Embedding</text>
+  </g>
+  <!-- input tokens -->
+  <g class="tb-node dim">
+    <rect x="70" y="444" width="240" height="38" rx="10"/>
+    <text x="190" y="467">Input Tokens</text>
+  </g>
+</svg>
+            <div class="tb-map-legend"><span><i class="tb-legend-dot tb-legend-active"></i> Focus of this lesson</span><span><i class="tb-legend-dot tb-legend-rest"></i> Rest (other lessons)</span></div>
+            <p class="tb-map-caption"><strong>You are here:</strong> this lesson covers what comes after <span class="tech-term">Attention</span> — the <span class="tech-term">Feed-Forward Network</span>, <span class="tech-term">Residual</span> (skip) <span class="tech-term">Connections</span> and <span class="tech-term">Layer Normalization</span> (<span class="tech-term">Add &amp; Norm</span>), highlighted below. The green dashed lines are the residual paths.</p>
+        </div>
+
 
         <!-- Intro Card -->
         <div class="card">
@@ -1899,28 +1751,7 @@
             feedbackBox.style.display = 'block';
         }
 
-        // --- Theme Synchronization Logic ---
-        function toggleTheme() {
-            const isLight = document.documentElement.classList.toggle('light');
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-            
-            // If inside iframe, notify parent window
-            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
-                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
-            }
-        }
 
-        // Listen for storage events to sync tabs instantly
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'theme') {
-                const theme = e.newValue;
-                if (theme === 'light') {
-                    document.documentElement.classList.add('light');
-                } else {
-                    document.documentElement.classList.remove('light');
-                }
-            }
-        });
     </script>
 
     <script>
