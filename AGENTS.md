@@ -43,6 +43,8 @@ The repository is structured as a lightweight, static client-side web applicatio
     └── 0006-decoder-only-vs-encoder-decoder.html
 ```
 
+> ⚠️ **BILINGUAL PARITY RULE (must follow):** Every lesson exists as a Bangla (`NNNN-name.html`) and English (`NNNN-name-en.html`) twin with fully duplicated markup + JS. Any change to a feature, interactive widget, button, or script in one file MUST be applied to its twin in the same task — translate only the user-facing text, keep logic/IDs/structure identical. Before finishing, diff the pair (e.g. counts of `<button`, `onclick=`, `function `) to confirm parity.
+
 ---
 
 ## 3. Core Application Architecture

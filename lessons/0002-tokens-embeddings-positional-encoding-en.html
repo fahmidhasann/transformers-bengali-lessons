@@ -917,8 +917,12 @@
                             <option value="verb">Verb Tense (Walking - Walk + Run = Running)</option>
                         </select>
                     </div>
-                    <button id="run-math-btn" onclick="runVectorMath()" style="margin-top: 0.5rem; padding: 0.85rem;">Run Vector Math</button>
-                    
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button id="run-math-btn" onclick="runVectorMath(false)" style="flex: 1; padding: 0.85rem;">▶ Run All</button>
+                        <button id="step-math-btn" onclick="runVectorMath(true)" style="flex: 1; padding: 0.85rem; background: linear-gradient(135deg, var(--accent-purple), #7c3aed);">Step-by-Step</button>
+                    </div>
+                    <button id="next-step-btn" onclick="nextVectorStep()" style="width: 100%; margin-top: 0.4rem; padding: 0.75rem; display: none; background: linear-gradient(135deg, #059669, #0891b2);">Next Step →</button>
+
                     <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); min-height: 120px;">
                         <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Explanation & Equation:</h4>
                         <div id="vector-narration" style="font-size: 0.95rem; line-height: 1.5;">
@@ -1157,6 +1161,24 @@
         };
 
         let isAnimating = false;
+        let stepMode = false;
+        let currentStep = 0;
+        let stepResolvers = [];
+
+        function waitForNextStep() {
+            return new Promise(resolve => {
+                stepResolvers.push(resolve);
+                document.getElementById('next-step-btn').style.display = 'block';
+            });
+        }
+
+        function nextVectorStep() {
+            if (stepResolvers.length > 0) {
+                const resolve = stepResolvers.shift();
+                document.getElementById('next-step-btn').style.display = 'none';
+                resolve();
+            }
+        }
 
         function toSVG(x, y) {
             return {
@@ -1243,74 +1265,68 @@
             requestAnimationFrame(update);
         }
 
-        function runVectorMath() {
+        async function runVectorMath(useStepMode = false) {
             if (isAnimating) return;
             isAnimating = true;
-            
-            const btn = document.getElementById('run-math-btn');
-            btn.disabled = true;
-            btn.style.opacity = 0.5;
-            
+            stepMode = useStepMode;
+            stepResolvers = [];
+            document.getElementById('next-step-btn').style.display = 'none';
+
+            const runBtn  = document.getElementById('run-math-btn');
+            const stepBtn = document.getElementById('step-math-btn');
+            runBtn.disabled  = true;  runBtn.style.opacity  = 0.5;
+            stepBtn.disabled = true;  stepBtn.style.opacity = 0.5;
+
             const relationKey = document.getElementById('relation-select').value;
             const rel = relations[relationKey];
-            
-            const vA = document.getElementById('vector-A');
-            const vB = document.getElementById('vector-B');
-            const vC = document.getElementById('vector-C');
-            const vR = document.getElementById('vector-R');
-            
-            vA.style.opacity = 0;
-            vB.style.opacity = 0;
-            vC.style.opacity = 0;
-            vR.style.opacity = 0;
-            
-            const org = toSVG(0, 0);
-            const svgA = toSVG(rel.A.x, rel.A.y);
-            
-            const ab_x = rel.A.x - rel.B.x;
-            const ab_y = rel.A.y - rel.B.y;
-            const svgAB = toSVG(ab_x, ab_y);
-            
-            const svgD = toSVG(rel.D.x, rel.D.y);
-            
+
+            ['vector-A','vector-B','vector-C','vector-R'].forEach(id => {
+                document.getElementById(id).style.opacity = 0;
+            });
+
+            const org   = toSVG(0, 0);
+            const svgA  = toSVG(rel.A.x, rel.A.y);
+            const svgAB = toSVG(rel.A.x - rel.B.x, rel.A.y - rel.B.y);
+            const svgD  = toSVG(rel.D.x, rel.D.y);
+
             const narration = document.getElementById('vector-narration');
+
+            const pause = (ms) => stepMode ? waitForNextStep() : new Promise(r => setTimeout(r, ms));
+
+            // Step 0: intro
             narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step0}</p>`;
-            
-            // Step 1: Animate Vector A
-            setTimeout(() => {
-                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step1}</p>`;
-                animateLine('vector-A', org.x, org.y, svgA.x, svgA.y, 1000, () => {
-                    // Step 2: Animate Vector -B
-                    setTimeout(() => {
-                        narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step2}</p>`;
-                        animateLine('vector-B', svgA.x, svgA.y, svgAB.x, svgAB.y, 1000, () => {
-                            // Step 3: Animate Vector +C
-                            setTimeout(() => {
-                                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step3}</p>`;
-                                animateLine('vector-C', svgAB.x, svgAB.y, svgD.x, svgD.y, 1000, () => {
-                                    // Step 4: Animate Result Vector
-                                    setTimeout(() => {
-                                        narration.innerHTML = `<p style="color:var(--accent-green); font-weight:bold; animation: popIn 0.3s">${rel.explain.step4}</p>`;
-                                        animateLine('vector-R', org.x, org.y, svgD.x, svgD.y, 1200, () => {
-                                            const ptD = document.getElementById(`pt-${rel.D.name.replace(/\s+/g, '')}`);
-                                            if (ptD) {
-                                                ptD.querySelector('circle').style.fill = 'var(--accent-green)';
-                                                ptD.querySelector('circle').setAttribute('r', '9');
-                                                setTimeout(() => {
-                                                    ptD.querySelector('circle').setAttribute('r', '6');
-                                                }, 1000);
-                                            }
-                                            isAnimating = false;
-                                            btn.disabled = false;
-                                            btn.style.opacity = 1;
-                                        });
-                                    }, 400);
-                                });
-                            }, 400);
-                        });
-                    }, 400);
-                });
-            }, 600);
+            await pause(600);
+
+            // Step 1: Vector A
+            narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step1}</p>`;
+            await new Promise(r => animateLine('vector-A', org.x, org.y, svgA.x, svgA.y, 1000, r));
+            await pause(400);
+
+            // Step 2: Vector -B
+            narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step2}</p>`;
+            await new Promise(r => animateLine('vector-B', svgA.x, svgA.y, svgAB.x, svgAB.y, 1000, r));
+            await pause(400);
+
+            // Step 3: Vector +C
+            narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step3}</p>`;
+            await new Promise(r => animateLine('vector-C', svgAB.x, svgAB.y, svgD.x, svgD.y, 1000, r));
+            await pause(400);
+
+            // Step 4: Result Vector
+            narration.innerHTML = `<p style="color:var(--accent-green); font-weight:bold; animation: popIn 0.3s">${rel.explain.step4}</p>`;
+            await new Promise(r => animateLine('vector-R', org.x, org.y, svgD.x, svgD.y, 1200, r));
+
+            const ptD = document.getElementById(`pt-${rel.D.name.replace(/\s+/g, '')}`);
+            if (ptD) {
+                ptD.querySelector('circle').style.fill = 'var(--accent-green)';
+                ptD.querySelector('circle').setAttribute('r', '9');
+                setTimeout(() => ptD.querySelector('circle').setAttribute('r', '6'), 1000);
+            }
+
+            isAnimating = false;
+            document.getElementById('next-step-btn').style.display = 'none';
+            runBtn.disabled  = false;  runBtn.style.opacity  = 1;
+            stepBtn.disabled = false;  stepBtn.style.opacity = 1;
         }
 
         // ------------------ Positional Encoding Simulator ------------------
