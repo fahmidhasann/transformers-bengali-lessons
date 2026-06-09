@@ -49,33 +49,40 @@
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
-            background-image: 
+            flex-direction: column;
+            background-image:
                 radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
             overflow-x: hidden;
         }
 
-        /* Sidebar Navigation */
+        /* Top Navigation Bar (shared design with the lesson pages) */
         .sidebar {
-            width: 280px;
+            width: 100%;
             background-color: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.7rem 2rem;
             display: flex;
-            flex-direction: column;
-            position: fixed;
+            flex-direction: row;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
             top: 0;
-            bottom: 0;
             left: 0;
-            z-index: 100;
-            transition: all 0.3s ease;
+            z-index: 500;
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+            transition: padding 0.3s ease;
         }
+        :root.light .sidebar { box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08); }
 
         .sidebar-brand {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 3rem;
+            margin-bottom: 0;
+            flex-shrink: 0;
         }
 
         .sidebar-brand-logo {
@@ -103,25 +110,28 @@
 
         .nav-menu {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.3rem;
             list-style: none;
+            margin-left: auto;
         }
 
         .nav-item button {
-            width: 100%;
+            width: auto;
             background: none;
             border: 1px solid transparent;
             color: var(--text-secondary);
-            padding: 0.85rem 1.2rem;
-            border-radius: 12px;
-            font-size: 0.95rem;
+            padding: 0.6rem 0.9rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-weight: 600;
             text-align: left;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.55rem;
+            white-space: nowrap;
             transition: all 0.3s ease;
             font-family: var(--font-main);
         }
@@ -129,7 +139,6 @@
         .nav-item button:hover {
             color: var(--text-primary);
             background: rgba(255, 255, 255, 0.05);
-            padding-left: 1.5rem;
         }
 
         .nav-item.active button {
@@ -150,6 +159,7 @@
         }
 
         .sidebar-footer {
+            display: none;
             margin-top: auto;
             font-size: 0.8rem;
             color: var(--text-secondary);
@@ -206,12 +216,12 @@
 
         /* Main Content Panel */
         .main-panel {
-            flex-grow: 1;
-            margin-left: 280px;
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
             padding: 2.5rem;
             min-height: 100vh;
             transition: all 0.3s ease;
-            max-width: calc(100vw - 280px);
         }
 
         header {
@@ -1141,10 +1151,12 @@
         /* Mobile responsive adjustments */
         .mobile-hamburger {
             display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.75rem;
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            line-height: 1;
             cursor: pointer;
             min-width: 44px;
             min-height: 44px;
@@ -1153,81 +1165,34 @@
             border-radius: 10px;
         }
 
-        /* Tablet / small-laptop tier: tighten sidebar + content before full collapse */
+        /* Collapse the horizontal nav into a hamburger menu when the bilingual labels stop fitting */
         @media (max-width: 1024px) {
-            .sidebar {
-                width: 240px;
-                padding: 1.75rem 1rem;
-            }
-            .main-panel {
-                margin-left: 240px;
-                max-width: calc(100vw - 240px);
-                padding: 2rem;
-            }
-            .preview-drawer {
-                width: 90%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: static;
-                padding: 1.25rem 1.5rem;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .sidebar-brand {
-                margin-bottom: 0;
-            }
-
-            .sidebar-footer {
-                display: none;
-            }
-
-            .mobile-hamburger {
-                display: flex;
-            }
-
-            .nav-item button {
-                min-height: 44px;
-            }
-
+            .mobile-hamburger { display: flex; }
             .nav-menu {
                 display: none;
                 position: absolute;
-                top: 70px;
+                top: 100%;
                 left: 0;
                 right: 0;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.25rem;
+                margin-left: 0;
                 background-color: var(--sidebar-bg);
                 border-bottom: 1px solid var(--border-color);
-                padding: 1.5rem;
+                padding: 1.25rem 1.5rem;
                 z-index: 90;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                box-shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
             }
+            .nav-menu.open { display: flex; }
+            .nav-item button { width: 100%; min-height: 44px; }
+            .preview-drawer { width: 90%; }
+        }
 
-            .nav-menu.open {
-                display: flex;
-            }
-
-            .main-panel {
-                margin-left: 0;
-                padding: 1.5rem;
-                max-width: 100%;
-            }
-
-            .preview-drawer {
-                width: 100%;
-            }
+        @media (max-width: 768px) {
+            .sidebar { padding: 0.9rem 1.25rem; }
+            .main-panel { padding: 1.5rem; }
+            .preview-drawer { width: 100%; }
 
             .roadmap-card {
                 flex-direction: column;
