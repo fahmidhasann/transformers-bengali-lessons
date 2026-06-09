@@ -9,10 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -626,6 +624,8 @@
 
         /* Theme Toggle Button Styles */
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             position: absolute;
             top: 2rem;
             right: 2rem;
@@ -1181,9 +1181,6 @@
             <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn how multiple attention streams work in parallel: the <strong>Multi-Head Attention Mechanism</strong>.</p>
         </div>
 
-        <footer>
-            <p>After reading this lesson, return to the chat and discuss any questions you have with the agent.</p>
-        </footer>
     </div>
 
     <script>
@@ -1195,17 +1192,17 @@
                     'it': {
                         title: "Query Focus: 'it'",
                         text: "Here, the word 'it' focuses 55% of its attention (Attention Weight) on 'animal' because the trait 'tired' is semantically associated with a living creature rather than a street.",
-                        weights: { 'The': 0.02, 'animal': 0.55, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.05, 'because': 0.03, 'it': 0.15, 'was': 0.02, 'too': 0.03, 'tired': 0.10 }
+                        weights: [0.02, 0.55, 0.03, 0.05, 0.02, 0.05, 0.03, 0.15, 0.02, 0.03, 0.10]
                     },
                     'street': {
                         title: "Query Focus: 'street'",
                         text: "Here, the word 'street' is closely connected with 'cross' and 'the' to identify the object being crossed.",
-                        weights: { 'The': 0.02, 'animal': 0.10, "didn't": 0.03, 'cross': 0.35, 'the': 0.15, 'street': 0.20, 'because': 0.02, 'it': 0.03, 'was': 0.02, 'too': 0.03, 'tired': 0.05 }
+                        weights: [0.02, 0.10, 0.03, 0.35, 0.15, 0.20, 0.02, 0.03, 0.02, 0.03, 0.05]
                     },
                     'tired': {
                         title: "Query Focus: 'tired'",
                         text: "Here, the word 'tired' establishes a strong connection with 'it' and 'animal', clarifying who is tired.",
-                        weights: { 'The': 0.01, 'animal': 0.40, "didn't": 0.02, 'cross': 0.05, 'the': 0.01, 'street': 0.03, 'because': 0.05, 'it': 0.25, 'was': 0.05, 'too': 0.08, 'tired': 0.10 }
+                        weights: [0.01, 0.40, 0.02, 0.05, 0.01, 0.03, 0.05, 0.25, 0.05, 0.08, 0.10]
                     }
                 }
             },
@@ -1215,12 +1212,12 @@
                     'it': {
                         title: "Query Focus: 'it'",
                         text: "Here, the word 'it' shifts 60% of its attention to 'street' because 'wide' is a characteristic of a street rather than an animal. By changing a single adjective, 'it' completely changes its referent! This is the power of context.",
-                        weights: { 'The': 0.02, 'animal': 0.05, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.60, 'because': 0.03, 'it': 0.12, 'was': 0.02, 'too': 0.03, 'wide': 0.08 }
+                        weights: [0.02, 0.05, 0.03, 0.05, 0.02, 0.60, 0.03, 0.12, 0.02, 0.03, 0.08]
                     },
                     'wide': {
                         title: "Query Focus: 'wide'",
                         text: "Here, the word 'wide' is associated with 'street' and 'it', describing the street's physical structure.",
-                        weights: { 'The': 0.01, 'animal': 0.02, "didn't": 0.02, 'cross': 0.05, 'the': 0.02, 'street': 0.45, 'because': 0.03, 'it': 0.20, 'was': 0.05, 'too': 0.10, 'wide': 0.08 }
+                        weights: [0.01, 0.02, 0.02, 0.05, 0.02, 0.45, 0.03, 0.20, 0.05, 0.10, 0.08]
                     }
                 }
             },
@@ -1230,12 +1227,12 @@
                     'bank': {
                         title: "Query Focus: 'bank'",
                         text: "Here, the word 'bank' allocates a combined 70% of its attention to 'money' and 'deposited', enabling the model to resolve its meaning as a financial institution.",
-                        weights: { 'I': 0.03, 'deposited': 0.25, 'my': 0.02, 'money': 0.45, 'at': 0.03, 'the': 0.02, 'bank': 0.20 }
+                        weights: [0.03, 0.25, 0.02, 0.45, 0.03, 0.02, 0.20]
                     },
                     'deposited': {
                         title: "Query Focus: 'deposited'",
                         text: "The action of depositing is semantically linked with 'money' and 'bank'.",
-                        weights: { 'I': 0.05, 'deposited': 0.30, 'my': 0.03, 'money': 0.35, 'at': 0.02, 'the': 0.02, 'bank': 0.23 }
+                        weights: [0.05, 0.30, 0.03, 0.35, 0.02, 0.02, 0.23]
                     }
                 }
             },
@@ -1245,12 +1242,12 @@
                     'bank': {
                         title: "Query Focus: 'bank'",
                         text: "Here, the word 'bank' establishes a strong relationship (approx 70%) with 'river' and 'muddy', confirming that it refers to the side of a body of water.",
-                        weights: { 'We': 0.02, 'sat': 0.05, 'on': 0.03, 'the': 0.02, 'muddy': 0.28, 'bank': 0.15, 'of': 0.02, 'the': 0.03, 'river': 0.40 }
+                        weights: [0.02, 0.05, 0.03, 0.02, 0.28, 0.15, 0.02, 0.03, 0.40]
                     },
                     'river': {
                         title: "Query Focus: 'river'",
                         text: "'river' draws context from 'bank' and 'muddy' to resolve its surrounding features.",
-                        weights: { 'We': 0.02, 'sat': 0.03, 'on': 0.02, 'the': 0.02, 'muddy': 0.20, 'bank': 0.45, 'of': 0.03, 'the': 0.03, 'river': 0.20 }
+                        weights: [0.02, 0.03, 0.02, 0.02, 0.20, 0.45, 0.03, 0.03, 0.20]
                     }
                 }
             }
@@ -1377,7 +1374,7 @@
             activeQueryWord = node;
 
             const wordName = currentWords[index];
-            let weights = {};
+            let weightArr = [];
             let explanationTitle = `Query word: "${wordName}"`;
             let explanationText = `You clicked: <strong>"${wordName}"</strong>. Observe how it establishes contextual connections with other words in the sentence.`;
 
@@ -1390,26 +1387,27 @@
                 predefinedDetail = isPredefined.queryDetails[matchWord];
             }
 
-            if (predefinedDetail) {
+            if (predefinedDetail && predefinedDetail.weights.length === currentWords.length) {
                 explanationTitle = predefinedDetail.title;
                 explanationText = predefinedDetail.text;
-                weights = predefinedDetail.weights;
+                weightArr = predefinedDetail.weights.slice();
             } else {
                 // Heuristically calculate simulated weights
-                const calcWeights = calculateHeuristicWeights(currentWords, index);
+                weightArr = calculateHeuristicWeights(currentWords, index);
                 explanationTitle = `Query Focus: "${wordName}"`;
                 explanationText = `The computer calculated the relationships using dot-products. Estimated Attention Weights are shown below:`;
-                
-                currentWords.forEach((w, i) => {
-                    weights[w] = calcWeights[i];
-                });
             }
 
-            // Apply weights to key nodes and calculate details
+            // Attention weights form a probability distribution over the keys, so
+            // they must sum to 1. Normalise here by position (not by word, since a
+            // word like "the" can appear at several positions with different weights).
+            const total = weightArr.reduce((a, b) => a + (b || 0), 0) || 1;
+            weightArr = weightArr.map(x => (x || 0) / total);
+
+            // Apply weights to key nodes by position
             currentWords.forEach((w, i) => {
                 const keyNode = document.getElementById(`key-node-${i}`);
-                const weight = weights[w] !== undefined ? weights[w] : weights[Object.keys(weights)[i]] || 0.05;
-                keyNode.setAttribute('data-weight', weight);
+                keyNode.setAttribute('data-weight', weightArr[i] !== undefined ? weightArr[i] : 0);
             });
 
             // Update explanation panel
@@ -1481,8 +1479,6 @@
                     }
                 }
                 
-                // Random jitter
-                score += Math.random() * 0.4;
                 scores[idx] = score;
             });
             

@@ -9,10 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -807,6 +805,8 @@
 
         /* Theme Toggle Button Styles */
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             position: absolute;
             top: 2rem;
             right: 2rem;
@@ -1475,9 +1475,6 @@
             <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn about the differences between the Transformer Encoder and Decoder blocks, and how they work in combination.</p>
         </div>
 
-        <footer>
-            <p>After reading this lesson, return to the chat and discuss any questions with the AI agent.</p>
-        </footer>
     </div>
 
     <script>

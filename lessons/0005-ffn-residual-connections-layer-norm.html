@@ -9,10 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -807,6 +805,8 @@
 
         /* Theme Toggle Button Styles */
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             position: absolute;
             top: 2rem;
             right: 2rem;
@@ -1475,9 +1475,6 @@
             <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা ট্রান্সফরমার এনকোডার এবং ডেকোডার ব্লকের মধ্যকার পার্থক্য ও তাদের কম্বাইনড কাজের প্রক্রিয়া শিখবো।</p>
         </div>
 
-        <footer>
-            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং কোনো প্রশ্ন থাকলে সাব-এজেন্টের সাথে আলোচনা করুন।</p>
-        </footer>
     </div>
 
     <script>

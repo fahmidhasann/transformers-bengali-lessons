@@ -9,10 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -614,6 +612,8 @@
 
         /* Theme Toggle Button Styles */
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             position: absolute;
             top: 2rem;
             right: 2rem;
@@ -1264,9 +1264,6 @@
             <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে <strong>Self-Attention Mechanism</strong> কাজ করে এবং কীভাবে মডেল শব্দের কনটেক্সট উদ্ধার করে।</p>
         </div>
 
-        <footer>
-            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
-        </footer>
     </div>
 
     <script>

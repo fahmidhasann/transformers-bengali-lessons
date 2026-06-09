@@ -9,13 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.add('light');
-            } else {
-                // Default to dark theme for first-time visitors
-                document.documentElement.classList.remove('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            // (Light theme CSS/JS is kept below so it can be re-enabled later.)
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -1431,6 +1427,8 @@
         }
 
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
@@ -3086,14 +3084,8 @@
 
         // --- Theme Toggle Logic ---
         function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.add('light');
-            } else {
-                // Default to dark theme for first-time visitors
-                document.documentElement.classList.remove('light');
-                if (!savedTheme) localStorage.setItem('theme', 'dark');
-            }
+            // Light theme temporarily disabled — always force dark mode.
+            document.documentElement.classList.remove('light');
             syncIFrameTheme();
         }
 
@@ -3109,12 +3101,8 @@
         }
 
         function syncThemeFromChild(theme) {
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            } else {
-                document.documentElement.classList.remove('light');
-            }
-            localStorage.setItem('theme', theme);
+            // Light theme temporarily disabled — always force dark mode.
+            document.documentElement.classList.remove('light');
             syncIFrameTheme();
         }
 

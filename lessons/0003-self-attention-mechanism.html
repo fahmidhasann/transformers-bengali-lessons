@@ -9,10 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script>
         (function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.documentElement.classList.add('light');
-            }
+            // Light theme temporarily disabled — force dark mode for everyone.
+            document.documentElement.classList.remove('light');
         })();
     </script>
     <style>
@@ -675,6 +673,8 @@
 
         /* Theme Toggle Button Styles */
         .theme-toggle-btn {
+            /* Toggle hidden while light theme is temporarily disabled */
+            display: none !important;
             position: absolute;
             top: 2rem;
             right: 2rem;
@@ -1230,9 +1230,6 @@
             <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে একাধিক মনোযোগের স্রোত একসাথে কাজ করে, অর্থাৎ <strong>Multi-Head Attention Mechanism</strong>।</p>
         </div>
 
-        <footer>
-            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
-        </footer>
     </div>
 
     <script>
@@ -1244,17 +1241,17 @@
                     'it': {
                         title: "Query Focus: 'it'",
                         text: "এখানে 'it' শব্দটি 'animal' (প্রাণী)-এর সাথে ৫৫% মনোযোগ (Attention Weight) সংযোগ তৈরি করেছে। কারণ 'tired' বা ক্লান্ত হওয়ার গুণটি রাস্তার চেয়ে প্রাণীর সাথে বেশি মানানসই।",
-                        weights: { 'The': 0.02, 'animal': 0.55, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.05, 'because': 0.03, 'it': 0.15, 'was': 0.02, 'too': 0.03, 'tired': 0.10 }
+                        weights: [0.02, 0.55, 0.03, 0.05, 0.02, 0.05, 0.03, 0.15, 0.02, 0.03, 0.10]
                     },
                     'street': {
                         title: "Query Focus: 'street'",
                         text: "এখানে 'street' (রাস্তা) শব্দটি 'cross' (পার হওয়া) এবং 'the'-এর সাথে বেশি সম্পর্কযুক্ত হয়েছে।",
-                        weights: { 'The': 0.02, 'animal': 0.10, "didn't": 0.03, 'cross': 0.35, 'the': 0.15, 'street': 0.20, 'because': 0.02, 'it': 0.03, 'was': 0.02, 'too': 0.03, 'tired': 0.05 }
+                        weights: [0.02, 0.10, 0.03, 0.35, 0.15, 0.20, 0.02, 0.03, 0.02, 0.03, 0.05]
                     },
                     'tired': {
                         title: "Query Focus: 'tired'",
                         text: "এখানে 'tired' (ক্লান্ত) শব্দটি 'it' এবং 'animal' এর সাথে দৃঢ় সংযোগ তৈরি করেছে, যার মাধ্যমে ক্লান্ত কে ছিল তা স্পষ্ট হয়।",
-                        weights: { 'The': 0.01, 'animal': 0.40, "didn't": 0.02, 'cross': 0.05, 'the': 0.01, 'street': 0.03, 'because': 0.05, 'it': 0.25, 'was': 0.05, 'too': 0.08, 'tired': 0.10 }
+                        weights: [0.01, 0.40, 0.02, 0.05, 0.01, 0.03, 0.05, 0.25, 0.05, 0.08, 0.10]
                     }
                 }
             },
@@ -1264,12 +1261,12 @@
                     'it': {
                         title: "Query Focus: 'it'",
                         text: "এখানে 'it' শব্দটি 'street' (রাস্তা)-এর সাথে ৬০% মনোযোগ সংযোগ তৈরি করেছে। কারণ 'wide' বা প্রশস্ত হওয়া গুণটি প্রাণীর তুলনায় রাস্তার সাথে বেশি মানানসই। কনটেক্সট পরিবর্তনের সাথে সাথে 'it' তার পরিচয় পরিবর্তন করে ফেলেছে!",
-                        weights: { 'The': 0.02, 'animal': 0.05, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.60, 'because': 0.03, 'it': 0.12, 'was': 0.02, 'too': 0.03, 'wide': 0.08 }
+                        weights: [0.02, 0.05, 0.03, 0.05, 0.02, 0.60, 0.03, 0.12, 0.02, 0.03, 0.08]
                     },
                     'wide': {
                         title: "Query Focus: 'wide'",
                         text: "এখানে 'wide' (প্রশস্ত) শব্দটি 'street' এবং 'it' এর সাথে সম্পর্কিত, যা রাস্তার দৈহিক গঠন প্রকাশ করে।",
-                        weights: { 'The': 0.01, 'animal': 0.02, "didn't": 0.02, 'cross': 0.05, 'the': 0.02, 'street': 0.45, 'because': 0.03, 'it': 0.20, 'was': 0.05, 'too': 0.10, 'wide': 0.08 }
+                        weights: [0.01, 0.02, 0.02, 0.05, 0.02, 0.45, 0.03, 0.20, 0.05, 0.10, 0.08]
                     }
                 }
             },
@@ -1279,12 +1276,12 @@
                     'bank': {
                         title: "Query Focus: 'bank'",
                         text: "এখানে 'bank' শব্দটি 'money' (টাকা) এবং 'deposited' (জমা দেওয়া)-এর সাথে সর্বমোট ৭০% মনোযোগ সংযোগ তৈরি করেছে। এর ফলে এর অর্থ দাঁড়িয়েছে অর্থনৈতিক প্রতিষ্ঠান বা ব্যাংকভবন।",
-                        weights: { 'I': 0.03, 'deposited': 0.25, 'my': 0.02, 'money': 0.45, 'at': 0.03, 'the': 0.02, 'bank': 0.20 }
+                        weights: [0.03, 0.25, 0.02, 0.45, 0.03, 0.02, 0.20]
                     },
                     'deposited': {
                         title: "Query Focus: 'deposited'",
                         text: "জমা করার মূল কাজটি হচ্ছে 'money' এবং 'bank'-এর সাথে সম্পর্কিত।",
-                        weights: { 'I': 0.05, 'deposited': 0.30, 'my': 0.03, 'money': 0.35, 'at': 0.02, 'the': 0.02, 'bank': 0.23 }
+                        weights: [0.05, 0.30, 0.03, 0.35, 0.02, 0.02, 0.23]
                     }
                 }
             },
@@ -1294,12 +1291,12 @@
                     'bank': {
                         title: "Query Focus: 'bank'",
                         text: "এখানে 'bank' শব্দটি 'river' (নদী) এবং 'muddy' (কর্দমাক্ত)-এর সাথে প্রায় ৭০% মনোযোগের সম্পর্ক স্থাপন করেছে। যার ফলে মডেল নিশ্চিত হয় যে এটি নদীর তীর বা পাড়কে নির্দেশ করছে।",
-                        weights: { 'We': 0.02, 'sat': 0.05, 'on': 0.03, 'the': 0.02, 'muddy': 0.28, 'bank': 0.15, 'of': 0.02, 'the': 0.03, 'river': 0.40 }
+                        weights: [0.02, 0.05, 0.03, 0.02, 0.28, 0.15, 0.02, 0.03, 0.40]
                     },
                     'river': {
                         title: "Query Focus: 'river'",
                         text: "'river' তার অবস্থান স্পষ্ট করতে 'bank' এবং 'muddy' এর সাহায্য নিচ্ছে।",
-                        weights: { 'We': 0.02, 'sat': 0.03, 'on': 0.02, 'the': 0.02, 'muddy': 0.20, 'bank': 0.45, 'of': 0.03, 'the': 0.03, 'river': 0.20 }
+                        weights: [0.02, 0.03, 0.02, 0.02, 0.20, 0.45, 0.03, 0.03, 0.20]
                     }
                 }
             }
@@ -1426,7 +1423,7 @@
             activeQueryWord = node;
 
             const wordName = currentWords[index];
-            let weights = {};
+            let weightArr = [];
             let explanationTitle = `Query word: "${wordName}"`;
             let explanationText = `আপনি "${wordName}" শব্দটি ক্লিক করেছেন। এটি কীভাবে বাক্যের অন্যান্য শব্দের সাথে অর্থবহ সংযোগ তৈরি করছে তা দেখতে পাচ্ছেন।`;
 
@@ -1439,27 +1436,27 @@
                 predefinedDetail = isPredefined.queryDetails[matchWord];
             }
 
-            if (predefinedDetail) {
+            if (predefinedDetail && predefinedDetail.weights.length === currentWords.length) {
                 explanationTitle = predefinedDetail.title;
                 explanationText = predefinedDetail.text;
-                weights = predefinedDetail.weights;
+                weightArr = predefinedDetail.weights.slice();
             } else {
                 // Heuristically calculate simulated weights
-                const calcWeights = calculateHeuristicWeights(currentWords, index);
+                weightArr = calculateHeuristicWeights(currentWords, index);
                 explanationTitle = `Query Focus: "${wordName}"`;
                 explanationText = `কম্পিউটার গাণিতিক ডট প্রোডাক্ট ব্যবহার করে "${wordName}" এর সাথে অন্যান্য শব্দের সম্পর্ক নির্ধারণ করেছে। নিচে এর আনুমানিক Attention Weights দেখানো হলো।`;
-                
-                currentWords.forEach((w, i) => {
-                    weights[w] = calcWeights[i];
-                });
             }
 
-            // Apply weights to key nodes and calculate details
+            // Attention weights form a probability distribution over the keys, so
+            // they must sum to 1. Normalise here by position (not by word, since a
+            // word like "the" can appear at several positions with different weights).
+            const total = weightArr.reduce((a, b) => a + (b || 0), 0) || 1;
+            weightArr = weightArr.map(x => (x || 0) / total);
+
+            // Apply weights to key nodes by position
             currentWords.forEach((w, i) => {
                 const keyNode = document.getElementById(`key-node-${i}`);
-                // Since duplicate words can exist, we assign by index
-                const weight = weights[w] !== undefined ? weights[w] : weights[Object.keys(weights)[i]] || 0.05;
-                keyNode.setAttribute('data-weight', weight);
+                keyNode.setAttribute('data-weight', weightArr[i] !== undefined ? weightArr[i] : 0);
             });
 
             // Update explanation panel
@@ -1531,8 +1528,6 @@
                     }
                 }
                 
-                // Random jitter for math realism
-                score += Math.random() * 0.4;
                 scores[idx] = score;
             });
             
