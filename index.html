@@ -1650,7 +1650,7 @@
                 <div class="card analytics-card">
                     <div class="analytics-info">
                         <p id="total-glossary-lbl">Total Glossary Terms</p>
-                        <h3>২৫+</h3>
+                        <h3 id="total-glossary-count">২৫+</h3>
                         <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="total-glossary-desc">সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ</p>
                     </div>
                     <div style="font-size: 3rem;">📖</div>
@@ -2513,6 +2513,7 @@
                 "nav-text-quiz": "Assessment (চূড়ান্ত কুইজ)",
                 "syllabus-progress-lbl": "Syllabus Progress",
                 "total-glossary-lbl": "Total Glossary Terms",
+                "total-glossary-count": "২৫+",
                 "total-glossary-desc": "সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ",
                 "final-assessment-lbl": "Final Assessment",
                 "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)",
@@ -2548,6 +2549,7 @@
                 "nav-text-quiz": "Final Assessment",
                 "syllabus-progress-lbl": "Syllabus Progress",
                 "total-glossary-lbl": "Total Glossary Terms",
+                "total-glossary-count": "25+",
                 "total-glossary-desc": "Key terms with simple explanations",
                 "final-assessment-lbl": "Final Assessment",
                 "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission",
@@ -2791,8 +2793,8 @@
                 badgeEl.innerText = "🏆";
                 badgeEl.style.filter = "drop-shadow(0 0 10px rgba(16, 185, 129, 0.4))";
             } else {
-                statusEl.innerText = "Not Attempted";
-                scoreSubEl.innerText = "কুইজ দিয়ে সার্টিফিকেট অর্জন করুন";
+                statusEl.innerText = isEn ? "Not Attempted" : "অংশগ্রহণ করা হয়নি";
+                scoreSubEl.innerText = isEn ? "Complete the quiz to earn your certificate" : "কুইজ দিয়ে সার্টিফিকেট অর্জন করুন";
                 badgeEl.innerText = "🎖️";
                 badgeEl.style.filter = "none";
             }
