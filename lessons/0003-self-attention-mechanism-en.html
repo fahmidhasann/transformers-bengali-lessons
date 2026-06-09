@@ -777,7 +777,7 @@
         <!-- Analogy Card -->
         <div class="card">
             <h2>An Analogy for Query, Key, and Value</h2>
-            <p>Self-Attention performs all calculations using three vectors: <span class="highlight">Query (Q)</span>, <span class="highlight-purple">Key (K)</span>, and <span class="tech-term">Value (V)</span>. To understand them, we can use a **YouTube Search Engine** analogy:</p>
+            <p>Self-Attention performs all calculations using three vectors: <span class="highlight">Query (Q)</span>, <span class="highlight-purple">Key (K)</span>, and <span class="tech-term">Value (V)</span>. To understand them, we can use a <strong>YouTube Search Engine</strong> analogy:</p>
             
             <div class="analogy-grid">
                 <div class="analogy-card">
@@ -813,7 +813,7 @@
             <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
                 <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
                     <strong style="color: var(--accent-cyan);">Step 1: Similarity (Dot Product)</strong>
-                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The Query of the word we want to analyze is dotted with the Keys of every word in the sentence (<span class="tech-term">Dot Product</span>). The dot product mathematically measures how aligned or similar two vectors are. The result is called the **Raw Score**.</p>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The Query of the word we want to analyze is dotted with the Keys of every word in the sentence (<span class="tech-term">Dot Product</span>). The dot product mathematically measures how aligned or similar two vectors are. The result is called the <strong>Raw Score</strong>.</p>
                 </div>
 
                 <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-purple);">
@@ -823,12 +823,12 @@
 
                 <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
                     <strong style="color: var(--accent-cyan);">Step 3: Softmax (Attention Weights)</strong>
-                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The scaled scores are passed through a <span class="tech-term">Softmax</span> function. Softmax normalizes all scores into fractions between 0 and 1 that sum up to exactly 1 (or 100%). These fractions are the **Attention Weights**, telling the model what percentage of attention should be paid to each word.</p>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The scaled scores are passed through a <span class="tech-term">Softmax</span> function. Softmax normalizes all scores into fractions between 0 and 1 that sum up to exactly 1 (or 100%). These fractions are the <strong>Attention Weights</strong>, telling the model what percentage of attention should be paid to each word.</p>
                 </div>
 
                 <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-green);">
                     <strong style="color: var(--accent-green);">Step 4: Weighted Sum of Values</strong>
-                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">Finally, the Value (V) vector of each word is multiplied by its corresponding Attention Weight, and these weighted vectors are added together (**Weighted Sum**). This combined vector is the final, context-rich representation of the word!</p>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">Finally, the Value (V) vector of each word is multiplied by its corresponding Attention Weight, and these weighted vectors are added together (<strong>Weighted Sum</strong>). This combined vector is the final, context-rich representation of the word!</p>
                 </div>
             </div>
         </div>
@@ -836,7 +836,7 @@
         <!-- Interactive Simulator Card -->
         <div class="card">
             <h2>Interactive Attention Simulator</h2>
-            <p>Select a sentence below (or enter a **Custom Sentence**). Click on any word in the **Query (Q) Row** to see how the connection lines and **Attention Weights** dynamically adjust based on context.</p>
+            <p>Select a sentence below (or enter a <strong>Custom Sentence</strong>). Click on any word in the <strong>Query (Q) Row</strong> to see how the connection lines and <strong>Attention Weights</strong> dynamically adjust based on context.</p>
 
             <div class="simulator">
                 <div class="sim-input-group">
