@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 1: LLM Pipeline-এর High-Level Intuition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Pipeline Visualizer */
+        .pipeline-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .step-node {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-purple);
+            transition: all 0.3s ease;
+        }
+
+        .step-node.active {
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .step-number {
+            background: var(--accent-purple);
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-node.active .step-number {
+            background: var(--accent-cyan);
+        }
+
+        .step-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        /* Simulator Styles */
+        .simulator {
+            margin-top: 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .sim-input-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        select, input, button {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select {
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .sim-output {
+            min-height: 200px;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .token-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .token-box {
+            padding: 0.4rem 0.8rem;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1.5px solid var(--accent-purple);
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            text-align: center;
+            animation: popIn 0.3s ease forwards;
+        }
+
+        .token-id {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+        }
+
+        .embedding-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .embed-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .attention-map {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding: 0.5rem;
+        }
+
+        .attn-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .attn-word {
+            width: 80px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .attn-bar-container {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .attn-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            width: 0%;
+            transition: width 0.8s ease-in-out;
+        }
+
+        .prediction-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+        }
+
+        .prediction-item.top {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.4);
+            font-weight: bold;
+        }
+
+        /* Quiz Styles */
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.95rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 1</span>
+            <h1>LLM Pipeline-এর High-Level Intuition</h1>
+            <p class="subtitle">কীভাবে একটি sentence মডেলের ভেতরে প্রসেস হয়ে output তৈরি করে?</p>
+        </header>
+
+        <!-- Intro Card -->
+        <div class="card">
+            <h2><span class="tech-term">The Goal of an LLM</span></h2>
+            <p>ChatGPT, Gemini বা LLaMA-এর মতো <span class="tech-term">Large Language Models (LLMs)</span> মূলত একটি অত্যন্ত শক্তিশালী "পরবর্তী শব্দ অনুমানকারী যন্ত্র" বা <span class="highlight">Next Token Predictor</span>।</p>
+            <p>মডেলের কাজ খুব সহজ: আপনি তাকে কিছু ইনপুট টেক্সট (যাকে <span class="tech-term">Prompt</span> বলা হয়) দেবেন, আর সে গণিত ও পরিসংখ্যান ব্যবহার করে হিসাব করবে ওই টেক্সটের পর সবচেয়ে সম্ভাব্য শব্দ বা টোকেন কোনটি হতে পারে। এই কাজটিকে বলা হয় <span class="tech-term">Autoregressive Generation</span>, কারণ মডেল নিজের তৈরি করা আগের শব্দগুলোকে ইনপুট হিসেবে নিয়ে বারবার পরবর্তী শব্দ প্রেডিক্ট করতে থাকে।</p>
+            <p>এই পুরো ম্যাজিকটি যার ওপর দাঁড়িয়ে আছে, তা হলো <span class="tech-term">Transformer Architecture</span>।</p>
+        </div>
+
+        <!-- Pipeline Nodes -->
+        <div class="card">
+            <h2><span class="tech-term">The Core Pipeline</span> (৪টি মূল ধাপ)</h2>
+            <p>একটি Prompt কীভাবে মডেলের ভেতর দিয়ে প্রসেস হয়, তার ৪টি ধাপ নিচে দেওয়া হলো:</p>
+            
+            <div class="pipeline-steps">
+                <div class="step-node" id="node-token">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Tokenization (টোকেনাইজেশন)</h3>
+                        <p>কম্পিউটার সরাসরি ভাষা বা শব্দ বোঝে না। তাই ইনপুট টেক্সটকে ছোট ছোট টুকরোতে ভাগ করা হয়, যাদের <span class="tech-term">Tokens</span> বলে। প্রতিটি টোকেনকে একটি ইউনিক সংখ্যা বা <span class="tech-term">Token ID</span> দেওয়া হয়।</p>
+                    </div>
+                </div>
+
+                <div class="step-node" id="node-embed">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Embedding (এম্বেডিং)</h3>
+                        <p>প্রতিটি Token ID-কে একটি উচ্চ-মাত্রিক ভেক্টর (<span class="tech-term">High-dimensional Vector</span>) বা সংখ্যার তালিকায় রূপান্তর করা হয়। এটি শব্দের ব্যাকরণগত ও অর্থগত সম্পর্ক ধারণ করে। যেমন: "রাজা" ও "রাণী" ভেক্টর দুটি স্পেসে কাছাকাছি অবস্থান করবে।</p>
+                    </div>
+                </div>
+
+                <div class="step-node" id="node-trans">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Transformer Blocks (ট্রান্সফরমার ব্লকস)</h3>
+                        <p>এটি মডেলের মস্তিষ্ক। এর ভেতরে রয়েছে <span class="tech-term">Self-Attention Mechanism</span>। এটি প্রতিটি টোকেনকে তার আশেপাশের অন্যান্য টোকেনগুলোর দিকে তাকাতে সাহায্য করে এবং বুঝতে পারে কোন শব্দের সাথে কোন শব্দ বেশি সম্পর্কিত (Context Extraction)।</p>
+                    </div>
+                </div>
+
+                <div class="step-node" id="node-softmax">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Output & Softmax (পরবর্তী টোকেন প্রেডিকশন)</h3>
+                        <p>Transformer-এর শেষ স্তরে পুরো vocabulary-র প্রতিটি শব্দের জন্য একটি প্রব্যাবিলিটি স্কোর হিসাব করা হয়। <span class="tech-term">Softmax</span> ফাংশন ব্যবহার করে এই স্কোরগুলোকে প্রব্যাবিলিটিতে (০ থেকে ১ এর মধ্যে) রূপান্তর করা হয় এবং সর্বোচ্চ সম্ভাবনার টোকেনটি নির্বাচন করা হয়।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Simulator Card -->
+        <div class="card">
+            <h2>Interactive Pipeline Simulator</h2>
+            <p>নিচের যেকোনো একটি Prompt সিলেক্ট করে <strong>"Run Step-by-Step"</strong> বাটনে ক্লিক করুন এবং দেখুন কীভাবে ডেটা প্রবাহিত হচ্ছে।</p>
+
+            <div class="simulator">
+                <div class="sim-input-group">
+                    <select id="prompt-select">
+                        <option value="cat">The cat sat on the ...</option>
+                        <option value="sky">The stars shine bright in the ...</option>
+                        <option value="code">Python is a great programming ...</option>
+                    </select>
+                    <button id="run-sim-btn">Run Step-by-Step</button>
+                </div>
+
+                <div class="tab-nav">
+                    <button class="tab-btn active" onclick="switchTab('token')">1. Tokenizer</button>
+                    <button class="tab-btn" onclick="switchTab('embed')">2. Embedding</button>
+                    <button class="tab-btn" onclick="switchTab('trans')">3. Transformer Block (Attention)</button>
+                    <button class="tab-btn" onclick="switchTab('softmax')">4. Prediction</button>
+                </div>
+
+                <div class="sim-output">
+                    <!-- Token Tab -->
+                    <div class="tab-panel active" id="tab-token">
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">টেক্সটকে টোকেনে বিভক্ত করা হয়েছে এবং প্রতিটির জন্য Vocabulary ID নির্ধারণ করা হয়েছে:</p>
+                        <div class="token-container" id="token-display">
+                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                        </div>
+                    </div>
+
+                    <!-- Embed Tab -->
+                    <div class="tab-panel" id="tab-embed">
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">প্রতিটি টোকেন এখন একটি 8-dimensional Vector (বাস্তবে এটি ৪০৯৬+ ডাইমেনশন হয়):</p>
+                        <div class="embedding-grid" id="embed-display">
+                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                        </div>
+                    </div>
+
+                    <!-- Transformer Tab -->
+                    <div class="tab-panel" id="tab-trans">
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">Self-Attention-এর মাধ্যমে শেষ টোকেনটি পেছনের টোকেনগুলোর ওপর কতখানি মনোযোগ (Attention Weight) দিচ্ছে তা দেখুন:</p>
+                        <div class="attention-map" id="trans-display">
+                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                        </div>
+                    </div>
+
+                    <!-- Softmax Tab -->
+                    <div class="tab-panel" id="tab-softmax">
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">পরবর্তী সম্ভাব্য টোকেনের তালিকা (Probability Distribution):</p>
+                        <ul class="prediction-list" id="prediction-display">
+                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (কুইজ)</h2>
+            <p>আপনার ধারণাকে ঝালাই করতে নিচের প্রশ্নটির উত্তর দিন:</p>
+            <div style="margin-top: 1.5rem;">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">প্রশ্ন: Transformer block-এর ভেতরে থাকা Self-Attention Mechanism-এর মূল কাজ কী?</p>
+                
+                <div class="quiz-option" onclick="checkAnswer(this, false, 'দুঃখিত! Tokenizer-এর কাজ হলো টেক্সট ভাঙা, Self-Attention-এর নয়।')">
+                    ক) টেক্সটকে টুকরো টুকরো করে টোকেনে ভাগ করা।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, true, 'চমৎকার! Self-Attention-এর কাজ হলো বাক্যের প্রতিটি টোকেন বা শব্দের মধ্যকার পারস্পরিক সম্পর্ক ও কনটেক্সট খুঁজে বের করা।')">
+                    খ) একটি বাক্যের বিভিন্ন টোকেনের মধ্যকার পারস্পরিক সম্পর্ক এবং কনটেক্সট তৈরি করা।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, false, 'ভুল উত্তর! এটি শেষ স্তরের Softmax ফাংশনের কাজ।')">
+                    গ) পরবর্তী টোকেনের সম্ভাবনা বা Probability স্কোর গণনা করা।
+                </div>
+
+                <div id="quiz-feedback-box" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>সহায়ক ও বিশ্বস্ত রেফারেন্সসমূহ (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Transformer-এর মূল পেপার: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
+                <li>ভিজুয়াল গাইড: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>GPT আর্কিটেকচার নিয়ে আলোচনা: <a href="https://jalammar.github.io/illustrated-gpt2/" target="_blank">The Illustrated GPT-2 by Jay Alammar</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে শব্দসমূহ সংখ্যায় রূপান্তরিত হয় অর্থাৎ <strong>Tokens and Embeddings</strong>-এর বিস্তারিত রূপ।</p>
+        </div>
+
+        <footer>
+            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
+        </footer>
+    </div>
+
+    <script>
+        const simData = {
+            cat: {
+                tokens: [
+                    { word: "The", id: 464 },
+                    { word: " cat", id: 3797 },
+                    { word: " sat", id: 3332 },
+                    { word: " on", id: 319 },
+                    { word: " the", id: 262 }
+                ],
+                embeddings: [
+                    [0.12, -0.84, 0.45, 0.01, -0.32, 0.55, 0.11, -0.09],
+                    [0.34, 0.51, -0.12, 0.95, 0.45, -0.22, 0.88, 0.12],
+                    [-0.08, -0.11, 0.65, 0.22, -0.56, 0.89, -0.01, 0.45],
+                    [0.21, 0.05, -0.88, 0.11, 0.32, -0.44, 0.15, -0.67],
+                    [0.11, -0.83, 0.44, 0.02, -0.31, 0.54, 0.10, -0.08]
+                ],
+                attention: [
+                    { word: "The", val: 5 },
+                    { word: " cat", val: 35 },
+                    { word: " sat", val: 15 },
+                    { word: " on", val: 5 },
+                    { word: " the", val: 40 }
+                ],
+                predictions: [
+                    { word: "mat", prob: "72.4%" },
+                    { word: "floor", prob: "12.1%" },
+                    { word: "bed", prob: "4.5%" }
+                ]
+            },
+            sky: {
+                tokens: [
+                    { word: "The", id: 464 },
+                    { word: " stars", id: 5743 },
+                    { word: " shine", id: 11210 },
+                    { word: " bright", id: 6382 },
+                    { word: " in", id: 287 },
+                    { word: " the", id: 262 }
+                ],
+                embeddings: [
+                    [0.12, -0.84, 0.45, 0.01, -0.32, 0.55, 0.11, -0.09],
+                    [-0.45, 0.77, 0.12, -0.89, 0.61, 0.11, -0.34, 0.90],
+                    [0.02, 0.32, -0.41, 0.55, 0.12, -0.67, 0.23, 0.11],
+                    [0.78, -0.12, 0.67, 0.23, -0.45, 0.89, 0.11, 0.02],
+                    [0.15, -0.22, -0.76, 0.08, 0.44, -0.31, 0.05, -0.54],
+                    [0.11, -0.83, 0.44, 0.02, -0.31, 0.54, 0.10, -0.08]
+                ],
+                attention: [
+                    { word: "The", val: 2 },
+                    { word: " stars", val: 45 },
+                    { word: " shine", val: 18 },
+                    { word: " bright", val: 10 },
+                    { word: " in", val: 5 },
+                    { word: " the", val: 20 }
+                ],
+                predictions: [
+                    { word: "sky", prob: "84.2%" },
+                    { word: "night", prob: "8.5%" },
+                    { word: "darkness", prob: "2.1%" }
+                ]
+            },
+            code: {
+                tokens: [
+                    { word: "Python", id: 15482 },
+                    { word: " is", id: 318 },
+                    { word: " a", id: 257 },
+                    { word: " great", id: 1049 },
+                    { word: " programming", id: 8945 }
+                ],
+                embeddings: [
+                    [0.91, -0.12, 0.76, -0.34, 0.89, 0.12, -0.45, 0.67],
+                    [0.05, -0.45, 0.12, -0.67, 0.23, -0.11, 0.88, 0.14],
+                    [0.08, -0.88, 0.33, 0.01, -0.45, 0.32, 0.11, -0.12],
+                    [0.45, -0.12, 0.78, 0.23, -0.11, 0.56, 0.22, 0.01],
+                    [-0.23, 0.89, 0.11, -0.78, 0.90, 0.12, -0.56, 0.78]
+                ],
+                attention: [
+                    { word: "Python", val: 50 },
+                    { word: " is", val: 5 },
+                    { word: " a", val: 3 },
+                    { word: " great", val: 12 },
+                    { word: " programming", val: 30 }
+                ],
+                predictions: [
+                    { word: "language", prob: "91.8%" },
+                    { word: "tool", prob: "3.2%" },
+                    { word: "environment", prob: "1.1%" }
+                ]
+            }
+        };
+
+        let activeTab = 'token';
+        let currentPromptKey = '';
+
+        document.getElementById('run-sim-btn').addEventListener('click', () => {
+            const select = document.getElementById('prompt-select');
+            currentPromptKey = select.value;
+            runSimulation(currentPromptKey);
+        });
+
+        function runSimulation(key) {
+            const data = simData[key];
+            
+            // Highlight step nodes one by one
+            document.querySelectorAll('.step-node').forEach(n => n.classList.remove('active'));
+            
+            // 1. Token display
+            const tokenDiv = document.getElementById('token-display');
+            tokenDiv.innerHTML = data.tokens.map(t => `
+                <div class="token-box">
+                    <span>"${t.word}"</span>
+                    <span class="token-id">ID: ${t.id}</span>
+                </div>
+            `).join('');
+
+            // 2. Embedding display
+            const embedDiv = document.getElementById('embed-display');
+            embedDiv.innerHTML = data.embeddings.map((emb, idx) => `
+                <div class="embed-box">
+                    <strong style="color:var(--accent-purple)">"${data.tokens[idx].word}"</strong>
+                    <div style="margin-top:0.2rem; font-size:0.75rem; color:var(--text-secondary)">
+                        [${emb.slice(0, 3).map(v => v.toFixed(2)).join(', ')}, ..., ${emb.slice(-1)[0].toFixed(2)}]
+                    </div>
+                </div>
+            `).join('');
+
+            // 3. Attention display
+            const transDiv = document.getElementById('trans-display');
+            transDiv.innerHTML = data.attention.map(a => `
+                <div class="attn-row">
+                    <span class="attn-word">"${a.word}"</span>
+                    <div class="attn-bar-container">
+                        <div class="attn-bar" id="bar-${a.word.trim()}" style="width: 0%"></div>
+                    </div>
+                    <span style="font-size:0.85rem; width:40px; text-align:right;">${a.val}%</span>
+                </div>
+            `).join('');
+
+            // Trigger attention animation
+            setTimeout(() => {
+                data.attention.forEach(a => {
+                    const el = document.getElementById(`bar-${a.word.trim()}`);
+                    if (el) el.style.width = `${a.val}%`;
+                });
+            }, 100);
+
+            // 4. Prediction display
+            const predDiv = document.getElementById('prediction-display');
+            predDiv.innerHTML = data.predictions.map((p, idx) => `
+                <li class="prediction-item ${idx === 0 ? 'top' : ''}">
+                    <span>"${p.word}"</span>
+                    <span>${p.prob}</span>
+                </li>
+            `).join('');
+
+            // Update node highlights as active tab changes
+            highlightNode(activeTab);
+        }
+
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.getAttribute('onclick').includes(tabId)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            if (currentPromptKey) {
+                highlightNode(tabId);
+            }
+        }
+
+        function highlightNode(tabId) {
+            document.querySelectorAll('.step-node').forEach(n => n.classList.remove('active'));
+            let nodeId = '';
+            if (tabId === 'token') nodeId = 'node-token';
+            else if (tabId === 'embed') nodeId = 'node-embed';
+            else if (tabId === 'trans') nodeId = 'node-trans';
+            else if (tabId === 'softmax') nodeId = 'node-softmax';
+            
+            const node = document.getElementById(nodeId);
+            if (node) node.classList.add('active');
+        }
+
+        function checkAnswer(element, isCorrect, feedback) {
+            // Clear previous states
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerText = feedback;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerText = feedback;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

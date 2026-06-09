@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 2: Tokens, Embeddings এবং Positional Encoding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: #cbd5e1;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Vector Space Visualizer Styles */
+        .vector-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .vector-container {
+                flex-direction: row;
+            }
+        }
+
+        .vector-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .vector-visualizer {
+            flex: 1.8;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 350px;
+        }
+
+        .svg-grid {
+            width: 100%;
+            height: auto;
+            max-width: 450px;
+        }
+
+        .axis-label {
+            fill: var(--text-secondary);
+            font-size: 11px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .grid-line {
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 1;
+        }
+
+        .axis-line {
+            stroke: var(--text-secondary);
+            stroke-width: 1.5;
+            fill: none;
+        }
+
+        .word-point {
+            transition: all 0.3s ease;
+        }
+
+        .word-point circle {
+            fill: var(--accent-cyan);
+            stroke: var(--bg-color);
+            stroke-width: 2;
+            transition: all 0.3s;
+        }
+
+        .word-point text {
+            fill: var(--text-primary);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+        }
+
+        /* Positional Encoding visualizer styles */
+        .pe-selector {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pe-word-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+
+        .pe-word-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-purple);
+        }
+
+        .pe-word-btn.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+        }
+
+        .vector-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .vector-table th, .vector-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .vector-table th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .vector-display-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .vector-block {
+            width: 48px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 6px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .vector-math-symbol {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 0.5rem;
+        }
+
+        .formula-box {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.95rem;
+            margin-top: 1rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Quiz Styles */
+        .quiz-question {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-q-text {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        select, button {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select {
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.97); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* SVG Vector Visualizer Overrides (Lesson 2) */
+        :root.light .grid-line {
+            stroke: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .axis-line {
+            stroke: #475569;
+        }
+
+        :root.light .axis-label {
+            fill: #475569;
+        }
+
+        :root.light .word-point circle {
+            stroke: #f8fafc;
+        }
+
+        :root.light .vector-math-symbol {
+            color: #475569;
+        }
+
+        :root.light .vector-table {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 2</span>
+            <h1>Tokens, Embeddings এবং Positional Encoding</h1>
+            <p class="subtitle">কীভাবে মানুষের ভাষা গাণিতিক ভেক্টরে রূপান্তরিত হয় এবং বাক্যে তাদের অবস্থান সংরক্ষিত হয়?</p>
+        </header>
+
+        <!-- Intro Section -->
+        <div class="card">
+            <h2>প্রবেশদ্বার (Introduction)</h2>
+            <p>আগের লেসনে আমরা জেনেছি যে একটি LLM বা Transformer মূলত পরবর্তী শব্দ অনুমান করার জন্য কাজ করে। কিন্তু প্রশ্ন হলো: <strong>আমরা কম্পিউটারে যে লেখা বা টেক্সট লিখি, কম্পিউটার তো তা চেনে না। সে তো কেবল সংখ্যা বোঝে!</strong></p>
+            <p>একটি বাক্যকে Transformer-এর ভেতরে পাঠাতে হলে তাকে ৩টি মৌলিক প্রক্রিয়ার মধ্য দিয়ে যেতে হয়:</p>
+            <ol>
+                <li><span class="highlight">Tokenization:</span> বাক্যকে ভেঙে ছোট ছোট টুকরো বা টোকেনে রূপান্তর করা এবং প্রতিটিকে একটি অনন্য সংখ্যা (ID) দেওয়া।</li>
+                <li><span class="highlight">Embedding:</span> টোকেন আইডিকে একটি অর্থপূর্ণ উচ্চ-মাত্রিক ভেক্টর বা সংখ্যার তালিকায় রূপান্তর করা।</li>
+                <li><span class="highlight">Positional Encoding:</span> প্রতিটি শব্দ বাক্যের ঠিক কোথায় অবস্থিত, তার অবস্থানগত তথ্য ভেক্টরে যোগ করা।</li>
+            </ol>
+            <p>চলুন এই ৩টি বিষয়কে একদম সহজ ভাষায় এবং ইন্টারঅ্যাক্টিভ সিমুলেশনের মাধ্যমে গভীরভাবে বুঝে নেওয়া যাক।</p>
+        </div>
+
+        <!-- Section 1: Tokenization -->
+        <div class="card">
+            <h2>১. Tokenization (টোকেনাইজেশন)</h2>
+            <p><span class="tech-term">Tokenization</span> হলো একটি ইনপুট টেক্সটকে ক্ষুদ্র ক্ষুদ্র অর্থপূর্ণ টুকরো বা <span class="tech-term">Tokens</span>-এ বিভক্ত করার প্রক্রিয়া। এই টোকেনগুলো শব্দ (words), শব্দের অংশ (sub-words) বা এমনকি একক অক্ষর (characters)-ও হতে পারে।</p>
+            
+            <p>টোকেনাইজেশনের কিছু গুরুত্বপূর্ণ ধারণা নিচে দেওয়া হলো:</p>
+            <ul>
+                <li><strong>Vocabulary (ভক্যাবলারি):</strong> এটি হলো মডেলের নিজস্ব ডিকশনারি। মডেল যতগুলো অনন্য টোকেন চেনে, তার মোট সংখ্যাই হলো ভোকাব সাইজ (যেমন GPT-4 এর Vocab Size প্রায় ১,০০,০০০)।</li>
+                <li><strong>Token IDs:</strong> টোকেনাইজ করার পর প্রতিটি টোকেনকে তার ডিকশনারির ইনডেক্স অনুযায়ী একটি সংখ্যা বা ID দেওয়া হয়। যেমন: <code>"cat"</code> হতে পারে <code>3797</code>।</li>
+            </ul>
+
+            <p style="margin-top: 1rem; font-weight: 600;">আধুনিক LLM-এ Sub-word Tokenization কেন ব্যবহৃত হয়?</p>
+            <p>যদি আমরা শুধু আস্ত শব্দ (Word-level) নিয়ে কাজ করি, তবে ডিকশনারি অনেক বড় হয়ে যায় এবং কোনো অপরিচিত শব্দ বা বানান ভুল হলে মডেল তা চিনতে পারে না (যাকে <strong>Out-Of-Vocabulary বা OOV</strong> সমস্যা বলে)। আবার যদি শুধু ক্যারেক্টার (Character-level, যেমন: a, b, c) ব্যবহার করি, তবে একটি বাক্যের টোকেন সংখ্যা অনেক বেশি হয়ে যায়, যা প্রসেস করা কঠিন।</p>
+            <p>এই সমস্যার সমাধান করে <span class="tech-term">Byte Pair Encoding (BPE)</span> এর মতো সাব-ওয়ার্ড অ্যালগরিদম। এটি ঘন ঘন ব্যবহৃত শব্দগুলোকে আস্ত রাখে এবং অপরিচিত শব্দগুলোকে পরিচিত উপ-শব্দে (sub-words) ভেঙে ফেলে।</p>
+            
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <p style="font-weight: 600; margin-bottom: 0.5rem; color: var(--accent-purple);">সাব-ওয়ার্ড টোকেনাইজেশনের উদাহরণ:</p>
+                <p>মডেল যদি <code>"unhappiness"</code> শব্দটি সরাসরি ভোকাবে না পায়, তবে সেটিকে ভেঙে ৩টি পরিচিত সাব-ওয়ার্ড টোকেন তৈরি করবে: <br>
+                <code class="tech-term">"un"</code> (ID: 421) + <code class="tech-term">"happi"</code> (ID: 8932) + <code class="tech-term">"ness"</code> (ID: 1205)</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Embeddings -->
+        <div class="card">
+            <h2>২. Embeddings (এম্বেডিং)</h2>
+            <p>টোকেনাইজেশনের পর আমরা টোকেন আইডি বা সংখ্যা পেলাম। কিন্তু গাণিতিক প্রসেসিংয়ের জন্য কেবল আইডি যথেষ্ট নয়। উদাহরণস্বরূপ, <code>"cat"</code> এর আইডি যদি <code>3797</code> হয় আর <code>"dog"</code> এর আইডি যদি <code>4251</code> হয়, তবে গাণিতিকভাবে <code>4251 > 3797</code> এর কোনো অর্থ নেই। এর দ্বারা বোঝা যায় না যে বিড়াল ও কুকুরের মধ্যে কী সম্পর্ক রয়েছে।</p>
+            
+            <p>এইখানেই আসে <span class="tech-term">Embeddings</span>-এর ভূমিকা। প্রতিটি টোকেন আইডিকে একটি উচ্চ-মাত্রিক ঘন ভেক্টর বা সংখ্যার তালিকায় (<span class="tech-term">High-dimensional Dense Vector</span>) রূপান্তর করা হয়। একে বলা হয় <span class="tech-term">Embedding Space</span>। বাস্তবে এই ভেক্টরের সাইজ ($d_{model}$) ৭৬৮ থেকে শুরু করে ৪০৯৬ বা তারও বেশি হয়ে থাকে।</p>
+            
+            <p style="font-weight: 600;">সেমান্টিক স্পেস (Semantic Space):</p>
+            <p>এম্বেডিং ভেক্টরের প্রতিটি মাত্রা (Dimension) শব্দের কোনো না কোনো সূক্ষ্ম অর্থ বা ব্যাকরণগত বৈশিষ্ট্য প্রকাশ করে (যেমন: জেন্ডার, রাজকীয়তা, জীবন্ত কি না ইত্যাদি)। যেসব শব্দের অর্থ কাছাকাছি, তাদের এম্বেডিং ভেক্টরগুলো এই মাল্টি-ডাইমেনশনাল স্পেসে কাছাকাছি অবস্থান করে।</p>
+            <p>এর ফলে আমরা শব্দের ওপর চমৎকার ভেক্টর ম্যাথ বা গাণিতিক হিসাব করতে পারি! যেমন:</p>
+            <div class="formula-box">
+                Vector("King") - Vector("Man") + Vector("Woman") ≈ Vector("Queen")
+            </div>
+        </div>
+
+        <!-- Interactive Visualizer 1 -->
+        <div class="card">
+            <h2>ইন্টারঅ্যাক্টিভ সেমান্টিক ভেক্টর স্পেস (Vector Space Simulator)</h2>
+            <p>নিচে যেকোনো একটি সম্পর্ক নির্বাচন করুন এবং <strong>"Run Vector Math"</strong> বাটনে ক্লিক করে ভেক্টর স্পেসের অর্থগত সম্পর্কের ম্যাজিকটি সরাসরি দেখুন।</p>
+            
+            <div class="vector-container">
+                <div class="vector-controls">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label for="relation-select" style="font-size: 0.9rem; color: var(--text-secondary);">সম্পর্ক নির্বাচন করুন:</label>
+                        <select id="relation-select" onchange="resetVisualizer()">
+                            <option value="gender">লিঙ্গ সম্পর্ক (King - Man + Woman = Queen)</option>
+                            <option value="capital">দেশ ও রাজধানী (France - Paris + Tokyo = Japan)</option>
+                            <option value="verb">ক্রিয়া ও কাল (Walking - Walk + Run = Running)</option>
+                        </select>
+                    </div>
+                    <button id="run-math-btn" onclick="runVectorMath()" style="margin-top: 0.5rem; padding: 0.85rem;">Run Vector Math</button>
+                    
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); min-height: 120px;">
+                        <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">ব্যাখ্যা ও সমীকরণ:</h4>
+                        <div id="vector-narration" style="font-size: 0.95rem; line-height: 1.5;">
+                            সম্পর্ক সিলেক্ট করে Run বাটনে চাপুন...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vector-visualizer">
+                    <svg class="svg-grid" viewBox="0 0 500 400" id="vector-svg">
+                        <defs>
+                            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-cyan)" />
+                            </marker>
+                            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" />
+                            </marker>
+                            <marker id="arrow-purple" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-purple)" />
+                            </marker>
+                            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-green)" />
+                            </marker>
+                        </defs>
+                        <!-- Grid lines and axes go here via JS -->
+                        <g id="grid-lines"></g>
+                        
+                        <!-- Axes lines -->
+                        <line x1="50" y1="350" x2="470" y2="350" class="axis-line" marker-end="url(#arrow-cyan)" />
+                        <line x1="50" y1="350" x2="50" y2="20" class="axis-line" marker-end="url(#arrow-cyan)" />
+                        <text x="460" y="370" class="axis-label" text-anchor="middle">Semantic Dimension X</text>
+                        <text x="25" y="30" class="axis-label" text-anchor="middle" transform="rotate(-90 25 30)">Semantic Dimension Y</text>
+                        <text x="40" y="365" class="axis-label">0</text>
+
+                        <!-- Math Vector Lines -->
+                        <line id="vector-A" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-cyan)" stroke-width="2.5" marker-end="url(#arrow-cyan)" style="opacity:0" />
+                        <line id="vector-B" x1="0" y1="0" x2="0" y2="0" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow-red)" style="opacity:0" />
+                        <line id="vector-C" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-purple)" stroke-width="2.5" marker-end="url(#arrow-purple)" style="opacity:0" />
+                        <line id="vector-R" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-green)" stroke-width="4" marker-end="url(#arrow-green)" style="opacity:0; filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));" />
+
+                        <!-- Plotted word dots -->
+                        <g id="word-points"></g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Positional Encoding -->
+        <div class="card">
+            <h2>৩. Positional Encoding (পজিশনাল এনকোডিং)</h2>
+            <p>আমরা শব্দের অর্থ বা এম্বেডিং পেলাম। কিন্তু Transformer আর্কিটেকচারের একটি অনন্য বৈশিষ্ট্য হলো এটি <strong>সবগুলো টোকেনকে একসাথে সমান্তরালভাবে (in parallel) প্রসেস করে</strong>। এটি আগের RNN বা LSTM মডেলের মতো একটা একটা করে শব্দ প্রসেস করে না।</p>
+            
+            <p>সমান্তরাল প্রসেসিংয়ের কারণে মডেল অত্যন্ত দ্রুত কাজ করতে পারে, কিন্তু একটি নতুন সমস্যা তৈরি হয়: <strong>মডেলটি বাক্যের শব্দের অবস্থান বা ক্রমানুসার ভুলে যায় (Permutation Invariance)</strong>।</p>
+            <p>পজিশনাল এনকোডিং ছাড়া নিচের দুটি বাক্যের কোনো তফাত মডেল বুঝতে পারবে না:</p>
+            <div style="background: rgba(255, 255, 255, 0.03); border-left: 4px solid #ef4444; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
+                ১. <strong>"The cat ate the mouse"</strong> (বিড়ালটি ইঁদুরটিকে খেয়েছে)<br>
+                ২. <strong>"The mouse ate the cat"</strong> (ইঁদুরটি বিড়ালটিকে খেয়েছে)
+            </div>
+            <p>যেহেতু দুটি বাক্যেই হুবহু একই টোকেন রয়েছে, তাই পজিশনাল তথ্য ছাড়া মডেলের কাছে দুটির অর্থ একই মনে হবে।</p>
+
+            <p style="font-weight: 600;">সমাধান: Positional Encoding ভেক্টর যোগ করা</p>
+            <p>বাক্যের প্রতিটি পজিশনের (যেমন Index 0, 1, 2...) জন্য একটি অনন্য গাণিতিক ভেক্টর তৈরি করা হয় যা শব্দের এম্বেডিং ভেক্টরের সমান সাইজের। এরপর এম্বেডিং ভেক্টরের সাথে ওই পজিশনাল ভেক্টরটি যোগ করা হয়:</p>
+            <div class="formula-box">
+                Combined Representation = Token Embedding + Positional Encoding
+            </div>
+            <p>পজিশনাল ভেক্টর তৈরির জন্য সাইন (Sine) এবং কোসাইন (Cosine) তরঙ্গের ফর্মুলা ব্যবহার করা হয়, যা মডেলকে আপেক্ষিক ও পরম অবস্থান বুঝতে সাহায্য করে।</p>
+        </div>
+
+        <!-- Interactive Visualizer 2 -->
+        <div class="card">
+            <h2>ইন্টারঅ্যাক্টিভ পজিশনাল এনকোডিং সিমুলেটর</h2>
+            <p>বাক্য: <strong style="color: var(--accent-cyan);">"The cat ate the mouse"</strong>। নিচের শব্দগুলোতে ক্লিক করে দেখুন কীভাবে তাদের অবস্থানের ভিত্তিতে <strong>Position Vector</strong> তৈরি হচ্ছে এবং <strong>Word Vector</strong>-এর সাথে যোগ হয়ে একটি অনন্য ফিঙ্গারপ্রিন্ট বা <strong>Combined Representation</strong> তৈরি করছে।</p>
+            
+            <div class="pe-selector">
+                <button class="pe-word-btn active" onclick="selectPEWord(0)">The (Index 0)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(1)">cat (Index 1)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(2)">ate (Index 2)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(3)">the (Index 3)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(4)">mouse (Index 4)</button>
+            </div>
+
+            <table class="vector-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">ভেক্টর ধরণ</th>
+                        <th style="width: 75%;">ভেক্টর ভ্যালু (6-Dimensions Heatmap)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">
+                            Word Vector (<span style="color: var(--accent-cyan);">W</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">অর্থ নির্দেশক</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-word-vector"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; vertical-align: middle;">
+                            <span class="vector-math-symbol" style="position: absolute; margin-top: -1.7rem; margin-left: 2rem;">+</span>
+                            Position Vector (<span style="color: var(--accent-purple);">P</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">অবস্থান নির্দেশক</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-pos-vector"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; vertical-align: middle;">
+                            <span class="vector-math-symbol" style="position: absolute; margin-top: -1.7rem; margin-left: 2rem;">=</span>
+                            Combined Vector (<span style="color: var(--accent-green);">C</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">মডেল ইনপুট (W + P)</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-combined-vector"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div id="pe-explanation" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.95rem;">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (কুইজ)</h2>
+            <p>আপনার অর্জিত জ্ঞান ঝালাই করার জন্য নিচের প্রশ্নগুলোর উত্তর দিন:</p>
+            
+            <!-- Question 1 -->
+            <div class="quiz-question" id="q1">
+                <p class="quiz-q-text">১. Out-Of-Vocabulary (OOV) বা অপরিচিত শব্দের সমস্যা সমাধান করতে আধুনিক টোকেনাইজাররা (যেমন GPT-তে BPE) কী পদ্ধতি ব্যবহার করে?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'incorrect', 'দুঃখিত! ক্যারেক্টার লেভেলে ভাঙলে সিকোয়েন্সের দৈর্ঘ্য অনেক বেড়ে যায় এবং মডেলের মেমোরি শেষ হয়ে যায়। BPE এর চেয়ে উন্নত উপায়ে কাজ করে।')">
+                    ক) প্রতিটি শব্দকে আলাদা আলাদা ক্যারেক্টার বা একক অক্ষরে ভেঙে ফেলে।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'correct', 'চমৎকার! BPE অপরিচিত বা বড় শব্দগুলোকে ছোট ছোট পরিচিত সাব-ওয়ার্ড (sub-words) বা উপ-শব্দে ভেঙে ফেলে যা ভোকাবুলারিতে আগে থেকেই থাকে।')">
+                    খ) অপরিচিত শব্দগুলোকে ছোট ছোট পরিচিত সাব-ওয়ার্ড (sub-words) বা উপ-শব্দে ভেঙে ফেলে।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'incorrect', 'ভুল উত্তর! অপরিচিত শব্দ বাদ দিলে বাক্যের পুরো অর্থই বদলে যাবে, তাই মডেল এটি করে না।')">
+                    গ) অপরিচিত শব্দগুলোকে বাক্য থেকে পুরোপুরি বাদ দিয়ে দেয়।
+                </div>
+                <div id="q1-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="quiz-question" id="q2">
+                <p class="quiz-q-text">২. Word Embedding স্পেসে 'King - Man + Woman = Queen' সম্পর্কটি আসলে কী বোঝায়?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'incorrect', 'ভুল! এটি কোনো টেক্সট বা ডিকশনারি সার্চ কোয়েরি নয়।')">
+                    ক) এটি ডিকশনারি থেকে দ্রুত অর্থ খুঁজে বের করার জন্য একটি সার্চ পদ্ধতি।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'correct', 'অসাধারণ! এম্বেডিং স্পেসের ভেক্টরগুলো শব্দের ব্যাকরণগত ও অর্থগত (semantic) সম্পর্ক ধারণ করে এবং ভেক্টরগুলোর ওপর গাণিতিক হিসাব বা ভেক্টর ম্যাথ করা সম্ভব হয়।')">
+                    খ) এম্বেডিং স্পেসের ভেক্টরগুলো শব্দের অর্থগত ও ব্যাকরণগত সম্পর্ক ধারণ করে এবং তাদের ওপর গাণিতিক অপারেশন করা সম্ভব।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'incorrect', 'ভুল উত্তর! এই সমীকরণটি এম্বেডিং স্পেসের একটি বাস্তব ও সফল গাণিতিক উদাহরণ।')">
+                    গ) এটি একটি ত্রুটিপূর্ণ গাণিতিক সমীকরণ যা এম্বেডিংয়ের ক্ষেত্রে কাজ করে না।
+                </div>
+                <div id="q2-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="quiz-question" id="q3">
+                <p class="quiz-q-text">৩. Transformer আর্কিটেকচারে Positional Encoding যোগ করা কেন অত্যন্ত প্রয়োজনীয়?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'incorrect', 'ভুল! টোকেন আইডিকে ইউনিক করা টোকেনাইজারের কাজ, পজিশনাল এনকোডিংয়ের নয়।')">
+                    ক) প্রতিটি টোকেন আইডিকে অনন্য বা ইউনিক করার জন্য।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'incorrect', 'ভুল! পজিশনাল এনকোডিং এম্বেডিং ভেক্টরের সাইজ কমায় না, বরং এর মান আরও সমৃদ্ধ করে।')">
+                    খ) এম্বেডিং ভেক্টরের সাইজ বা ডাইমেনশন কমিয়ে ছোট করার জন্য।
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'correct', 'একেবারে সঠিক উত্তর! যেহেতু Transformer সব টোকেন সমান্তরালভাবে প্রসেস করে, তাই বাক্যে শব্দের আপেক্ষিক ও পরম অবস্থান বোঝাতে পজিশনাল এনকোডিং যোগ করা বাধ্যতামূলক।')">
+                    গ) Transformer যেহেতু টোকেনসমূহ সমান্তরালভাবে প্রসেস করে, তাই বাক্যে শব্দের সঠিক অবস্থান বা সিকোয়েন্স বোঝানোর জন্য।
+                </div>
+                <div id="q3-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>সহায়ক ও বিশ্বস্ত রেফারেন্সসমূহ (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>টোকেনাইজেশন নির্দেশিকা: <a href="https://huggingface.co/docs/transformers/tokenizer_summary" target="_blank">Hugging Face Tokenizer Summary</a></li>
+                <li>এম্বেডিং ও পজিশনাল এনকোডিংয়ের চমৎকার ভিজ্যুয়াল গাইড: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>পজিশনাল তরঙ্গের ম্যাথ: <a href="https://kazemnejad.com/blog/transformer_architecture_positional_encoding/" target="_blank">Transformer Positional Embedding Explained by Amir Kazemnejad</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে <strong>Self-Attention Mechanism</strong> কাজ করে এবং কীভাবে মডেল শব্দের কনটেক্সট উদ্ধার করে।</p>
+        </div>
+
+        <footer>
+            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
+        </footer>
+    </div>
+
+    <script>
+        // ------------------ Vector Space Simulator ------------------
+        const relations = {
+            gender: {
+                A: { name: "King", x: 8, y: 2 },
+                B: { name: "Man", x: 2, y: 2 },
+                C: { name: "Woman", x: 2, y: 6 },
+                D: { name: "Queen", x: 8, y: 6 },
+                formula: "King - Man + Woman = Queen",
+                explain: {
+                    step0: "চলুন জেন্ডার রিলেশনশিপের ভেক্টর ম্যাথ অ্যানিমেশন দেখি। সমীকরণ: King - Man + Woman = Queen",
+                    step1: "১. মূলবিন্দু (0,0) থেকে Word A (King) এর দিকে ভেক্টর আঁকা হলো। King ভেক্টর: [8.0, 2.0]",
+                    step2: "২. এবার Word B (Man) [2.0, 2.0] বিয়োগ করা হলো। এর অর্থ King ভেক্টরের মাথা থেকে Man এর বিপরীত দিকে যাত্রা করে আমরা পৌঁছালাম [6.0, 0.0] বিন্দুতে।",
+                    step3: "৩. এখন Word C (Woman) [2.0, 6.0] যোগ করা হলো। [6.0, 0.0] থেকে Woman এর দিকে অগ্রসর হয়ে আমরা পৌঁছালাম [8.0, 6.0] বিন্দুতে।",
+                    step4: "৪. ম্যাজিক! আমাদের সর্বশেষ প্রাপ্ত বিন্দু [8.0, 6.0] হলো Word D (Queen) ভেক্টরের অবিকল অবস্থান! অর্থাৎ: King - Man + Woman = Queen"
+                }
+            },
+            capital: {
+                A: { name: "France", x: 8, y: 7 },
+                B: { name: "Paris", x: 3, y: 7 },
+                C: { name: "Tokyo", x: 3, y: 2 },
+                D: { name: "Japan", x: 8, y: 2 },
+                formula: "France - Paris + Tokyo = Japan",
+                explain: {
+                    step0: "চলুন রাজধানী ও দেশের সম্পর্কের ভেক্টর ম্যাথ দেখি। সমীকরণ: France - Paris + Tokyo = Japan",
+                    step1: "১. মূলবিন্দু (0,0) থেকে Word A (France) এর দিকে ভেক্টর আঁকা হলো। France ভেক্টর: [8.0, 7.0]",
+                    step2: "২. এবার Word B (Paris) [3.0, 7.0] বিয়োগ করা হলো। France ভেক্টরের মাথা থেকে Paris এর বিপরীত দিকে যাত্রা করে আমরা পৌঁছালাম [5.0, 0.0] বিন্দুতে।",
+                    step3: "৩. এখন Word C (Tokyo) [3.0, 2.0] যোগ করা হলো। [5.0, 0.0] থেকে Tokyo এর দিকে অগ্রসর হয়ে আমরা পৌঁছালাম [8.0, 2.0] বিন্দুতে।",
+                    step4: "৪. চমৎকার! সর্বশেষ প্রাপ্ত বিন্দু [8.0, 2.0] হলো Word D (Japan) ভেক্টরের অবিকল অবস্থান! অর্থাৎ: France - Paris + Tokyo = Japan"
+                }
+            },
+            verb: {
+                A: { name: "Walking", x: 3, y: 7 },
+                B: { name: "Walk", x: 3, y: 3 },
+                C: { name: "Run", x: 7, y: 3 },
+                D: { name: "Running", x: 7, y: 7 },
+                formula: "Walking - Walk + Run = Running",
+                explain: {
+                    step0: "চলুন ক্রিয়াপদের কাল বা টেন্সের সম্পর্কের ভেক্টর ম্যাথ দেখি। সমীকরণ: Walking - Walk + Run = Running",
+                    step1: "১. মূলবিন্দু (0,0) থেকে Word A (Walking) এর দিকে ভেক্টর আঁকা হলো। Walking ভেক্টর: [3.0, 7.0]",
+                    step2: "২. এবার Word B (Walk) [3.0, 3.0] বিয়োগ করা হলো। Walking ভেক্টরের মাথা থেকে Walk এর বিপরীত দিকে যাত্রা করে আমরা পৌঁছালাম [0.0, 4.0] বিন্দুতে।",
+                    step3: "৩. এখন Word C (Run) [7.0, 3.0] যোগ করা হলো। [0.0, 4.0] থেকে Run এর দিকে অগ্রসর হয়ে আমরা পৌঁছালাম [7.0, 7.0] বিন্দুতে।",
+                    step4: "৪. ওয়াও! সর্বশেষ প্রাপ্ত বিন্দু [7.0, 7.0] হলো Word D (Running) ভেক্টরের অবিকল অবস্থান! অর্থাৎ: Walking - Walk + Run = Running"
+                }
+            }
+        };
+
+        let isAnimating = false;
+
+        function toSVG(x, y) {
+            return {
+                x: 50 + x * 40,
+                y: 350 - y * 40
+            };
+        }
+
+        function initVisualizer() {
+            // Draw grid lines
+            const gridG = document.getElementById('grid-lines');
+            let gridHTML = '';
+            for (let x = 1; x <= 10; x++) {
+                const pos = toSVG(x, 0);
+                gridHTML += `<line x1="${pos.x}" y1="20" x2="${pos.x}" y2="350" class="grid-line" />`;
+                gridHTML += `<text x="${pos.x}" y="365" class="axis-label" text-anchor="middle">${x}</text>`;
+            }
+            for (let y = 1; y <= 8; y++) {
+                const pos = toSVG(0, y);
+                gridHTML += `<line x1="50" y1="${pos.y}" x2="470" y2="${pos.y}" class="grid-line" />`;
+                gridHTML += `<text x="35" y="${pos.y + 4}" class="axis-label" text-anchor="end">${y}</text>`;
+            }
+            gridG.innerHTML = gridHTML;
+
+            resetVisualizer();
+        }
+
+        function resetVisualizer() {
+            if (isAnimating) return;
+            const relationKey = document.getElementById('relation-select').value;
+            const rel = relations[relationKey];
+
+            // Reset vectors opacity
+            document.getElementById('vector-A').style.opacity = 0;
+            document.getElementById('vector-B').style.opacity = 0;
+            document.getElementById('vector-C').style.opacity = 0;
+            document.getElementById('vector-R').style.opacity = 0;
+
+            // Redraw word points
+            const pointsG = document.getElementById('word-points');
+            pointsG.innerHTML = '';
+            
+            const keys = ['A', 'B', 'C', 'D'];
+            keys.forEach(k => {
+                const pt = rel[k];
+                const svgPt = toSVG(pt.x, pt.y);
+                pointsG.innerHTML += `
+                    <g class="word-point" id="pt-${pt.name.replace(/\s+/g, '')}">
+                        <circle cx="${svgPt.x}" cy="${svgPt.y}" r="6" />
+                        <text x="${svgPt.x}" y="${svgPt.y - 12}" text-anchor="middle">${pt.name}</text>
+                    </g>
+                `;
+            });
+
+            document.getElementById('vector-narration').innerHTML = `সম্পর্ক: <span class="highlight">${rel.formula}</span><br>অ্যানিমেশন দেখতে <strong>Run Vector Math</strong> চাপুন।`;
+        }
+
+        function animateLine(lineId, x1, y1, x2, y2, duration, callback) {
+            const line = document.getElementById(lineId);
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x1);
+            line.setAttribute('y2', y1);
+            line.style.opacity = 1;
+            
+            const startTime = performance.now();
+            
+            function update(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentX = x1 + (x2 - x1) * progress;
+                const currentY = y1 + (y2 - y1) * progress;
+                
+                line.setAttribute('x2', currentX);
+                line.setAttribute('y2', currentY);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function runVectorMath() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            const btn = document.getElementById('run-math-btn');
+            btn.disabled = true;
+            btn.style.opacity = 0.5;
+            
+            const relationKey = document.getElementById('relation-select').value;
+            const rel = relations[relationKey];
+            
+            const vA = document.getElementById('vector-A');
+            const vB = document.getElementById('vector-B');
+            const vC = document.getElementById('vector-C');
+            const vR = document.getElementById('vector-R');
+            
+            vA.style.opacity = 0;
+            vB.style.opacity = 0;
+            vC.style.opacity = 0;
+            vR.style.opacity = 0;
+            
+            const org = toSVG(0, 0);
+            const svgA = toSVG(rel.A.x, rel.A.y);
+            
+            const ab_x = rel.A.x - rel.B.x;
+            const ab_y = rel.A.y - rel.B.y;
+            const svgAB = toSVG(ab_x, ab_y);
+            
+            const svgD = toSVG(rel.D.x, rel.D.y);
+            
+            const narration = document.getElementById('vector-narration');
+            narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step0}</p>`;
+            
+            // Step 1: Animate Vector A
+            setTimeout(() => {
+                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step1}</p>`;
+                animateLine('vector-A', org.x, org.y, svgA.x, svgA.y, 1000, () => {
+                    // Step 2: Animate Vector -B
+                    setTimeout(() => {
+                        narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step2}</p>`;
+                        animateLine('vector-B', svgA.x, svgA.y, svgAB.x, svgAB.y, 1000, () => {
+                            // Step 3: Animate Vector +C
+                            setTimeout(() => {
+                                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step3}</p>`;
+                                animateLine('vector-C', svgAB.x, svgAB.y, svgD.x, svgD.y, 1000, () => {
+                                    // Step 4: Animate Result Vector
+                                    setTimeout(() => {
+                                        narration.innerHTML = `<p style="color:var(--accent-green); font-weight:bold; animation: popIn 0.3s">${rel.explain.step4}</p>`;
+                                        animateLine('vector-R', org.x, org.y, svgD.x, svgD.y, 1200, () => {
+                                            const ptD = document.getElementById(`pt-${rel.D.name.replace(/\s+/g, '')}`);
+                                            if (ptD) {
+                                                ptD.querySelector('circle').style.fill = 'var(--accent-green)';
+                                                ptD.querySelector('circle').setAttribute('r', '9');
+                                                setTimeout(() => {
+                                                    ptD.querySelector('circle').setAttribute('r', '6');
+                                                }, 1000);
+                                            }
+                                            isAnimating = false;
+                                            btn.disabled = false;
+                                            btn.style.opacity = 1;
+                                        });
+                                    }, 400);
+                                });
+                            }, 400);
+                        });
+                    }, 400);
+                });
+            }, 600);
+        }
+
+        // ------------------ Positional Encoding Simulator ------------------
+        const peWords = [
+            { word: "The", idx: 0, embed: [0.15, -0.62, 0.48, -0.09, 0.35, -0.21] },
+            { word: "cat", idx: 1, embed: [0.34, 0.81, -0.15, 0.92, -0.45, 0.73] },
+            { word: "ate", idx: 2, embed: [-0.22, 0.44, 0.89, -0.56, 0.12, -0.37] },
+            { word: "the", idx: 3, embed: [0.15, -0.62, 0.48, -0.09, 0.35, -0.21] }, // same as index 0 to prove positional impact
+            { word: "mouse", idx: 4, embed: [0.41, 0.72, -0.28, 0.85, -0.51, 0.61] }
+        ];
+
+        function computePE(pos, d = 6) {
+            const pe = [];
+            const base = 100;
+            for (let i = 0; i < d; i += 2) {
+                const denom = Math.pow(base, i / d);
+                pe[i] = Math.sin(pos / denom);
+                pe[i+1] = Math.cos(pos / denom);
+            }
+            return pe;
+        }
+
+        function getColorForVal(val, type) {
+            let norm;
+            if (type === 'comb') {
+                norm = (val + 2) / 4; // combined max range is roughly -2 to +2
+                norm = Math.max(0, Math.min(1, norm));
+            } else {
+                norm = (val + 1) / 2; // -1 to +1 range
+                norm = Math.max(0, Math.min(1, norm));
+            }
+            
+            if (type === 'word') {
+                return `rgba(6, 182, 212, ${0.15 + norm * 0.85})`; // Cyan glow
+            } else if (type === 'pos') {
+                return `rgba(168, 85, 247, ${0.15 + norm * 0.85})`; // Purple glow
+            } else {
+                return `rgba(16, 185, 129, ${0.15 + norm * 0.85})`; // Green glow
+            }
+        }
+
+        function selectPEWord(idx) {
+            // Update button UI
+            const btns = document.querySelectorAll('.pe-word-btn');
+            btns.forEach((btn, bIdx) => {
+                if (bIdx === idx) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const data = peWords[idx];
+            const wordEmbed = data.embed;
+            const posEmbed = computePE(idx, 6);
+            const combined = wordEmbed.map((w, i) => w + posEmbed[i]);
+
+            // Render W Row
+            const wordRow = document.getElementById('pe-word-vector');
+            wordRow.innerHTML = wordEmbed.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'word')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Render P Row
+            const posRow = document.getElementById('pe-pos-vector');
+            posRow.innerHTML = posEmbed.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'pos')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Render C Row
+            const combRow = document.getElementById('pe-combined-vector');
+            combRow.innerHTML = combined.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'comb')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Set Explanation
+            const expDiv = document.getElementById('pe-explanation');
+            let explanationText = `
+                <p>আপনি সিলেক্ট করেছেন: <strong class="highlight">"${data.word}" (Position Index: ${data.idx})</strong></p>
+                <p>• Word Vector <code>W</code> শব্দের অর্থ সেমান্টিকভাবে রিপ্রেজেন্ট করছে।</p>
+                <p>• Position Vector <code>P</code> তৈরি করা হয়েছে <code>pos = ${data.idx}</code> ধরে sine/cosine তরঙ্গের মাধ্যমে।</p>
+                <p>• চূড়ান্ত ভেক্টর <code>C = W + P</code> যা সরাসরি ট্রান্সফরমার ব্লকে পাঠানো হয়।</p>
+            `;
+
+            if (data.idx === 0 || data.idx === 3) {
+                explanationText += `
+                    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 0.75rem; margin-top: 0.75rem;">
+                        <strong>💡 বিশেষ পর্যবেক্ষণ:</strong> <br>
+                        লক্ষ্য করুন, ইনপুট বাক্যে দুটি <strong>"The" / "the"</strong> রয়েছে। প্রথমটির ইনডেক্স 0 এবং দ্বিতীয়টির ইনডেক্স 3। 
+                        দুটিরই <strong>Word Vector (W) হুবহু একই</strong> [0.15, -0.62, 0.48, -0.09, 0.35, -0.21]। কিন্তু ভিন্ন ভিন্ন পজিশন ইনডেক্স হওয়ার কারণে তাদের <strong>Position Vector (P) ভিন্ন ভিন্ন</strong> এসেছে। 
+                        ফলাফলস্বরূপ, তাদের চূড়ান্ত <strong>Combined Vector (C) সম্পূর্ণ আলাদা</strong> হয়ে গেছে! এর ফলে সমান্তরালভাবে প্রসেস করার পরও মডেলটি জানে কোন শব্দটি আগে আর কোনটি পরে বসেছে।
+                    </div>
+                `;
+            }
+
+            expDiv.innerHTML = explanationText;
+        }
+
+        // ------------------ Quiz Functions ------------------
+        function checkQAnswer(element, questionId, status, feedback) {
+            const questionBox = document.getElementById(`q${questionId}`);
+            const options = questionBox.querySelectorAll('.quiz-option');
+            const feedbackBox = document.getElementById(`q${questionId}-feedback`);
+
+            // Reset option states
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            feedbackBox.className = 'quiz-feedback';
+
+            if (status === 'correct') {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerHTML = `✅ ${feedback}`;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerHTML = `❌ ${feedback}`;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+
+        // Window load initializer
+        window.onload = () => {
+            initVisualizer();
+            selectPEWord(0); // init PE widget
+        };
+    </script>
+</body>
+</html>

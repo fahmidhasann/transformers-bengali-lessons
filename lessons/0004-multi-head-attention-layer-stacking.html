@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 4: Multi-Head Attention এবং Layer Stacking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Interactive Attention Visualizer Styles */
+        .head-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .head-btn {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .head-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .head-btn.active {
+            color: white;
+            font-weight: 600;
+        }
+
+        .head-btn.head1-active {
+            background: rgba(6, 182, 212, 0.2);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+        }
+        .head-btn.head2-active {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+        }
+        .head-btn.head3-active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+        .head-btn.head4-active {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+
+        .visualizer-tokens {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            justify-content: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .viz-token {
+            padding: 0.5rem 0.9rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            font-size: 1.05rem;
+            text-align: center;
+        }
+
+        .viz-token:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .viz-token.query-token {
+            font-weight: 700;
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+            background: white !important;
+            color: #0f172a !important;
+            border-color: white !important;
+        }
+
+        .viz-details-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .viz-explanation {
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #cbd5e1;
+            padding-left: 0.75rem;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Color-coded left borders for explanation according to head */
+        .border-head1 { border-left: 3px solid var(--accent-cyan); }
+        .border-head2 { border-left: 3px solid var(--accent-purple); }
+        .border-head3 { border-left: 3px solid var(--accent-green); }
+        .border-head4 { border-left: 3px solid var(--accent-orange); }
+
+        /* Attention Bar Chart */
+        .attention-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chart-label {
+            width: 90px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .chart-bar-container {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
+        }
+
+        .chart-bar.color-head1 { background: var(--accent-cyan); }
+        .chart-bar.color-head2 { background: var(--accent-purple); }
+        .chart-bar.color-head3 { background: var(--accent-green); }
+        .chart-bar.color-head4 { background: var(--accent-orange); }
+
+        .chart-value {
+            font-size: 0.85rem;
+            width: 45px;
+            text-align: right;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-secondary);
+        }
+
+        /* Layer Stacking Explorer Styles */
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .layer-group {
+            width: 100%;
+            padding: 1.2rem;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+        }
+
+        .layer-group:hover {
+            background: rgba(30, 41, 59, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .layer-group.active {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .layer-group.bottom-group.active {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .layer-group.mid-group.active {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        .layer-group.top-group.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+        }
+
+        .layer-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+        }
+
+        .layer-group.bottom-group .layer-title { color: var(--accent-green); }
+        .layer-group.mid-group .layer-title { color: var(--accent-purple); }
+        .layer-group.top-group .layer-title { color: var(--accent-cyan); }
+
+        .layer-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .layer-arrow {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: bold;
+        }
+
+        .layer-detail-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            min-height: 180px;
+            transition: all 0.3s ease;
+        }
+
+        .layer-detail-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            margin-top: 1.5rem;
+        }
+
+        .quiz-question-card {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-question-card:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .quiz-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Head buttons and visualizer custom overrides (Lesson 4) */
+        :root.light .head-btn {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #475569;
+        }
+
+        :root.light .head-btn:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            color: #0f172a;
+        }
+
+        :root.light .head-btn.active {
+            color: #ffffff !important;
+        }
+
+        :root.light .visualizer-tokens {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .viz-token {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+            color: #334155;
+        }
+
+        :root.light .viz-token:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        :root.light .viz-token.query-token {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border-color: #0f172a !important;
+        }
+
+        :root.light .viz-details-panel,
+        :root.light .layer-detail-box {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .viz-explanation {
+            color: #334155;
+        }
+
+        :root.light .layer-group {
+            background: rgba(255, 255, 255, 0.55);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .layer-group:hover {
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .layer-group.active {
+            background: #ffffff;
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 4</span>
+            <h1>Multi-Head Attention এবং Layer Stacking</h1>
+            <p class="subtitle">কীভাবে একাধিক Attention Head এবং স্তরীভূত লেয়ার মিলে মডেলে গভীর যৌক্তিকতা তৈরি করে?</p>
+        </header>
+
+        <!-- Intro Card -->
+        <div class="card">
+            <h2>কেন আমাদের একাধিক Attention Head প্রয়োজন?</h2>
+            <p>আমরা আগের লেসনে দেখেছি কীভাবে <span class="tech-term">Self-Attention Mechanism</span> একটি বাক্যের শব্দগুলোর মধ্যকার পারস্পরিক সম্পর্ক বের করে। কিন্তু মানুষের ভাষা অত্যন্ত জটিল। একটি বাক্যের কোনো নির্দিষ্ট শব্দ একই সাথে একাধিক ভিন্ন ভিন্ন ব্যাকরণগত ও অর্থগত সম্পর্কে জড়িয়ে থাকতে পারে।</p>
+            
+            <p>ধরা যাক একটি বাক্য: <span class="highlight">"The cute dog chased the cat because it was running fast."</span></p>
+            <p>এখানে <span class="tech-term">dog</span> শব্দটির দিকে লক্ষ্য করুন:</p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; list-style-type: square;">
+                <li>এটি কেমন কুকুর? - <span class="highlight">"cute"</span> কুকুর (Adjective-Noun বা বিশেষণ সম্পর্ক)।</li>
+                <li>কুকুরটি কী করেছিল? - তাড়া করেছিল বা <span class="highlight">"chased"</span> (Subject-Verb বা কর্তা-ক্রিয়া সম্পর্ক)।</li>
+                <li>কেন তাড়া করেছিল? - কারণ বিড়ালটি পালাচ্ছিল (Causal relationship)।</li>
+            </ul>
+
+            <p>যদি আমাদের মাত্র একটি attention mechanism থাকত (যাকে <span class="tech-term">Single-Head Attention</span> বলা হয়), তবে মডেলটিকে এই সমস্ত ভিন্নধর্মী সম্পর্ককে একসাথে গড় (average) করে একটি মাত্র মনোযোগের মান বের করতে হতো। এর ফলে তথ্যের সূক্ষ্মতা নষ্ট হতো এবং মডেল কোনো একটি নির্দিষ্ট সম্পর্ক সঠিকভাবে বুঝতে ব্যর্থ হতো।</p>
+            
+            <p>এই সমস্যার সমাধান হিসেবে নিয়ে আসা হয় <span class="tech-term">Multi-Head Attention</span>। এখানে মডেলের মধ্যে একাধিক "Attention Head" সমান্তরালে বা প্যারালালে চালানো হয়। প্রতিটি Head আলাদাভাবে ইনপুটের ভিন্ন ভিন্ন সম্পর্কের দিকে নজর দিতে শেখে:</p>
+            
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; list-style-type: decimal;">
+                <li><span class="highlight">Head 1 (Subject-Verb):</span> এটি কর্তা ও ক্রিয়ার মধ্যকার সম্পর্ক দেখে (যেমন- dog ও chased)।</li>
+                <li><span class="highlight">Head 2 (Pronoun Resolution):</span> এটি সর্বনামের প্রকৃত অর্থ খোঁজে (যেমন- "it" বলতে কাকে বোঝানো হয়েছে, dog নাকি cat)।</li>
+                <li><span class="highlight">Head 3 (Modifier/Adjective):</span> এটি বিশেষণ ও তা কাকে মডিফাই করছে তা সনাক্ত করে (যেমন- cute এর সাথে dog)।</li>
+                <li><span class="highlight">Head 4 (Positional Context):</span> এটি বাক্যের ক্রম ও আশেপাশের শব্দের বিন্যাস মনে রাখে।</li>
+            </ul>
+        </div>
+
+        <!-- Dimension Splitting Card -->
+        <div class="card">
+            <h2>Dimension Splitting: হেডদের গাণিতিক বিন্যাস</h2>
+            <p>আপাতদৃষ্টিতে মনে হতে পারে, অনেকগুলো Head প্যারালালে চালালে কম্পিউটেশনাল খরচ অনেক বেড়ে যাবে। কিন্তু Transformer-এ এই প্রক্রিয়াটি অত্যন্ত স্মার্টলি করা হয়।</p>
+            
+            <p>ধরা যাক, আমাদের মডেলের মূল এম্বেডিং সাইজ বা ডাইমেনশন (<span class="tech-term">d_model</span>) হলো <span class="highlight">512</span>। আর আমাদের হেড সংখ্যা (<span class="tech-term">h</span>) হলো <span class="highlight">8</span>।</p>
+            
+            <p>মডেলটি পুরো ৫১২ ডাইমেনশন নিয়ে প্রতিটি হেডকে কাজ করতে দেয় না। বরং এটি ৫১২-কে ৮টি ভাগে ভাগ করে দেয়:</p>
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">
+                d_head = d_model / h = 512 / 8 = 64
+            </div>
+            
+            <p>প্রতিটি Head মাত্র <span class="highlight">64 ডাইমেনশনের</span> ছোট ছোট সাবস্পেসে (<span class="tech-term">Subspaces</span>) তাদের মনোযোগের হিসাব সম্পন্ন করে। সবশেষে ৮টি হেডের গণনা করা ৬৪-ডাইমেনশনের আউটপুটগুলোকে আবার পাশাপাশি জোড়া লাগিয়ে (<span class="tech-term">Concatenation</span>) মূল ৫১২-ডাইমেনশনে ফিরিয়ে আনা হয়।</p>
+            <p>এর ফলে অতিরিক্ত কম্পিউটেশনাল পাওয়ার খরচ না করেই আমরা ৮টি ভিন্ন আঙ্গিকে বাক্যটি বোঝার ক্ষমতা পাই!</p>
+        </div>
+
+        <!-- Interactive Visualizer Card -->
+        <div class="card">
+            <h2>Interactive Multi-Head Attention Visualizer</h2>
+            <p>নিচের বিভিন্ন Attention Head সিলেক্ট করুন এবং বাক্যের যেকোনো একটি শব্দে ক্লিক করুন (যা হবে <strong>Query Word</strong>)। দেখুন কীভাবে ভিন্ন ভিন্ন হেডের অধীনে শব্দটি বাক্যের অন্যান্য শব্দের ওপর মনোযোগের পার্সেন্টেজ পরিবর্তন করছে।</p>
+            
+            <!-- Head Selector Tabs -->
+            <div class="head-selector">
+                <button class="head-btn head1-active active" id="btn-head1" onclick="selectHead('head1')">Head 1: Subject-Verb</button>
+                <button class="head-btn" id="btn-head2" onclick="selectHead('head2')">Head 2: Pronoun Resolution</button>
+                <button class="head-btn" id="btn-head3" onclick="selectHead('head3')">Head 3: Modifier/Adjective</button>
+                <button class="head-btn" id="btn-head4" onclick="selectHead('head4')">Head 4: Local Context</button>
+            </div>
+
+            <!-- Tokens Workspace -->
+            <div class="visualizer-tokens" id="tokens-container">
+                <!-- Javascript will inject tokens here -->
+            </div>
+
+            <!-- Visualizer Feedback & Bars -->
+            <div class="viz-details-panel">
+                <div class="layer-detail-title" style="color: var(--accent-cyan);">
+                    <span>Selected Query:</span> <strong id="query-word-display" style="font-family: 'Outfit', sans-serif; background: rgba(255,255,255,0.1); padding: 0.1rem 0.6rem; border-radius:4px;">cute</strong>
+                </div>
+                <div class="viz-explanation border-head1" id="explanation-box">
+                    "cute" (বিশেষণ) সরাসরি নির্দেশ করছে কার গুণ প্রকাশ করা হচ্ছে - অর্থাৎ "dog" (কুকুর)।
+                </div>
+                
+                <h3 style="font-size:1rem; margin-bottom:0.75rem; color:var(--text-secondary);">Attention Weights (মনোযোগের হার):</h3>
+                <div class="attention-chart" id="chart-container">
+                    <!-- Javascript will inject chart rows here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Layer Stacking Card -->
+        <div class="card">
+            <h2>Layer Stacking: স্তরে স্তরে জটিলতার উন্মোচন</h2>
+            <p>Transformer-এর ভেতরে শুধু একটি Self-Attention এবং Feed-Forward Network-এর ব্লক (Layer) থাকে না। এই ব্লকগুলোকে একটির ওপর আরেকটি স্তূপাকারে সাজানো হয়, যাকে <span class="tech-term">Layer Stacking</span> বলে।</p>
+            <p>যেমন: LLaMA-3-8B মডেলে ৩২টি লেয়ার আছে, আর GPT-4-এর মতো বড় মডেলে ১০০-র বেশি লেয়ার থাকতে পারে। এই স্ট্যাকিংয়ের মাধ্যমে মডেল ধাপে ধাপে সাধারণ ভাষা থেকে গভীর অনুধাবনে পৌঁছায় (Hierarchical Context):</p>
+            
+            <div class="layer-stack">
+                <!-- Top Layers -->
+                <div class="layer-group top-group" id="layer-top" onclick="selectLayer('top')">
+                    <div class="layer-title">Top Layers (লেয়ার ৯-১২): Global Reasoning & Completion</div>
+                    <div class="layer-desc">গভীর মূলভাব, সিদ্ধান্ত গ্রহণ, যুক্তি এবং পরবর্তী সঠিক শব্দ প্রেডিক্ট করা।</div>
+                </div>
+                <div class="layer-arrow">↓</div>
+                <!-- Middle Layers -->
+                <div class="layer-group mid-group active" id="layer-mid" onclick="selectLayer('mid')">
+                    <div class="layer-title">Middle Layers (লেয়ার ৫-৮): Syntax & Relations</div>
+                    <div class="layer-desc">ক্লজ কানেকশন, সর্বনামের সমাধান (Pronoun Resolution) ও ব্যাকরণগত কাঠামো।</div>
+                </div>
+                <div class="layer-arrow">↓</div>
+                <!-- Bottom Layers -->
+                <div class="layer-group bottom-group" id="layer-bottom" onclick="selectLayer('bottom')">
+                    <div class="layer-title">Bottom Layers (লেয়ার ১-৪): Surface Lexical Features</div>
+                    <div class="layer-desc">প্রাথমিক পার্টস অফ স্পিচ, লোকাল সিকোয়েন্স ও সাধারণ বানান সনাক্তকরণ।</div>
+                </div>
+            </div>
+
+            <!-- Layer Details Explorer Panel -->
+            <div class="layer-detail-box" id="layer-detail-panel">
+                <div class="layer-detail-title" id="layer-panel-title" style="color:var(--accent-purple);">
+                    Middle Layers (লেয়ার ৫-৮): Syntax & Relations
+                </div>
+                <div id="layer-panel-content">
+                    <p><strong>মূল দায়িত্ব:</strong> বাক্যটির মধ্যকার ব্যাকরণগত গঠন এবং বিভিন্ন ক্লজের সংযোগ তৈরি করা।</p>
+                    <p><strong>উদাহরণ ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-purple); font-size:0.9rem; font-style:italic;">
+                        এই স্তরে মডেল বুঝতে পারে যে 'chased' ক্রিয়াটি ঘটেছে 'dog' এবং 'cat'-এর মাঝে। সে 'it' সর্বনামটির সম্পর্ক 'cat'-এর সাথে স্থাপন করে (Pronoun Resolution সম্পন্ন করে)।
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (কুইজ)</h2>
+            <p>লেসনটি আপনি কতটুকু বুঝতে পারলেন তা নিচের ৩টি প্রশ্নের মাধ্যমে পরীক্ষা করুন:</p>
+            
+            <div class="quiz-container">
+                <!-- Question 1 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">প্রশ্ন ১: Multi-Head Attention ব্যবহারের মূল কারণ কী?</div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'দুঃখিত! কম্পিউটেশনাল স্পিড বাড়ানো হেড বিভাজনের মূল কারণ নয়।')">
+                        ক) মডেলের ট্রেনিং স্পিড দ্বিগুণ করা।
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, true, 'চমৎকার! একাধিক হেড মডেলকে একই শব্দের সাথে সম্পর্কিত বিভিন্ন ধরণের রিলেশনশিপ সমান্তরালে শিখতে সাহায্য করে।')">
+                        খ) একই শব্দের বিভিন্ন ধরণের সম্পর্ক (যেমন: subject-verb এবং modifier) একসাথে প্যারালালে ক্যাপচার করা।
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'ভুল উত্তর! এটি এম্বেডিং লেয়ারের কাজ, মনোযোগ হেডের নয়।')">
+                        গ) শব্দগুলোর ডিকশনারি বা Vocabulary-র সাইজ বৃদ্ধি করা।
+                    </div>
+                    <div id="quiz-feedback-1" class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">প্রশ্ন ২: Layer Stacking-এর ক্ষেত্রে নিচের কোন স্তরটি সবচেয়ে জটিল যৌক্তিক চিন্তা (Reasoning) এবং ভাবার্থ বোঝার কাজ করে?</div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'ভুল উত্তর! ইনপুটের কাছের নিচের লেয়ারগুলো প্রাথমিক ব্যাকরণ ও প্যাটার্ন নিয়ে কাজ করে।')">
+                        ক) Bottom Layers (নিচের লেয়ারসমূহ)
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'দুঃখিত! মাঝের লেয়ারগুলো সাধারণত বাক্য গঠন ও সাধারণ ক্লজ সংযোগের কাজ করে।')">
+                        খ) Middle Layers (মাঝের লেয়ারসমূহ)
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, true, 'সঠিক উত্তর! Top Layers আউটপুটের একদম কাছে থাকে এবং এটি সম্পূর্ণ বাক্যের গভীর অর্থ, অনুভূতি এবং পরবর্তী শব্দের অনুমান করার মতো জটিল কাজ করে।')">
+                        গ) Top Layers (উপরের লেয়ারসমূহ)
+                    </div>
+                    <div id="quiz-feedback-2" class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">প্রশ্ন ৩: একটি Transformer মডেলের Embedding Dimension (d_model) হলো ৭৬৮ (768) এবং এতে ১২টি (12) Attention Head রয়েছে। প্রতিটি Head-এর নিজস্ব ডাইমেনশন (d_head) কত হবে?</div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'ভুল উত্তর! এটি হেড সংখ্যা নির্দেশ করছে, ডাইমেনশন নয়।')">
+                        ক) 12
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, true, 'চমৎকার! ৭৬৮ ডাইমেনশনকে ১২টি হেডে ভাগ করা হয়। তাই প্রতিটি হেডের ডাইমেনশন হলো ৭৬৮ / ১২ = ৬৪।')">
+                        খ) 64 (কারণ 768 / 12 = 64)
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'ভুল উত্তর! সম্পূর্ণ ডাইমেনশন কোনো একক হেডের কাছে থাকে না, এটি বিভক্ত হয়।')">
+                        গ) 768
+                    </div>
+                    <div id="quiz-feedback-3" class="quiz-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>সহায়ক ও বিশ্বস্ত রেফারেন্সসমূহ (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Transformer-এর মূল পেপার: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
+                <li>ভিজুয়াল গাইড: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>লেয়ার স্ট্যাকিংয়ের ব্যাখ্যা: <a href="https://transformer-circuits.pub/2021/framework/index.html" target="_blank">A Mathematical Framework for Transformer Circuits (Anthropic Research)</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে ট্রান্সফরমার মডেলগুলো <strong>Residual Connections এবং Layer Normalization</strong> ব্যবহার করে সফলভাবে শত শত লেয়ারকে একসাথে যুক্ত করতে পারে।</p>
+        </div>
+
+        <footer>
+            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tokens for the visualizer
+        const tokens = ["The", "cute", "dog", "chased", "the", "cat", "because", "it", "was", "running", "fast."];
+
+        const attnData = {
+            head1: { // Subject-Verb
+                name: "Head 1: Subject-Verb (কর্তা-ক্রিয়া সম্পর্ক)",
+                accentColor: "var(--accent-cyan)",
+                className: "head1-active",
+                colorClass: "color-head1",
+                borderClass: "border-head1",
+                weights: [
+                    [0.60, 0.05, 0.15, 0.05, 0.05, 0.05, 0.01, 0.01, 0.01, 0.01, 0.01], // The
+                    [0.05, 0.70, 0.15, 0.03, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.00], // cute
+                    [0.05, 0.15, 0.20, 0.45, 0.02, 0.05, 0.02, 0.02, 0.02, 0.01, 0.01], // dog
+                    [0.02, 0.03, 0.65, 0.15, 0.02, 0.10, 0.01, 0.01, 0.01, 0.00, 0.00], // chased
+                    [0.01, 0.01, 0.03, 0.05, 0.60, 0.20, 0.05, 0.02, 0.01, 0.01, 0.01], // the
+                    [0.01, 0.01, 0.05, 0.55, 0.03, 0.25, 0.02, 0.04, 0.02, 0.01, 0.01], // cat
+                    [0.01, 0.01, 0.02, 0.05, 0.01, 0.05, 0.70, 0.05, 0.05, 0.03, 0.02], // because
+                    [0.01, 0.01, 0.05, 0.05, 0.01, 0.15, 0.05, 0.20, 0.10, 0.35, 0.02], // it
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.05, 0.05, 0.50, 0.20, 0.10, 0.03], // was
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.03, 0.02, 0.60, 0.10, 0.15, 0.03], // running
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.02, 0.70, 0.16]  // fast
+                ],
+                explanations: {
+                    "chased": "'chased' (তাড়া করেছিল) ক্রিয়াপদটি সনাক্ত করছে যে এই কাজটি কে সম্পন্ন করছে ('dog') এবং কার ওপর করা হচ্ছে ('cat')।",
+                    "dog": "'dog' (কর্তা) তার প্রধান কাজ 'chased' (ক্রিয়া)-এর সাথে সম্পর্ক তৈরি করছে।",
+                    "cat": "'cat' (কর্ম) তার উপর ঘটা কাজ 'chased' (ক্রিয়া)-এর সাথে যুক্ত হচ্ছে।",
+                    "running": "'running' (দৌড়াচ্ছিল) ক্রিয়াপদটি তার সম্ভাব্য কর্তা 'it' (যা বিড়ালকে নির্দেশ করছে) এর দিকে মনোযোগ দিচ্ছে।",
+                    "was": "'was' (ছিল) সাহায্যকারী ক্রিয়াটি তার সাবজেক্ট 'it'-এর দিকে ফোকাস করছে।"
+                },
+                defaultExplanation: "এই Head-টি বাক্যের কর্তা (Subject) এবং ক্রিয়ার (Verb) মধ্যে ব্যাকরণগত সম্পর্ক খুঁজছে।"
+            },
+            head2: { // Pronoun Resolution
+                name: "Head 2: Pronoun Resolution (সর্বনাম সমাধান)",
+                accentColor: "var(--accent-purple)",
+                className: "head2-active",
+                colorClass: "color-head2",
+                borderClass: "border-head2",
+                weights: [
+                    [0.80, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02],
+                    [0.02, 0.85, 0.03, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.02, 0.08, 0.80, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.01, 0.01, 0.05, 0.85, 0.01, 0.04, 0.01, 0.01, 0.01, 0.00, 0.00],
+                    [0.01, 0.01, 0.02, 0.02, 0.80, 0.10, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.01, 0.01, 0.05, 0.05, 0.02, 0.70, 0.01, 0.12, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.02, 0.85, 0.02, 0.02, 0.01, 0.01],
+                    [0.01, 0.01, 0.15, 0.02, 0.01, 0.70, 0.02, 0.05, 0.01, 0.01, 0.01], // "it" focus 70% on "cat" and 15% on "dog"
+                    [0.01, 0.01, 0.05, 0.02, 0.01, 0.35, 0.02, 0.50, 0.02, 0.01, 0.01],
+                    [0.01, 0.01, 0.05, 0.02, 0.01, 0.25, 0.02, 0.40, 0.05, 0.15, 0.03],
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.10, 0.02, 0.15, 0.02, 0.05, 0.60]
+                ],
+                explanations: {
+                    "it": "'it' (সর্বনাম) সরাসরি সনাক্ত করছে যে এটি বাক্যের পূর্ববর্তী বিশেষ্য 'cat' (বিড়াল)-কে নির্দেশ করছে (Pronoun Resolution)। এটি কুকুরের দিকে কম নজর দিচ্ছে কারণ বিড়ালটি দৌড়াচ্ছিল।",
+                    "cat": "বিড়ালটি এবং তার সাথে সম্পর্কিত সর্বনাম 'it'-এর মধ্যে সংযোগ দেখাচ্ছে।",
+                    "was": "সর্বনাম 'it' এবং তার নির্দেশিত 'cat'-এর দিকে কিছুটা মনোযোগ দিচ্ছে।"
+                },
+                defaultExplanation: "এই Head-টি মূলত সর্বনাম (Pronoun) এবং তার নির্দেশিত বিশেষ্য (Noun)-এর মধ্যকার সম্পর্ক নির্ণয় করে।"
+            },
+            head3: { // Modifier & Adjective
+                name: "Head 3: Modifier & Adjective (বিশেষণ ও বিশেষণ সম্পর্ক)",
+                accentColor: "var(--accent-green)",
+                className: "head3-active",
+                colorClass: "color-head3",
+                borderClass: "border-head3",
+                weights: [
+                    [0.70, 0.10, 0.10, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.02, 0.10, 0.82, 0.01, 0.01, 0.01, 0.01, 0.01, 0.00, 0.00, 0.01], // cute -> dog
+                    [0.01, 0.75, 0.20, 0.01, 0.01, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00], // dog -> cute
+                    [0.01, 0.01, 0.02, 0.90, 0.01, 0.02, 0.01, 0.01, 0.00, 0.01, 0.00],
+                    [0.01, 0.01, 0.01, 0.02, 0.75, 0.15, 0.01, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.02, 0.60, 0.30, 0.01, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.90, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.85, 0.03, 0.02, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.80, 0.05, 0.02],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.15, 0.72], // running -> fast
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.85, 0.07]  // fast -> running
+                ],
+                explanations: {
+                    "cute": "'cute' (বিশেষণ) সরাসরি নির্দেশ করছে কার গুণ প্রকাশ করা হচ্ছে - অর্থাৎ 'dog' (কুকুর)।",
+                    "dog": "কুকুরটি কেমন তা বোঝাতে 'cute' বিশেষণের সাথে শক্তিশালী সংযোগ স্থাপন করছে।",
+                    "fast.": "'fast' (ক্রিয়া-বিশেষণ) বর্ণনা করছে দৌড়ানোর গতি কেমন ছিল, তাই এটি 'running' ক্রিয়ার সাথে যুক্ত হচ্ছে।",
+                    "running": "দৌড়ানোর ধরণ কেমন ছিল তা বোঝাতে 'fast' অ্যাডভার্ব বা মডিফায়ারের সাথে যুক্ত হচ্ছে।"
+                },
+                defaultExplanation: "এই Head-টি বাক্যের বিশেষণ (Adjective) এবং তা যে বিশেষ্যকে মডিফাই করছে তার মধ্যকার সম্পর্ক দেখায়।"
+            },
+            head4: { // Positional / Local Context
+                name: "Head 4: Positional & Local Context (স্থানিক ও নিকটবর্তী সম্পর্ক)",
+                accentColor: "var(--accent-orange)",
+                className: "head4-active",
+                colorClass: "color-head4",
+                borderClass: "border-head4",
+                weights: [
+                    [0.95, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // The
+                    [0.80, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // cute -> The
+                    [0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // dog -> cute
+                    [0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // chased -> dog
+                    [0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00], // the -> chased
+                    [0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00, 0.00, 0.00], // cat -> the
+                    [0.00, 0.00, 0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00], // because -> cat
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00], // it -> because
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00], // was -> it
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03], // running -> was
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.82, 0.16]  // fast -> running
+                ],
+                explanations: {},
+                defaultExplanation: "এই Head-টি ব্যাকরণগত অর্থের চেয়ে বাক্যের শব্দগুলোর সিকোয়েন্স বা ক্রমের ওপর নজর দেয় (বিশেষ করে ঠিক আগের শব্দটি)। এটি বাক্যের শব্দবিন্যাস সঠিক রাখতে সাহায্য করে।"
+            }
+        };
+
+        const layerDetails = {
+            bottom: {
+                title: "Bottom Layers (লেয়ার ১-৪): Surface Lexical Features",
+                color: "var(--accent-green)",
+                border: "var(--accent-green)",
+                content: `
+                    <p><strong>মূল দায়িত্ব:</strong> প্রাথমিক ব্যাকরণগত বৈশিষ্ট্য, পার্টস অফ স্পিচ (Noun, Verb, Adjective) এবং কাছাকাছি শব্দ বা লোকাল প্যাটার্ন সনাক্তকরণ।</p>
+                    <p><strong>উদাহরণ ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-green); font-size:0.9rem; font-style:italic;">
+                        এই স্তরে মডেল বুঝতে পারে: 'The' হলো একটি determiner, 'cute' একটি adjective, এবং 'dog' ও 'cat' হলো nouns। শব্দগুলোর পজিশনাল এম্বেডিংয়ের মাধ্যমে এদের কাছাকাছি অবস্থান চিহ্নিত করা হয়।
+                    </p>
+                `
+            },
+            mid: {
+                title: "Middle Layers (লেয়ার ৫-৮): Syntax & Relations",
+                color: "var(--accent-purple)",
+                border: "var(--accent-purple)",
+                content: `
+                    <p><strong>মূল দায়িত্ব:</strong> বাক্যটির মধ্যকার ব্যাকরণগত গঠন এবং বিভিন্ন ক্লজের সংযোগ তৈরি করা।</p>
+                    <p><strong>উদাহরণ ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-purple); font-size:0.9rem; font-style:italic;">
+                        এই স্তরে মডেল বুঝতে পারে যে 'chased' ক্রিয়াটি ঘটেছে 'dog' এবং 'cat'-এর মাঝে। সে 'it' সর্বনামটির সম্পর্ক 'cat'-এর সাথে স্থাপন করে (Pronoun Resolution সম্পন্ন করে)।
+                    </p>
+                `
+            },
+            top: {
+                title: "Top Layers (লেয়ার ৯-১২): Global Reasoning & Completion",
+                color: "var(--accent-cyan)",
+                border: "var(--accent-cyan)",
+                content: `
+                    <p><strong>মূল দায়িত্ব:</strong> সম্পূর্ণ বাক্যের গভীর বা বৈশ্বিক অর্থ, অনুভূতি (sentiment), যুক্তি এবং পরবর্তী সম্ভাব্য শব্দ (Next Token) অনুমান করা।</p>
+                    <p><strong>উদাহরণ ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-cyan); font-size:0.9rem; font-style:italic;">
+                        মডেল এখানে বোঝে যে 'কারণ' (because) রয়েছে। বিড়ালটির দৌড়ানোর কারণেই কুকুরটি তাকে তাড়া করেছিল। যদি আমরা মডেলকে জিজ্ঞেস করি "কুকুরটি কেন তাড়া করছিল?", এই টপ লেয়ারগুলো পুরো বাক্যের কার্যকারণ যুক্তিটি প্রসেস করে উত্তর তৈরি করবে।
+                    </p>
+                `
+            }
+        };
+
+        let activeHeadKey = 'head1';
+        let activeQueryIndex = 1; // "cute"
+
+        // Initialize Visualizer Tokens
+        function initVisualizer() {
+            const container = document.getElementById('tokens-container');
+            container.innerHTML = tokens.map((t, idx) => `
+                <div class="viz-token" id="token-${idx}" onclick="clickToken(${idx})">
+                    ${t}
+                </div>
+            `).join('');
+            
+            updateVisualizer();
+        }
+
+        function clickToken(index) {
+            activeQueryIndex = index;
+            updateVisualizer();
+        }
+
+        function selectHead(headKey) {
+            activeHeadKey = headKey;
+            
+            // Update button active classes
+            document.querySelectorAll('.head-btn').forEach(btn => {
+                btn.className = 'head-btn'; // reset
+            });
+            
+            const selectedBtn = document.getElementById(`btn-${headKey}`);
+            const head = attnData[headKey];
+            selectedBtn.classList.add('active', head.className);
+
+            updateVisualizer();
+        }
+
+        function updateVisualizer() {
+            const head = attnData[activeHeadKey];
+            const weights = head.weights[activeQueryIndex];
+            const word = tokens[activeQueryIndex];
+            
+            // Highlight query token
+            document.querySelectorAll('.viz-token').forEach((el, idx) => {
+                el.classList.remove('query-token');
+                el.style.background = '';
+                el.style.color = '';
+                el.style.borderColor = '';
+                
+                if (idx === activeQueryIndex) {
+                    el.classList.add('query-token');
+                } else {
+                    const w = weights[idx];
+                    // Apply color depending on active head and attention weight
+                    el.style.background = getFadedColor(activeHeadKey, w);
+                    el.style.borderColor = `rgba(255, 255, 255, ${0.1 + w * 0.4})`;
+                    el.style.color = `rgba(248, 250, 252, ${0.5 + w * 0.5})`;
+                    if (w > 0.3) {
+                        el.style.fontWeight = '600';
+                    } else {
+                        el.style.fontWeight = '400';
+                    }
+                }
+            });
+
+            // Update display query text
+            document.getElementById('query-word-display').innerText = word;
+            
+            // Update explanation
+            const expBox = document.getElementById('explanation-box');
+            expBox.className = `viz-explanation ${head.borderClass}`;
+            const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim().toLowerCase();
+            expBox.innerText = head.explanations[cleanWord] || head.defaultExplanation;
+
+            // Draw attention chart
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.innerHTML = tokens.map((t, idx) => {
+                const w = weights[idx];
+                const percentage = (w * 100).toFixed(0);
+                return `
+                    <div class="chart-row">
+                        <span class="chart-label">${t}</span>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar ${head.colorClass}" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="chart-value">${percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFadedColor(headKey, weight) {
+            // Generates faded background color based on head colors
+            if (headKey === 'head1') {
+                return `rgba(6, 182, 212, ${weight * 0.85})`; // Cyan
+            } else if (headKey === 'head2') {
+                return `rgba(168, 85, 247, ${weight * 0.85})`; // Purple
+            } else if (headKey === 'head3') {
+                return `rgba(16, 185, 129, ${weight * 0.85})`; // Green
+            } else {
+                return `rgba(245, 158, 11, ${weight * 0.85})`; // Orange
+            }
+        }
+
+        // Initialize Layer Explorer
+        function selectLayer(layerKey) {
+            // Remove active classes
+            document.querySelectorAll('.layer-group').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Add active class
+            document.getElementById(`layer-${layerKey}`).classList.add('active');
+
+            // Update details
+            const detail = layerDetails[layerKey];
+            const titleEl = document.getElementById('layer-panel-title');
+            titleEl.style.color = detail.color;
+            titleEl.innerText = detail.title;
+            document.getElementById('layer-panel-content').innerHTML = detail.content;
+        }
+
+        // Quiz handler
+        function checkAnswer(qNum, element, isCorrect, feedbackText) {
+            const parentNode = element.parentNode;
+            
+            // Clear choices in this question
+            parentNode.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = document.getElementById(`quiz-feedback-${qNum}`);
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerText = feedbackText;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerText = feedbackText;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+
+        // Boot
+        window.onload = () => {
+            initVisualizer();
+            selectHead('head1');
+        };
+    </script>
+</body>
+</html>

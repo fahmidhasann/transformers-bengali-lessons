@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 3: Self-Attention Mechanism</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: var(--accent-purple);
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .highlight-purple {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Analogy Card Grid */
+        .analogy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .analogy-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .analogy-card:hover {
+            border-color: var(--accent-purple);
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        .analogy-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .analogy-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Simulator Styles */
+        .simulator {
+            margin-top: 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .sim-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (min-width: 600px) {
+            .sim-input-group {
+                flex-direction: row;
+            }
+        }
+
+        select, input, button {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select {
+            cursor: pointer;
+            flex-grow: 1;
+        }
+
+        input {
+            flex-grow: 1;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Interactive Map Area */
+        .attention-visualization-container {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2.5rem 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: visible;
+        }
+
+        .word-row {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .query-row {
+            margin-bottom: 8rem;
+        }
+
+        .word-node {
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-color);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            user-select: none;
+            transition: all 0.2s ease;
+            text-align: center;
+            min-width: 60px;
+            font-size: 0.95rem;
+        }
+
+        .query-node {
+            cursor: pointer;
+        }
+
+        .query-node:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .query-node.active-query {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(168, 85, 247, 0.25));
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+            color: #fff;
+        }
+
+        .key-node {
+            background: rgba(15, 23, 42, 0.7);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .key-node.active-key {
+            border-color: var(--accent-purple);
+            background: rgba(168, 85, 247, 0.1);
+        }
+
+        .attention-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-line {
+            stroke-linecap: round;
+            opacity: 0;
+            animation: fadeInLine 0.4s ease forwards;
+        }
+
+        @keyframes fadeInLine {
+            to { opacity: 1; }
+        }
+
+        /* Details Panel */
+        .attention-details-panel {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .weight-bars-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .weight-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .weight-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: bold;
+            width: 100px;
+            font-size: 0.9rem;
+        }
+
+        .weight-bar-bg {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .weight-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        .weight-val {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            width: 45px;
+            text-align: right;
+            color: var(--text-secondary);
+        }
+
+        .row-label {
+            position: absolute;
+            left: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .query-label {
+            top: 5px;
+        }
+
+        .key-label {
+            bottom: 5px;
+        }
+
+        /* Quiz Styles */
+        .quiz-question-container {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .quiz-question-container:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Attention Simulator Nodes (Lesson 3) */
+        :root.light .word-node {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .word-node:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(8, 145, 178, 0.08);
+        }
+
+        :root.light .query-node.active-query {
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(147, 51, 234, 0.15));
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.25);
+            color: #0f172a;
+        }
+
+        :root.light .key-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .key-node.active-key {
+            border-color: var(--accent-purple);
+            background: rgba(147, 51, 234, 0.08);
+        }
+
+        :root.light .attention-details-panel {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .row-label {
+            background: rgba(241, 245, 249, 0.95);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #475569;
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 3</span>
+            <h1>Self-Attention Mechanism</h1>
+            <p class="subtitle">কীভাবে একটি শব্দ তার আশেপাশের শব্দ থেকে সঠিক কনটেক্সট বা প্রসঙ্গ খুঁজে নেয়?</p>
+        </header>
+
+        <!-- Context Problem Card -->
+        <div class="card">
+            <h2>The Context Problem (প্রসঙ্গের সংকট)</h2>
+            <p>একটি সাধারণ ইংরেজি শব্দ যেমন <span class="tech-term">bank</span> বিবেচনা করুন। এর নিচে দেওয়া দুটি একদম ভিন্ন অর্থ হতে পারে:</p>
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--accent-cyan);">
+                <p style="margin-bottom: 0.5rem;"><strong>বাক্য ১:</strong> "I deposited my money at the <span class="highlight">bank</span>." <br>
+                👉 এখানে <span class="highlight">bank</span> মানে অর্থনৈতিক ব্যাংক (Financial Institution)।</p>
+                <p style="margin: 0;"><strong>বাক্য ২:</strong> "We sat on the muddy <span class="highlight">bank</span> of the river." <br>
+                👉 এখানে <span class="highlight">bank</span> মানে নদীর তীর বা পাড় (Riverbank)।</p>
+            </div>
+            <p>মানুষ হিসেবে আমরা পুরো বাক্যটি পড়ে নিমেষেই এই পার্থক্য বুঝে যাই। কিন্তু কম্পিউটার কীভাবে বুঝবে? কম্পিউটারের কাছে তো প্রতিটি শব্দ কেবল একটি নির্জীব সংখ্যা বা তালিকা (<span class="tech-term">Embedding Vector</span>)।</p>
+            <p>Transformer-এর পূর্বে জনপ্রিয় আর্কিটেকচারগুলো (যেমন <span class="tech-term">RNN</span> বা <span class="tech-term">LSTM</span>) শব্দগুলোকে ক্রমানুসারে (one-by-one) প্রসেস করত। ফলে বাক্যটি বেশি লম্বা হলে প্রথম দিকের শব্দের অর্থ বা প্রভাব শেষ পর্যন্ত পৌঁছাত না।</p>
+            <p>এই সমস্যার বৈপ্লবিক সমাধান নিয়ে আসে Transformer-এর <span class="tech-term">Self-Attention Mechanism</span>। এটি প্রতিটি শব্দকে বাক্যের অন্য সব শব্দের সাথে সরাসরি সংযোগ তৈরি করতে দেয়, যা শব্দের কনটেক্সট-নির্ভর অর্থ নিখুঁতভাবে বের করে আনে।</p>
+        </div>
+
+        <!-- Analogy Card -->
+        <div class="card">
+            <h2>Query, Key, and Value-এর চমৎকার রূপক</h2>
+            <p>Self-Attention পুরো হিসাবটি তিনটি ভেক্টরের সাহায্যে করে: <span class="highlight">Query (Q)</span>, <span class="highlight-purple">Key (K)</span>, এবং <span class="tech-term">Value (V)</span>। এদের বুঝতে আমরা <strong>YouTube Search Engine</strong>-এর চমৎকার অ্যানালজি ব্যবহার করতে পারি:</p>
+            
+            <div class="analogy-grid">
+                <div class="analogy-card">
+                    <div class="analogy-icon">🔍</div>
+                    <div class="analogy-title">Query (Q)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">আপনি ইউটিউবের সার্চ বক্সে যে বিষয়টি টাইপ করছেন (যেমন: <em>"Deep Learning Course"</em>)। এটি হলো আপনার Query। 
+                    <br><br>
+                    <strong>শব্দের অর্থ:</strong> "আমি অন্য কোন কোন শব্দের সাথে সবচেয়ে বেশি সম্পর্কিত হতে চাই?"</p>
+                </div>
+                <div class="analogy-card">
+                    <div class="analogy-icon">🏷️</div>
+                    <div class="analogy-title">Key (K)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">ইউটিউবে থাকা ভিডিওগুলোর টাইটেল, ডেসক্রিপশন বা লেবেল। এটি হলো Key। 
+                    <br><br>
+                    <strong>শব্দের অর্থ:</strong> "অন্যান্য শব্দরা কেন আমার দিকে তাকাবে? আমার কাছে কী ধরনের তথ্য আছে তার পরিচিতি।"</p>
+                </div>
+                <div class="analogy-card">
+                    <div class="analogy-icon">🎞️</div>
+                    <div class="analogy-title">Value (V)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">যখন আপনার Query ও ভিডিওর Key মিলে যায়, তখন আপনি যে মূল ভিডিও বা কনটেন্টটি প্লে করে দেখেন, তা হলো Value।
+                    <br><br>
+                    <strong>শব্দের অর্থ:</strong> "যদি আমার সাথে কোনো শব্দের সম্পর্ক তৈরি হয়, তবে আমি কী মূল অর্থ বা তথ্য প্রদান করব।"</p>
+                </div>
+            </div>
+            <p>Transformer প্রতিটি ইনপুট শব্দের এম্বেডিং ভেক্টরকে তিনটি আলাদা ম্যাট্রিক্স (যাদের ট্রেনিংয়ের সময় লার্ন করা হয়) দিয়ে গুণ করে <span class="tech-term">Q</span>, <span class="tech-term">K</span>, এবং <span class="tech-term">V</span> ভেক্টর তৈরি করে।</p>
+        </div>
+
+        <!-- Step-by-Step Mechanism -->
+        <div class="card">
+            <h2>Self-Attention কীভাবে কাজ করে? (৪টি সহজ ধাপ)</h2>
+            <p>জটিল কোনো ফর্মুলা ছাড়া খুব সহজ ভাষায় গাণিতিক প্রক্রিয়াটি বুঝে নেওয়া যাক:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
+                    <strong style="color: var(--accent-cyan);">ধাপ ১: Similarity (ডট প্রোডাক্ট)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">আমরা যে শব্দটির অর্থ বুঝতে চাচ্ছি তার Query-এর সাথে বাক্যের প্রতিটি শব্দের Key-এর ডট প্রোডাক্ট (<span class="tech-term">Dot Product</span>) করা হয়। ডট প্রোডাক্ট মূলত দুটি ভেক্টরের সমান্তরাল সামঞ্জস্যতা পরিমাপ করে। এর ফলাফলকে বলা হয় <strong>Raw Score</strong>।</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-purple);">
+                    <strong style="color: var(--accent-purple);">ধাপ ২: Scaling (স্কেলিং)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">ভেক্টরের সাইজ বা ডাইমেনশন ($d_k$) অনেক বড় হলে ডট প্রোডাক্টের মান অনেক বেশি বড় হতে পারে। এই বড় মান পরবর্তীতে সমস্যা তৈরি করে। তাই ডট প্রোডাক্টের মানগুলোকে $\sqrt{d_k}$ দিয়ে ভাগ করা হয়, যাতে মানগুলো নিয়ন্ত্রণে থাকে।</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
+                    <strong style="color: var(--accent-cyan);">ধাপ ৩: Softmax (Attention Weights - মনোযোগের অনুপাত)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">প্রাপ্ত স্কেলড স্কোরগুলোকে <span class="tech-term">Softmax</span> ফাংশনের মধ্য দিয়ে নেওয়া হয়। Softmax সমস্ত স্কোরকে ০ থেকে ১ এর মধ্যে একটি ভগ্নাংশে রূপান্তর করে, যাদের যোগফল হয় ঠিক ১ (বা ১০০%)। এই ভগ্নাংশগুলোই হলো <strong>Attention Weights</strong>, যা আমাদের জানায় বাক্যের কোন কোন শব্দে কত শতাংশ মনোযোগ দিতে হবে।</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-green);">
+                    <strong style="color: var(--accent-green);">ধাপ ৪: Weighted Sum of Values (মূল তথ্যের সমন্বয়)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">সবশেষে, প্রতিটি শব্দের Value ($V$) ভেক্টরকে তার স্ব স্ব Attention Weight দিয়ে গুণ করা হয় এবং সব কটি ভেক্টরের যোগফল বা <strong>Weighted Sum</strong> নির্ণয় করা হয়। এই সমন্বিত ভেক্টরটিই হলো শব্দটির চূড়ান্ত, কনটেক্সট সমৃদ্ধ রূপ!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Simulator Card -->
+        <div class="card">
+            <h2>Interactive Attention Simulator</h2>
+            <p>নিচের যেকোনো একটি বাক্য বেছে নিন (অথবা <strong>Custom Sentence</strong> লিখে এন্টার দিন)। এরপর <strong>Query (Q) Row</strong>-এর যেকোনো শব্দের ওপর ক্লিক করুন। দেখুন কীভাবে মনোযোগের লাল ও নীল সংযোগ রেখা ও তাদের ওজন বা <strong>Attention Weights</strong> পরিবর্তিত হচ্ছে।</p>
+
+            <div class="simulator">
+                <div class="sim-input-group">
+                    <select id="sentence-select">
+                        <option value="animal-tired">The animal didn't cross the street because it was too tired.</option>
+                        <option value="animal-wide">The animal didn't cross the street because it was too wide.</option>
+                        <option value="bank-money">I deposited my money at the bank.</option>
+                        <option value="bank-river">We sat on the muddy bank of the river.</option>
+                        <option value="custom">-- Custom Sentence (নিজে ইংরেজি বাক্য লিখুন) --</option>
+                    </select>
+                </div>
+
+                <div id="custom-input-container" style="display: none; margin-bottom: 1.5rem; gap: 0.5rem; flex-wrap: wrap;">
+                    <input type="text" id="custom-sentence-input" placeholder="যেমন: The dog barked at the cat because it was loud (সর্বোচ্চ ১০ শব্দ)">
+                    <button id="custom-visualize-btn">Visualize Custom</button>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="attention-visualization-container" id="attn-viz-container">
+                    <div class="row-label query-label">Query Row (Q) - ক্লিক করুন</div>
+                    <div class="word-row query-row" id="query-word-row"></div>
+                    
+                    <!-- Connection lines canvas -->
+                    <svg class="attention-svg" id="attention-svg"></svg>
+                    
+                    <div class="word-row key-row" id="key-word-row"></div>
+                    <div class="row-label key-label">Key/Value Row (K/V)</div>
+                </div>
+
+                <!-- Explanation Panel -->
+                <div class="attention-details-panel" id="details-panel" style="display: none;">
+                    <h3 id="details-title" style="color: var(--accent-cyan); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.1rem;"></h3>
+                    <p id="details-text" style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 1rem;"></p>
+                    
+                    <div class="weight-bars-list" id="weight-bars-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (কুইজ)</h2>
+            <p>আপনার শেখা বিষয়গুলো যাচাই করতে সঠিক উত্তরটি নির্বাচন করুন:</p>
+            
+            <div class="quiz-question-container">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">১. Self-Attention-এ Query (Q), Key (K) এবং Value (V) ভেক্টরগুলোর সঠিক অর্থ কী?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, true, 'চমৎকার! Query নির্দেশ করে শব্দটি কোন শব্দ থেকে অর্থ নেবে, Key হলো তার নিজের লেবেল এবং Value হলো তার মূল কন্টেন্ট বা তথ্য।')">
+                    ক) Query হলো শব্দটি কার সাথে সম্পর্কিত হবে তার অনুসন্ধান, Key হলো শব্দের লেবেল/ইনডেক্স এবং Value হলো শব্দের প্রকৃত অর্থ বা কন্টেন্ট।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, false, 'দুঃখিত, ভুল উত্তর! ইউটিউব সার্চ অ্যানালজিটি আবার মনে করুন।')">
+                    খ) Query হলো পরবর্তী টোকেন আইডি, Key হলো এম্বেডিং ম্যাট্রিক্স এবং Value হলো সফটম্যাক্স মান।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, false, 'ভুল উত্তর! Query, Key এবং Value শব্দটির এম্বেডিং থেকে উৎপন্ন ভেক্টর মাত্র, কোনোটিই আউটপুট লজিক বা ডিকশনারি নয়।')">
+                    গ) Query হলো ডিকশনারি ডেটাবেজ, Key হলো ব্যাকরণ নিয়ম এবং Value হলো শেষ আউটপুট শব্দ।
+                </div>
+                <div id="quiz-feedback-1" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question-container" style="margin-top: 2rem;">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">২. Self-Attention-এ ডট প্রোডাক্ট হিসেবের পর Scaling করার মূল কারণ কী?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, false, 'ভুল উত্তর! স্কেলিং ম্যাট্রিক্স মেমরি ব্যবহার বা প্রসেসর স্পিডের চেয়ে গাণিতিক স্থিতিশীলতার জন্য বেশি জরুরি।')">
+                    ক) যাতে মেমরিতে ভেক্টরের আকার অনেক ছোট হয়ে যায় ও জিপিইউ স্পিড বাড়ে।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, true, 'সঠিক উত্তর! স্কেলিং না করলে ডট প্রোডাক্টের মান অনেক বেশি বড় হয়ে যায়, যার ফলে Softmax ফাংশনের গ্রেডিয়েন্ট অত্যন্ত ক্ষুদ্র বা ভ্যানিশিং (Vanishing Gradient) হয়ে লার্নিং বন্ধ করে দেয়।')">
+                    খ) ডট প্রোডাক্টের মান খুব বড় হলে Softmax ফাংশনের ইনপুট স্যাচুরেট হয়ে গ্রেডিয়েন্ট ভ্যানিশিং বা লার্নিং ব্যাহত হতে পারে।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, false, 'ভুল উত্তর! এটি শব্দের এম্বেডিং লেয়ার বা টোকেন সংখ্যার ওপর প্রভাব ফেলে না।')">
+                    গ) এটি ছাড়া বাক্যের মোট টোকেনের সংখ্যা গণনা করা অসম্ভব।
+                </div>
+                <div id="quiz-feedback-2" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question-container" style="margin-top: 2rem;">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">৩. "The animal didn't cross the street because it was too tired." এবং "...it was too wide." - এই দুটি বাক্যে যথাক্রমে 'it' শব্দটির অর্থ কীভাবে পরিবর্তিত হয়?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, false, 'ভুল উত্তর! Transformer-এ কোনো আলাদা ব্যাকরণ বা ডিকশনারি রুলসেট থাকে না।')">
+                    ক) বাক্য দুটিতে ভিন্ন ব্যাকরণ নিয়ম বা রুল-বেসড কোড ব্যবহার করা হয়েছে।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, true, 'অসাধারণ! Self-Attention-এর মাধ্যমে প্রথম বাক্যে \'it\' শব্দটি \'tired\' (ক্লান্ত)-এর সাথে মিলে \'animal\'-কে এবং দ্বিতীয় বাক্যে \'wide\' (প্রশস্ত)-এর সাথে মিলে \'street\'-কে বেশি মনোযোগ বা Attention Weight দেয়।')">
+                    খ) Self-Attention-এর সাহায্যে 'it' শব্দটি তার চারপাশের গুণবাচক বিশেষণ ('tired' বা 'wide') এর সাথে সংযোগ স্থাপন করে যথাক্রমে 'animal' বা 'street' এর ভেক্টরকে বেশি মনোযোগ (Attention Weight) প্রদান করে।
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, false, 'ভুল উত্তর! \'it\' শব্দটির বানান বা এম্বেডিং শুরুতে একই থাকে। এটি তার আশেপাশের শব্দের সাথে সম্পর্কের কারণে পরে পরিবর্তিত হয়।')">
+                    গ) প্রথম বাক্যে 'it'-এর এম্বেডিং স্পেলিং এবং দ্বিতীয় বাক্যে 'it'-এর স্পেলিং কম্পিউটার আলাদা দেখে।
+                </div>
+                <div id="quiz-feedback-3" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>সহায়ক ও বিশ্বস্ত রেফারেন্সসমূহ (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Transformer-এর মূল গবেষণা পত্র: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al., 2017)</a></li>
+                <li>অত্যন্ত জনপ্রিয় ভিজুয়াল গাইড: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>ম্যাথমেটিক্যাল এনালাইসিস: <a href="https://sebastianraschka.com/blog/2023/self-attention-from-scratch.html" target="_blank">Understanding Self-Attention From Scratch by Sebastian Raschka</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে একাধিক মনোযোগের স্রোত একসাথে কাজ করে, অর্থাৎ <strong>Multi-Head Attention Mechanism</strong>।</p>
+        </div>
+
+        <footer>
+            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
+        </footer>
+    </div>
+
+    <script>
+        // High-fidelity pre-defined attention dataset for specific word queries
+        const sentenceDatasets = {
+            'animal-tired': {
+                sentence: "The animal didn't cross the street because it was too tired",
+                queryDetails: {
+                    'it': {
+                        title: "Query Focus: 'it'",
+                        text: "এখানে 'it' শব্দটি 'animal' (প্রাণী)-এর সাথে ৫৫% মনোযোগ (Attention Weight) সংযোগ তৈরি করেছে। কারণ 'tired' বা ক্লান্ত হওয়ার গুণটি রাস্তার চেয়ে প্রাণীর সাথে বেশি মানানসই।",
+                        weights: { 'The': 0.02, 'animal': 0.55, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.05, 'because': 0.03, 'it': 0.15, 'was': 0.02, 'too': 0.03, 'tired': 0.10 }
+                    },
+                    'street': {
+                        title: "Query Focus: 'street'",
+                        text: "এখানে 'street' (রাস্তা) শব্দটি 'cross' (পার হওয়া) এবং 'the'-এর সাথে বেশি সম্পর্কযুক্ত হয়েছে।",
+                        weights: { 'The': 0.02, 'animal': 0.10, "didn't": 0.03, 'cross': 0.35, 'the': 0.15, 'street': 0.20, 'because': 0.02, 'it': 0.03, 'was': 0.02, 'too': 0.03, 'tired': 0.05 }
+                    },
+                    'tired': {
+                        title: "Query Focus: 'tired'",
+                        text: "এখানে 'tired' (ক্লান্ত) শব্দটি 'it' এবং 'animal' এর সাথে দৃঢ় সংযোগ তৈরি করেছে, যার মাধ্যমে ক্লান্ত কে ছিল তা স্পষ্ট হয়।",
+                        weights: { 'The': 0.01, 'animal': 0.40, "didn't": 0.02, 'cross': 0.05, 'the': 0.01, 'street': 0.03, 'because': 0.05, 'it': 0.25, 'was': 0.05, 'too': 0.08, 'tired': 0.10 }
+                    }
+                }
+            },
+            'animal-wide': {
+                sentence: "The animal didn't cross the street because it was too wide",
+                queryDetails: {
+                    'it': {
+                        title: "Query Focus: 'it'",
+                        text: "এখানে 'it' শব্দটি 'street' (রাস্তা)-এর সাথে ৬০% মনোযোগ সংযোগ তৈরি করেছে। কারণ 'wide' বা প্রশস্ত হওয়া গুণটি প্রাণীর তুলনায় রাস্তার সাথে বেশি মানানসই। কনটেক্সট পরিবর্তনের সাথে সাথে 'it' তার পরিচয় পরিবর্তন করে ফেলেছে!",
+                        weights: { 'The': 0.02, 'animal': 0.05, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.60, 'because': 0.03, 'it': 0.12, 'was': 0.02, 'too': 0.03, 'wide': 0.08 }
+                    },
+                    'wide': {
+                        title: "Query Focus: 'wide'",
+                        text: "এখানে 'wide' (প্রশস্ত) শব্দটি 'street' এবং 'it' এর সাথে সম্পর্কিত, যা রাস্তার দৈহিক গঠন প্রকাশ করে।",
+                        weights: { 'The': 0.01, 'animal': 0.02, "didn't": 0.02, 'cross': 0.05, 'the': 0.02, 'street': 0.45, 'because': 0.03, 'it': 0.20, 'was': 0.05, 'too': 0.10, 'wide': 0.08 }
+                    }
+                }
+            },
+            'bank-money': {
+                sentence: "I deposited my money at the bank",
+                queryDetails: {
+                    'bank': {
+                        title: "Query Focus: 'bank'",
+                        text: "এখানে 'bank' শব্দটি 'money' (টাকা) এবং 'deposited' (জমা দেওয়া)-এর সাথে সর্বমোট ৭০% মনোযোগ সংযোগ তৈরি করেছে। এর ফলে এর অর্থ দাঁড়িয়েছে অর্থনৈতিক প্রতিষ্ঠান বা ব্যাংকভবন।",
+                        weights: { 'I': 0.03, 'deposited': 0.25, 'my': 0.02, 'money': 0.45, 'at': 0.03, 'the': 0.02, 'bank': 0.20 }
+                    },
+                    'deposited': {
+                        title: "Query Focus: 'deposited'",
+                        text: "জমা করার মূল কাজটি হচ্ছে 'money' এবং 'bank'-এর সাথে সম্পর্কিত।",
+                        weights: { 'I': 0.05, 'deposited': 0.30, 'my': 0.03, 'money': 0.35, 'at': 0.02, 'the': 0.02, 'bank': 0.23 }
+                    }
+                }
+            },
+            'bank-river': {
+                sentence: "We sat on the muddy bank of the river",
+                queryDetails: {
+                    'bank': {
+                        title: "Query Focus: 'bank'",
+                        text: "এখানে 'bank' শব্দটি 'river' (নদী) এবং 'muddy' (কর্দমাক্ত)-এর সাথে প্রায় ৭০% মনোযোগের সম্পর্ক স্থাপন করেছে। যার ফলে মডেল নিশ্চিত হয় যে এটি নদীর তীর বা পাড়কে নির্দেশ করছে।",
+                        weights: { 'We': 0.02, 'sat': 0.05, 'on': 0.03, 'the': 0.02, 'muddy': 0.28, 'bank': 0.15, 'of': 0.02, 'the': 0.03, 'river': 0.40 }
+                    },
+                    'river': {
+                        title: "Query Focus: 'river'",
+                        text: "'river' তার অবস্থান স্পষ্ট করতে 'bank' এবং 'muddy' এর সাহায্য নিচ্ছে।",
+                        weights: { 'We': 0.02, 'sat': 0.03, 'on': 0.02, 'the': 0.02, 'muddy': 0.20, 'bank': 0.45, 'of': 0.03, 'the': 0.03, 'river': 0.20 }
+                    }
+                }
+            }
+        };
+
+        let activeQueryWord = null;
+        let selectedSentenceKey = 'animal-tired';
+        let currentWords = [];
+
+        // Elements
+        const sentenceSelect = document.getElementById('sentence-select');
+        const customInputContainer = document.getElementById('custom-input-container');
+        const customSentenceInput = document.getElementById('custom-sentence-input');
+        const customVisualizeBtn = document.getElementById('custom-visualize-btn');
+        
+        const queryWordRow = document.getElementById('query-word-row');
+        const keyWordRow = document.getElementById('key-word-row');
+        const attentionSvg = document.getElementById('attention-svg');
+        
+        const detailsPanel = document.getElementById('details-panel');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsText = document.getElementById('details-text');
+        const weightBarsList = document.getElementById('weight-bars-list');
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadSentence(selectedSentenceKey);
+            
+            // Set initial click on a keyword to showcase immediately
+            setTimeout(() => {
+                const initialNode = queryWordRow.querySelector('[data-word="it"], [data-word="bank"]');
+                if (initialNode) {
+                    initialNode.click();
+                }
+            }, 300);
+        });
+
+        window.addEventListener('resize', () => {
+            if (activeQueryWord) {
+                drawAttentionLines(activeQueryWord);
+            }
+        });
+
+        sentenceSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            selectedSentenceKey = val;
+            if (val === 'custom') {
+                customInputContainer.style.display = 'flex';
+                clearVisualization();
+            } else {
+                customInputContainer.style.display = 'none';
+                loadSentence(val);
+            }
+        });
+
+        customVisualizeBtn.addEventListener('click', () => {
+            const rawText = customSentenceInput.value.trim();
+            if (!rawText) return;
+            loadCustomSentence(rawText);
+        });
+
+        customSentenceInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                customVisualizeBtn.click();
+            }
+        });
+
+        function clearVisualization() {
+            queryWordRow.innerHTML = '';
+            keyWordRow.innerHTML = '';
+            attentionSvg.innerHTML = '';
+            detailsPanel.style.display = 'none';
+            activeQueryWord = null;
+        }
+
+        function loadSentence(key) {
+            clearVisualization();
+            const dataset = sentenceDatasets[key];
+            if (!dataset) return;
+            
+            currentWords = dataset.sentence.split(' ').filter(w => w.trim() !== '');
+            renderWords(currentWords);
+        }
+
+        function loadCustomSentence(text) {
+            clearVisualization();
+            // Split, clean punctuation, limit to 10 words
+            let cleanWords = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(/\s+/).filter(w => w.trim() !== '');
+            if (cleanWords.length > 10) {
+                cleanWords = cleanWords.slice(0, 10);
+            }
+            currentWords = cleanWords;
+            renderWords(currentWords);
+            
+            // Auto click first word
+            setTimeout(() => {
+                const first = queryWordRow.querySelector('.query-node');
+                if (first) first.click();
+            }, 100);
+        }
+
+        function renderWords(words) {
+            queryWordRow.innerHTML = words.map((w, idx) => `
+                <div class="word-node query-node" data-index="${idx}" data-word="${w}">${w}</div>
+            `).join('');
+
+            keyWordRow.innerHTML = words.map((w, idx) => `
+                <div class="word-node key-node" id="key-node-${idx}" data-word="${w}">${w}</div>
+            `).join('');
+
+            // Click handler
+            queryWordRow.querySelectorAll('.query-node').forEach(node => {
+                node.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.getAttribute('data-index'));
+                    handleQueryClick(idx, e.target);
+                });
+            });
+        }
+
+        function handleQueryClick(index, node) {
+            // Update active state in Query Row
+            queryWordRow.querySelectorAll('.query-node').forEach(n => n.classList.remove('active-query'));
+            node.classList.add('active-query');
+            activeQueryWord = node;
+
+            const wordName = currentWords[index];
+            let weights = {};
+            let explanationTitle = `Query word: "${wordName}"`;
+            let explanationText = `আপনি "${wordName}" শব্দটি ক্লিক করেছেন। এটি কীভাবে বাক্যের অন্যান্য শব্দের সাথে অর্থবহ সংযোগ তৈরি করছে তা দেখতে পাচ্ছেন।`;
+
+            // Check if pre-defined sentence and pre-defined query details exist
+            const isPredefined = sentenceDatasets[selectedSentenceKey];
+            let predefinedDetail = null;
+            if (isPredefined && isPredefined.queryDetails) {
+                // Try matching word with key
+                const matchWord = wordName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+                predefinedDetail = isPredefined.queryDetails[matchWord];
+            }
+
+            if (predefinedDetail) {
+                explanationTitle = predefinedDetail.title;
+                explanationText = predefinedDetail.text;
+                weights = predefinedDetail.weights;
+            } else {
+                // Heuristically calculate simulated weights
+                const calcWeights = calculateHeuristicWeights(currentWords, index);
+                explanationTitle = `Query Focus: "${wordName}"`;
+                explanationText = `কম্পিউটার গাণিতিক ডট প্রোডাক্ট ব্যবহার করে "${wordName}" এর সাথে অন্যান্য শব্দের সম্পর্ক নির্ধারণ করেছে। নিচে এর আনুমানিক Attention Weights দেখানো হলো।`;
+                
+                currentWords.forEach((w, i) => {
+                    weights[w] = calcWeights[i];
+                });
+            }
+
+            // Apply weights to key nodes and calculate details
+            currentWords.forEach((w, i) => {
+                const keyNode = document.getElementById(`key-node-${i}`);
+                // Since duplicate words can exist, we assign by index
+                const weight = weights[w] !== undefined ? weights[w] : weights[Object.keys(weights)[i]] || 0.05;
+                keyNode.setAttribute('data-weight', weight);
+            });
+
+            // Update explanation panel
+            detailsTitle.innerText = explanationTitle;
+            detailsText.innerText = explanationText;
+            detailsPanel.style.display = 'block';
+
+            // Show weight bars
+            weightBarsList.innerHTML = currentWords.map((w, i) => {
+                const weight = parseFloat(document.getElementById(`key-node-${i}`).getAttribute('data-weight')) || 0;
+                const percentage = (weight * 100).toFixed(0);
+                return `
+                    <div class="weight-row">
+                        <span class="weight-label">"${w}"</span>
+                        <div class="weight-bar-bg">
+                            <div class="weight-bar-fill" id="fill-${i}" style="width: 0%;"></div>
+                        </div>
+                        <span class="weight-val">${percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Trigger progress bar animation
+            setTimeout(() => {
+                currentWords.forEach((w, i) => {
+                    const fillEl = document.getElementById(`fill-${i}`);
+                    const weight = parseFloat(document.getElementById(`key-node-${i}`).getAttribute('data-weight')) || 0;
+                    if (fillEl) fillEl.style.width = `${weight * 100}%`;
+                });
+            }, 50);
+
+            // Draw attention lines on SVG
+            drawAttentionLines(node);
+        }
+
+        function calculateHeuristicWeights(words, queryIndex) {
+            const queryWord = words[queryIndex].toLowerCase();
+            let scores = new Array(words.length).fill(0);
+            
+            words.forEach((word, idx) => {
+                const w = word.toLowerCase();
+                let score = 0;
+                
+                if (idx === queryIndex) {
+                    score += 3.0; // self attention
+                }
+                
+                const distance = Math.abs(idx - queryIndex);
+                score += Math.max(0, 2.0 - distance * 0.5); // proximity
+                
+                // Specific semantic connections heuristic
+                if (queryWord === 'bank') {
+                    if (['river', 'water', 'muddy', 'slope', 'shore', 'green'].includes(w)) {
+                        score += 4.5;
+                    }
+                    if (['money', 'deposited', 'cash', 'save', 'account', 'interest'].includes(w)) {
+                        score += 4.5;
+                    }
+                }
+                if (['river', 'water', 'muddy', 'money', 'deposited', 'cash', 'account'].includes(queryWord) && w === 'bank') {
+                    score += 4.5;
+                }
+                
+                // Pronouns
+                if (['it', 'its', 'he', 'she', 'they', 'them'].includes(queryWord)) {
+                    // Attends back to potential nouns
+                    if (idx < queryIndex && idx > 0) {
+                        score += 3.0; // default higher score for preceding words
+                    }
+                }
+                
+                // Random jitter for math realism
+                score += Math.random() * 0.4;
+                scores[idx] = score;
+            });
+            
+            // Softmax Normalization
+            const expScores = scores.map(s => Math.exp(s));
+            const sumExp = expScores.reduce((a, b) => a + b, 0);
+            return expScores.map(e => e / sumExp);
+        }
+
+        function drawAttentionLines(queryNode) {
+            const container = document.getElementById('attn-viz-container');
+            const svg = document.getElementById('attention-svg');
+            
+            svg.innerHTML = '';
+            
+            const containerRect = container.getBoundingClientRect();
+            svg.setAttribute('width', containerRect.width);
+            svg.setAttribute('height', containerRect.height);
+            
+            const queryRect = queryNode.getBoundingClientRect();
+            const x1 = queryRect.left + queryRect.width / 2 - containerRect.left;
+            const y1 = queryRect.bottom - containerRect.top;
+            
+            const keyNodes = keyWordRow.querySelectorAll('.key-node');
+            keyNodes.forEach((keyNode) => {
+                const keyRect = keyNode.getBoundingClientRect();
+                const x2 = keyRect.left + keyRect.width / 2 - containerRect.left;
+                const y2 = keyRect.top - containerRect.top;
+                
+                const weight = parseFloat(keyNode.getAttribute('data-weight')) || 0.05;
+                
+                // Draw bezier path
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const cpY = (y1 + y2) / 2;
+                const d = `M ${x1} ${y1} C ${x1} ${cpY}, ${x2} ${cpY}, ${x2} ${y2}`;
+                
+                path.setAttribute('d', d);
+                path.setAttribute('fill', 'none');
+                
+                // High-attention uses brighter neon cyan-purple, low attention fades out
+                const strokeColor = weight > 0.35 
+                    ? `rgba(6, 182, 212, ${0.2 + weight * 0.8})` // Cyan
+                    : `rgba(168, 85, 247, ${0.1 + weight * 0.7})`; // Purple
+                
+                const strokeWidth = 1 + weight * 9;
+                
+                path.setAttribute('stroke', strokeColor);
+                path.setAttribute('stroke-width', strokeWidth);
+                path.setAttribute('class', 'connection-line');
+                
+                svg.appendChild(path);
+
+                // Add active-key border style to high-weight keys
+                if (weight > 0.2) {
+                    keyNode.classList.add('active-key');
+                } else {
+                    keyNode.classList.remove('active-key');
+                }
+            });
+        }
+
+        // Quiz checker
+        function checkAnswer(element, questionNum, isCorrect, feedback) {
+            const questionContainer = element.closest('.quiz-question-container');
+            const options = questionContainer.querySelectorAll('.quiz-option');
+            
+            // Clear previous highlights for this question
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = document.getElementById(`quiz-feedback-${questionNum}`);
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerText = feedback;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerText = feedback;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
