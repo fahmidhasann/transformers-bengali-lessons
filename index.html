@@ -155,8 +155,54 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             text-align: center;
-            border-top: 1px solid var(--border-color);
-            padding-top: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 1rem;
+            background: rgba(30, 41, 59, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+        }
+
+        .sidebar-footer:hover {
+            border-color: rgba(6, 182, 212, 0.35);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.15);
+            transform: translateY(-2px);
+            background: rgba(30, 41, 59, 0.35);
+        }
+
+        .sidebar-footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease, text-shadow 0.2s ease;
+        }
+
+        .sidebar-footer a:hover {
+            color: var(--accent-purple);
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+        }
+
+        :root.light .sidebar-footer {
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+
+        :root.light .sidebar-footer:hover {
+            border-color: rgba(6, 182, 212, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.8);
         }
 
         /* Main Content Panel */
@@ -1342,7 +1388,46 @@
             box-shadow: 0 10px 15px rgba(15, 23, 42, 0.04);
         }
 
-        /* Theme Toggle Button Styles */
+        /* Theme & Language Toggle Button Styles */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .lang-toggle-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0 1rem;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: var(--font-main);
+        }
+        
+        .lang-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .lang-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .lang-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
         .theme-toggle-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
@@ -1425,38 +1510,38 @@
             <li class="nav-item active" id="nav-dashboard">
                 <button onclick="switchTab('dashboard')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    Dashboard (সংক্ষিপ্তসার)
+                    <span class="nav-text" id="nav-text-dashboard">Dashboard (সংক্ষিপ্তসার)</span>
                 </button>
             </li>
             <li class="nav-item" id="nav-lessons">
                 <button onclick="switchTab('lessons')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3.5A2.5 2.5 0 0 1 6.5 1H20v21H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
-                    Syllabus (লেসন ম্যাপ)
+                    <span class="nav-text" id="nav-text-lessons">Syllabus (লেসন ম্যাপ)</span>
                 </button>
             </li>
             <li class="nav-item" id="nav-glossary">
                 <button onclick="switchTab('glossary')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M12 4v16M2 8h20M2 14h20"/></svg>
-                    Glossary (শব্দকোষ)
+                    <span class="nav-text" id="nav-text-glossary">Glossary (শব্দকোষ)</span>
                 </button>
             </li>
             <li class="nav-item" id="nav-resources">
                 <button onclick="switchTab('resources')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                    References (সহায়ক লিংক)
+                    <span class="nav-text" id="nav-text-resources">References (সহায়ক লিংক)</span>
                 </button>
             </li>
             <li class="nav-item" id="nav-quiz">
                 <button onclick="switchTab('quiz')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg>
-                    Assessment (চূড়ান্ত কুইজ)
+                    <span class="nav-text" id="nav-text-quiz">Assessment (চূড়ান্ত কুইজ)</span>
                 </button>
             </li>
         </ul>
 
         <div class="sidebar-footer">
-            <p>Bengali Transformer Hub</p>
-            <p style="font-size:0.7rem; margin-top:0.25rem;">Made with ❤️ by Antigravity</p>
+            <p style="font-size: 0.85rem; line-height: 1.45; margin-bottom: 0.65rem; color: var(--text-primary); font-weight: 500;">Helping you learn Transformers, the core architecture behind all modern large language models like ChatGPT, Claude, and Gemini.</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">Course made by <a href="https://web.facebook.com/fahmid.hasan.190797/" target="_blank">Fahmid Hasan</a></p>
         </div>
     </aside>
 
@@ -1467,10 +1552,13 @@
                 <h1 id="page-heading">Dashboard</h1>
                 <p id="page-subheading">স্বাগতম! ট্রান্সফরমার আর্কিটেকচার শেখার যাত্রা শুরু হোক।</p>
             </div>
-            <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
-                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-            </button>
+            <div class="header-controls">
+                <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
+                <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </button>
+            </div>
         </header>
 
         <!-- DASHBOARD VIEW -->
@@ -1479,7 +1567,7 @@
                 <!-- Learning Progress Card -->
                 <div class="card analytics-card">
                     <div class="analytics-info">
-                        <p>Syllabus Progress</p>
+                        <p id="syllabus-progress-lbl">Syllabus Progress</p>
                         <h3 id="dash-progress-text">0%</h3>
                         <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="dash-remaining-text">৬টি লেসনের সবকটি বাকি</p>
                     </div>
@@ -1495,9 +1583,9 @@
                 <!-- Glossary Metrics Card -->
                 <div class="card analytics-card">
                     <div class="analytics-info">
-                        <p>Total Glossary Terms</p>
+                        <p id="total-glossary-lbl">Total Glossary Terms</p>
                         <h3>২৫+</h3>
-                        <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;">সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ</p>
+                        <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="total-glossary-desc">সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ</p>
                     </div>
                     <div style="font-size: 3rem;">📖</div>
                 </div>
@@ -1505,7 +1593,7 @@
                 <!-- Final Quiz status Card -->
                 <div class="card analytics-card">
                     <div class="analytics-info">
-                        <p>Final Assessment</p>
+                        <p id="final-assessment-lbl">Final Assessment</p>
                         <h3 id="dash-quiz-status">Not Attempted</h3>
                         <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="dash-quiz-score-sub">নিজের অর্জিত জ্ঞান যাচাই করুন</p>
                     </div>
@@ -1516,50 +1604,50 @@
             <!-- Mission Overview Card -->
             <div class="card">
                 <div class="mission-header">
-                    <h2><span class="card-header-icon">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)</h2>
-                    <span class="goal-tag" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-green);">Interactive Tracker</span>
+                    <h2 id="mission-card-title"><span class="card-header-icon">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)</h2>
+                    <span class="goal-tag" id="mission-tracker-badge" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-green);">Interactive Tracker</span>
                 </div>
-                <p>LLM (Large Language Model) এর "behind the scene" বা ভেতরের মেকানিজম স্পষ্টভাবে বোঝা। কোনো জটিল গাণিতিক ফর্মুলা বা কোডিং জটলা ছাড়া **Conceptual Intuition** নিজের আয়ত্তে আনা, যাতে পরবর্তীতে যেকোনো advanced LLM concept সহজে ধরতে পারেন।</p>
+                <p id="mission-card-desc">LLM (Large Language Model) এর "behind the scene" বা ভেতরের মেকানিজম স্পষ্টভাবে বোঝা। কোনো জটিল গাণিতিক ফর্মুলা বা কোডিং জটলা ছাড়া **Conceptual Intuition** নিজের আয়ত্তে আনা, যাতে পরবর্তীতে যেকোনো advanced LLM concept সহজে ধরতে পারেন।</p>
                 
                 <div class="mission-goals" id="mission-goals-list">
                     <div class="goal-item" onclick="toggleGoal(0)" id="goal-0">
                         <div class="goal-checkbox"></div>
                         <div class="goal-content">
                             <span class="goal-tag">Lesson 1-3</span>
-                            <p><strong>Core Attention Intuition:</strong> Self-Attention, Query (Q), Key (K), Value (V) এবং Softmax-এর ভেতরের মেকানিজম অনুধাবন করা।</p>
+                            <p id="goal-text-0"><strong>Core Attention Intuition:</strong> Self-Attention, Query (Q), Key (K), Value (V) এবং Softmax-এর ভেতরের মেকানিজম অনুধাবন করা।</p>
                         </div>
                     </div>
                     <div class="goal-item" onclick="toggleGoal(1)" id="goal-1">
                         <div class="goal-checkbox"></div>
                         <div class="goal-content">
                             <span class="goal-tag">Lesson 2</span>
-                            <p><strong>Input Pipeline:</strong> মানুষের বাক্য কীভাবে Tokenization, Sub-words, Vectors (Embedding) ও Positional Encoding অতিক্রম করে গাণিতিক ফিঙ্গারপ্রিন্ট তৈরি করে তা শেখা।</p>
+                            <p id="goal-text-1"><strong>Input Pipeline:</strong> মানুষের বাক্য কীভাবে Tokenization, Sub-words, Vectors (Embedding) ও Positional Encoding অতিক্রম করে গাণিতিক ফিঙ্গারপ্রিন্ট তৈরি করে তা শেখা।</p>
                         </div>
                     </div>
                     <div class="goal-item" onclick="toggleGoal(2)" id="goal-2">
                         <div class="goal-checkbox"></div>
                         <div class="goal-content">
                             <span class="goal-tag">Lesson 4-5</span>
-                            <p><strong>Multi-Head Stacking:</strong> একাধিক মনোযোগ হেড কেন লাগে, Dimension Splitting কী এবং Residual Skip Connections ও LayerNorm কীভাবে ট্রেনিং স্থিতিশীল করে তা বোঝা।</p>
+                            <p id="goal-text-2"><strong>Multi-Head Stacking:</strong> একাধিক মনোযোগ হেড কেন লাগে, Dimension Splitting কী এবং Residual Skip Connections ও LayerNorm কীভাবে ট্রেনিং স্থিতিশীল করে তা বোঝা।</p>
                         </div>
                     </div>
                     <div class="goal-item" onclick="toggleGoal(3)" id="goal-3">
                         <div class="goal-checkbox"></div>
                         <div class="goal-content">
                             <span class="goal-tag">Lesson 6</span>
-                            <p><strong>LLM Gen Architecture:</strong> Modern Decoder-Only Transformers (যেমন GPT, LLaMA) কেন ব্যবহৃত হয় এবং Causal Masking কী তা জানা।</p>
+                            <p id="goal-text-3"><strong>LLM Gen Architecture:</strong> Modern Decoder-Only Transformers (যেমন GPT, LLaMA) কেন ব্যবহৃত হয় এবং Causal Masking কী তা জানা।</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Quick Start Box -->
-            <div class="card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(168, 85, 247, 0.08)); border-color: rgba(6, 182, 212, 0.25);">
-                <h2><span class="card-header-icon">🚀</span> Quick Start Guide</h2>
-                <p>শেখ শুরু করার জন্য <strong>"Syllabus (লেসন ম্যাপ)"</strong> ট্যাবে চলে যান। সেখানে সিরিয়ালি সাজানো লেসনগুলো পড়তে পারবেন। প্রতিটি লেসন পড়ার সময় আপনি তা **"In Progress"** বা **"Completed"** হিসেবে চিহ্নিত করতে পারেন, যা উপরে আপনার ড্যাশবোর্ডের প্রোগ্রেস ও ট্র্যাকার আপডেট করে রাখবে!</p>
+            <div class="card" id="quick-start-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(168, 85, 247, 0.08)); border-color: rgba(6, 182, 212, 0.25);">
+                <h2 id="quick-start-title"><span class="card-header-icon">🚀</span> Quick Start Guide</h2>
+                <p id="quick-start-desc">শেখ শুরু করার জন্য <strong>"Syllabus (লেসন ম্যাপ)"</strong> ট্যাবে চলে যান। সেখানে সিরিয়ালি সাজানো লেসনগুলো পড়তে পারবেন। প্রতিটি লেসন পড়ার সময় আপনি তা **"In Progress"** বা **"Completed"** হিসেবে চিহ্নিত করতে পারেন, যা উপরে আপনার ড্যাশবোর্ডের প্রোগ্রেস ও ট্র্যাকার আপডেট করে রাখবে!</p>
                 <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-                    <button class="btn btn-primary" onclick="switchTab('lessons')">লেসন ম্যাপে যান</button>
-                    <button class="btn btn-secondary" onclick="switchTab('glossary')">শব্দকোষ সার্চ করুন</button>
+                    <button class="btn btn-primary" id="quick-start-btn-1" onclick="switchTab('lessons')">লেসন ম্যাপে যান</button>
+                    <button class="btn btn-secondary" id="quick-start-btn-2" onclick="switchTab('glossary')">শব্দকোষ সার্চ করুন</button>
                 </div>
             </div>
         </section>
@@ -1582,7 +1670,7 @@
                     <input type="text" class="search-input" id="glossary-search" placeholder="পদক্ষেপ বা ইংরেজি Term দিয়ে সার্চ করুন (যেমন: Attention)..." oninput="filterGlossary()">
                 </div>
                 <select class="category-filter" id="glossary-cat-filter" onchange="filterGlossary()">
-                    <option value="all">সব ক্যাটাগরি</option>
+                    <option value="all" id="glossary-cat-all-opt">সব ক্যাটাগরি</option>
                     <option value="Input Representation">Input Representation</option>
                     <option value="Attention Mechanism">Attention Mechanism</option>
                     <option value="Model Block & Optimization">Model Block & Optimization</option>
@@ -1598,8 +1686,8 @@
         <!-- REFERENCES/RESOURCES VIEW -->
         <section class="view-section" id="view-resources">
             <div class="card" style="margin-bottom: 2rem;">
-                <h2><span class="card-header-icon">📚</span> সহায়ক রিসোর্স গাইড</h2>
-                <p>ট্রান্সফরমার আর্কিটেকচার নিয়ে ভিজ্যুয়াল অ্যানিমেশন, অরিজিনাল পেপার এবং মডার্ন লার্জ ল্যাঙ্গুয়েজ মডেল শেখার জন্য নিচে চমৎকার কিছু সহায়ক রিসোর্স সাজানো রয়েছে। প্রতিটি রিসোর্সের সংক্ষিপ্ত বিবরণও দেওয়া হলো যাতে আপনি আপনার সুবিধামতো বেছে নিতে পারেন।</p>
+                <h2 id="resources-intro-title"><span class="card-header-icon">📚</span> সহায়ক রিসোর্স গাইড</h2>
+                <p id="resources-intro-desc">ট্রান্সফরমার আর্কিটেকচার নিয়ে ভিজ্যুয়াল অ্যানিমেশন, অরিজিনাল পেপার এবং মডার্ন লার্জ ল্যাঙ্গুয়েজ মডেল শেখার জন্য নিচে চমৎকার কিছু সহায়ক রিসোর্স সাজানো রয়েছে। প্রতিটি রিসোর্সের সংক্ষিপ্ত বিবরণও দেওয়া হলো যাতে আপনি আপনি আপনার সুবিধামতো বেছে নিতে পারেন।</p>
             </div>
             
             <div class="resources-grid" id="resources-container">
@@ -1614,11 +1702,11 @@
                 <!-- Quiz Intro Box -->
                 <div class="card quiz-intro-box" id="quiz-intro">
                     <span class="quiz-intro-icon">🎖️</span>
-                    <h2 style="border:none; padding:0; display:block; text-align:center; font-size:1.75rem; margin-bottom:1rem;">Transformer Architecture Assessment</h2>
-                    <p style="max-width:550px; margin:0 auto 2rem auto; color:var(--text-secondary);">
+                    <h2 id="quiz-intro-title" style="border:none; padding:0; display:block; text-align:center; font-size:1.75rem; margin-bottom:1rem;">Transformer Architecture Assessment</h2>
+                    <p id="quiz-intro-desc" style="max-width:550px; margin:0 auto 2rem auto; color:var(--text-secondary);">
                         ৬টি লেসন শেষ করার পর আপনার অর্জিত জ্ঞান যাচাইয়ের জন্য প্রস্তুত? ৫টি বহুনির্বাচনী প্রশ্নের সঠিক উত্তর দিয়ে সফলতার সাথে উত্তীর্ণ হয়ে অর্জন করুন আপনার **"Transformer Hub Completion Certificate"**!
                     </p>
-                    <button class="btn btn-primary btn-large" style="padding: 0.85rem 2rem; font-size: 1rem;" onclick="startQuiz()">কুইজ শুরু করুন</button>
+                    <button class="btn btn-primary btn-large" id="quiz-start-btn" style="padding: 0.85rem 2rem; font-size: 1rem;" onclick="startQuiz()">কুইজ শুরু করুন</button>
                 </div>
 
                 <!-- Quiz Questions Area -->
@@ -1637,9 +1725,9 @@
                 <div class="quiz-result-area" id="quiz-result" style="display: none;">
                     <div class="certificate-wrapper">
                         <div class="cert-seal">PASS</div>
-                        <div class="cert-title">Certificate of Completion</div>
-                        <div class="cert-subtitle">Bengali Transformer Learning Hub</div>
-                        <div class="cert-statement">
+                        <div class="cert-title" id="cert-title">Certificate of Completion</div>
+                        <div class="cert-subtitle" id="cert-subtitle">Bengali Transformer Learning Hub</div>
+                        <div class="cert-statement" id="cert-statement">
                             গর্বের সাথে প্রত্যয়ন করা যাচ্ছে যে,<br>
                             <strong style="font-size: 1.6rem; color: white;" id="cert-user-name">শিক্ষার্থী</strong><br>
                             সাফল্যের সাথে **Transformer Architecture and LLM Mechanics**-এর কুইজ সম্পন্ন করেছেন।
@@ -1648,8 +1736,8 @@
                         <div class="cert-footer-text" id="cert-date-text">তারিখ: June 9, 2026</div>
                     </div>
                     <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-                        <button class="btn btn-primary" onclick="restartQuiz()">পুনরায় কুইজ দিন</button>
-                        <button class="btn btn-secondary" onclick="switchTab('dashboard')">ড্যাশবোর্ডে ফিরে যান</button>
+                        <button class="btn btn-primary" id="quiz-restart-btn" onclick="restartQuiz()">পুনরায় কুইজ দিন</button>
+                        <button class="btn btn-secondary" id="quiz-back-btn" onclick="switchTab('dashboard')">ড্যাশবোর্ডে ফিরে যান</button>
                     </div>
                 </div>
 
@@ -1666,12 +1754,12 @@
             </div>
             <div class="preview-drawer-controls">
                 <select class="status-dropdown" id="preview-status-dropdown" onchange="onPreviewStatusChange(this.value)">
-                    <option value="not-started">Not Started</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
+                    <option value="not-started" id="preview-opt-not-started">Not Started</option>
+                    <option value="in-progress" id="preview-opt-in-progress">In Progress</option>
+                    <option value="completed" id="preview-opt-completed">Completed</option>
                 </select>
                 <a class="btn btn-secondary" id="preview-open-tab-btn" target="_blank" href="#">
-                    <span>New Tab</span> ↗
+                    <span id="preview-open-tab-text">New Tab</span> ↗
                 </a>
                 <button class="close-btn" onclick="closeLessonPreview()">✕</button>
             </div>
@@ -1680,10 +1768,8 @@
             <iframe class="preview-iframe" id="preview-iframe" src=""></iframe>
         </div>
     </div>
-
-    <!-- Javascript Logical State & Actions -->
-    <script>
-        // --- 1. Static Databases ---
+<script>
+        // --- 1. Static Databases (Bengali) ---
         const lessonsData = [
             {
                 id: "0001-high-level-llm-pipeline",
@@ -1896,7 +1982,7 @@
                 category: "Generation & LLM Architecture",
                 term: "Sequence-to-Sequence (Seq2Seq)",
                 bnTerm: "সিকোয়েন্স-টু-সিকোয়েন্স",
-                def: "এমন এক ধরণের মেশিন লার্নিং সমস্যা বা আর্কিটেকচার যেখানে একটি সিকোয়েন্সকে (যেমন ইংরেজি বাক্য) অন্য একটি সিকোয়েন্সকে (যেমন বাংলা বাক্য) রূপান্তর করা হয়।"
+                def: "নক ডিজাইন করাSeq2Seq আর্কিটেকচার যেখানে একটি সিকোয়েন্সকে (যেমন ইংরেজি বাক্য) অন্য একটি সিকোয়েন্সকে (যেমন বাংলা বাক্য) রূপান্তর করা হয়।"
             },
             {
                 category: "Generation & LLM Architecture",
@@ -1934,7 +2020,7 @@
             {
                 type: "video",
                 title: 'Andrej Karpathy: "Let\'s build GPT: from scratch"',
-                desc: "যদিও এটি PyTorch কোডিং-এর ওপর নির্মিত, এর শুরুর অংশগুলো Transformer-এর components (বিশেষ করে causal mask, attention logits) খুব সুন্দরভাবে visually ও conceptually ব্যাখ্যা করে।",
+                desc: " hisPyTorch কোডিং-এর ওপর নির্মিত হলেও, এর শুরুর অংশগুলো Transformer-এর components (বিশেষ করে causal mask, attention logits) খুব সুন্দরভাবে visually ও conceptually ব্যাখ্যা করে।",
                 url: "https://www.youtube.com/watch?v=kCc8FmEb1nY"
             },
             {
@@ -2009,10 +2095,336 @@
             }
         ];
 
+        // --- 1. Static Databases (English) ---
+        const lessonsDataEn = [
+            {
+                id: "0001-high-level-llm-pipeline",
+                num: "01",
+                title: "High-Level Intuition of LLM Pipeline",
+                desc: "An overview of how a human-written sentence or prompt is tokenized step-by-step, converted to embedding vectors, and processed through a model to predict the next word.",
+                file: "lessons/0001-high-level-llm-pipeline-en.html",
+                duration: "15 min"
+            },
+            {
+                id: "0002-tokens-embeddings-positional-encoding",
+                num: "02",
+                title: "Tokens, Embeddings, and Positional Encoding",
+                desc: "The foundation of computer word recognition. BPE tokenization algorithm, semantic vector spaces representing word meanings, and trigonometric encoding representing word positions for parallel processing.",
+                file: "lessons/0002-tokens-embeddings-positional-encoding-en.html",
+                duration: "20 min"
+            },
+            {
+                id: "0003-self-attention-mechanism",
+                num: "03",
+                title: "Self-Attention Mechanism",
+                desc: "The magic solution to word context ambiguity. Query (Q), Key (K), and Value (V) vector dot product, scaling, and Softmax attention distribution based on search engine analogies.",
+                file: "lessons/0003-self-attention-mechanism-en.html",
+                duration: "25 min"
+            },
+            {
+                id: "0004-multi-head-attention-layer-stacking",
+                num: "04",
+                title: "Multi-Head Attention and Layer Stacking",
+                desc: "Enhancing language understanding. Capturing multi-dimensional relationships using multiple attention heads via Dimension Splitting, and layer stacking to build hierarchal deep features.",
+                file: "lessons/0004-multi-head-attention-layer-stacking-en.html",
+                duration: "20 min"
+            },
+            {
+                id: "0005-ffn-residual-connections-layer-norm",
+                num: "05",
+                title: "FFN, Residual Connections, and Layer Normalization",
+                desc: "Representing factual knowledge through Feed-Forward Networks, preventing signal vanishing using Skip Connections, and stabilizing deep training with Pre-LN layer normalization.",
+                file: "lessons/0005-ffn-residual-connections-layer-norm-en.html",
+                duration: "25 min"
+            },
+            {
+                id: "0006-decoder-only-vs-encoder-decoder",
+                num: "06",
+                title: "Decoder-Only Architecture and Causal Masking",
+                desc: "The engine of modern generative AI. Differences between Seq2Seq architectures and GPT/LLaMA-style autoregressive decoders, and Causal Attention masking to hide future words.",
+                file: "lessons/0006-decoder-only-vs-encoder-decoder-en.html",
+                duration: "20 min"
+            }
+        ];
+
+        const glossaryDataEn = [
+            {
+                category: "Input Representation",
+                term: "Tokenization",
+                bnTerm: "টোকেনাইজেশন",
+                def: "The complete collection of unique tokens or words that a model can recognize, essentially its dictionary."
+            },
+            {
+                category: "Input Representation",
+                term: "BPE (Byte Pair Encoding)",
+                bnTerm: "বাইট পেয়ার এনকোডিং",
+                def: "A sub-word tokenization algorithm that keeps frequent words intact and splits rare words into smaller subwords to prevent Out-Of-Vocabulary (OOV) issues."
+            },
+            {
+                category: "Input Representation",
+                term: "Embedding",
+                bnTerm: "এম্বেডিং",
+                def: "Converting a token ID into a high-dimensional semantic vector that mathematically represents the word's meaning and relationships."
+            },
+            {
+                category: "Input Representation",
+                term: "Positional Encoding",
+                bnTerm: "পজিশনাল এনকোডিং",
+                def: "A specific mathematical vector added to embedding vectors to convey the order or position of tokens processed in parallel."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Self-Attention Mechanism",
+                bnTerm: "সেলফ-অ্যাটেনশন মেকানিজম",
+                def: "A mechanism that measures how related a word is to other words in the same sentence to determine its context-rich meaning."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Query (Q)",
+                bnTerm: "কোয়েরি",
+                def: "A vector representing the current word searching for relationships with other words in the sentence (like a search query typed in a search engine)."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Key (K)",
+                bnTerm: "কী",
+                def: "A label vector for every word in the sentence used to check compatibility with the Query vector (like video titles or tags matching a search)."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Value (V)",
+                bnTerm: "ভ্যালু",
+                def: "A vector containing the actual semantic information of the word, which is weighted by attention scores to construct the output representation."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Attention Weights",
+                bnTerm: "অ্যাটেনশন ওয়েটস",
+                def: "Percentages or probability distributions obtained via Softmax that indicate how much attention a word should pay to other words."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Dot-Product Similarity",
+                bnTerm: "ডট-প্রোডাক্ট সিমিলারিটি",
+                def: "A mathematical method to compute compatibility or similarity between two vectors, used to obtain raw attention logits."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Scaling",
+                bnTerm: "স্কেলিং",
+                def: "Dividing dot-product values by the square root of the query/key dimension (sqrt(d_k)) to prevent large scores from saturating the Softmax function."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Multi-Head Attention",
+                bnTerm: "মাল্টি-হেড অ্যাটেনশন",
+                def: "Using multiple attention mechanisms in parallel to focus on different aspects of relationships and context in a sentence."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Single-Head Attention",
+                bnTerm: "সিঙ্গেল-হেড অ্যাটেনশন",
+                def: "An attention mechanism with only one head, which has limited capacity to capture multiple relationships simultaneously."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Bidirectional Attention",
+                bnTerm: "বাইডাইরেকশনাল অ্যাটেনশন",
+                def: "An attention mechanism where a token can look at words to both its left and right sides (e.g., in BERT)."
+            },
+            {
+                category: "Attention Mechanism",
+                term: "Pronoun Resolution",
+                bnTerm: "প্রোনাউন রেজোলিউশন",
+                def: "The task of determining which noun a pronoun (e.g., 'it') refers to in a sentence."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Layer Stacking",
+                bnTerm: "লেয়ার স্ট্যাকিং",
+                def: "Stacking multiple Transformer blocks sequentially to help the model build hierarchical, high-level logical abstractions."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Dimension Splitting",
+                bnTerm: "ডাইমেনশন স্প্লিটিং",
+                def: "Splitting the main embedding dimension into equal pieces for each head (d_head = d_model / h) to build parallel attention subspaces."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Feed-Forward Network (FFN)",
+                bnTerm: "ফিড-ফরোয়ার্ড নেটওয়ার্ক",
+                def: "A sub-layer in a Transformer block that processes each token representation position-by-position independently to build deep features and add factual knowledge."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Residual Connection",
+                bnTerm: "রেজিসডুয়াল কানেকশন",
+                def: "An architectural shortcut where the sub-layer's input is directly added to its output, preventing vanishing gradients in deep training."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Layer Normalization",
+                bnTerm: "লেয়ার নরমালাইজেশন",
+                def: "A vector feature scaling operation that stabilizes training by maintaining a mean of 0 and a variance of 1 across the features of a single token."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Pre-LN",
+                bnTerm: "প্রি-এলএন",
+                def: "A modern design choice where Layer Normalization is applied to the input before it enters a sub-layer, ensuring early training stability."
+            },
+            {
+                category: "Model Block & Optimization",
+                term: "Post-LN",
+                bnTerm: "পোস্ট-এলএন",
+                def: "The original Transformer design where Layer Normalization is applied after sub-layer processing and residual addition."
+            },
+            {
+                category: "Generation & LLM Architecture",
+                term: "Decoder-Only Architecture",
+                bnTerm: "ডিকোডার-অনলি আর্কিটেকচার",
+                def: "A Transformer architecture composed solely of decoders, primarily used for generating next tokens autoregressively (e.g., GPT, LLaMA)."
+            },
+            {
+                category: "Generation & LLM Architecture",
+                term: "Causal Masking",
+                bnTerm: "কজাল মাস্কিং",
+                def: "A technique using an upper-triangular mask matrix to block attention to future tokens during training, preventing cheating."
+            },
+            {
+                category: "Generation & LLM Architecture",
+                term: "Autoregressive Generation",
+                bnTerm: "অটো-রিগ্রেসিভ জেনারেট",
+                def: "An iterative text generation process where previously generated tokens are appended back to the input to generate the next token, one by one."
+            },
+            {
+                category: "Generation & LLM Architecture",
+                term: "Sequence-to-Sequence (Seq2Seq)",
+                bnTerm: "সিকোয়েন্স-টু-সিকোয়েন্স",
+                def: "A machine learning framework or problem where a model maps an input sequence (e.g., English) to an output sequence (e.g., Bengali)."
+            },
+            {
+                category: "Generation & LLM Architecture",
+                term: "End of Sequence (EOS) Token",
+                bnTerm: "ইওএস টোকেন",
+                def: "A special token that signals the end of text generation, indicating that the model should stop producing new tokens."
+            }
+        ];
+
+        const resourcesDataEn = [
+            {
+                type: "article",
+                title: '"The Illustrated Transformer" — Jay Alammar',
+                desc: "An excellent visual explanation of the Transformer architecture. Highly recommended for understanding the inner workings of Encoder, Decoder, Self-Attention, and FFNs.",
+                url: "https://jalammar.github.io/illustrated-transformer/"
+            },
+            {
+                type: "article",
+                title: '"The Illustrated GPT-2" — Jay Alammar',
+                desc: "Visually explains how decoder-only models (like GPT-2, GPT-3) work under the hood and how the autoregressive generation loop is executed.",
+                url: "https://jalammar.github.io/illustrated-gpt2/"
+            },
+            {
+                type: "video",
+                title: '3Blue1Brown: "Attention and Transformers" Series',
+                desc: "Dazzling visual animations explaining the math and intuition behind Self-Attention and the Transformer block.",
+                url: "https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi"
+            },
+            {
+                type: "paper",
+                title: '"Attention Is All You Need" — Vaswani et al. (Original Paper)',
+                desc: "The seminal research paper that introduced the Transformer. Crucial for understanding the original mathematical formulation and experimental details.",
+                url: "https://arxiv.org/abs/1706.03762"
+            },
+            {
+                type: "video",
+                title: 'Andrej Karpathy: "Let\'s build GPT: from scratch"',
+                desc: "A legendary step-by-step video guide building a GPT model from scratch in PyTorch. Extremely helpful for visual and conceptual learning.",
+                url: "https://www.youtube.com/watch?v=kCc8FmEb1nY"
+            },
+            {
+                type: "wisdom",
+                title: "Reddit Community: r/MachineLearning",
+                desc: "The premier Reddit community for advanced machine learning discussions, research papers, and technical debates.",
+                url: "https://reddit.com/r/MachineLearning"
+            },
+            {
+                type: "wisdom",
+                title: "Reddit Community: r/LocalLLaMA",
+                desc: "An active community focused on running LLMs locally, fine-tuning, hardware setups, and practical engineering insights.",
+                url: "https://reddit.com/r/LocalLLaMA"
+            }
+        ];
+
+        const quizQuestionsEn = [
+            {
+                question: "1. What is the primary role of the Self-Attention Mechanism inside a Transformer block?",
+                options: [
+                    "To split input text into tokens.",
+                    "To calculate semantic and grammatical relations and context between different tokens in the sentence.",
+                    "To compute the probability scores for the next predicted token.",
+                    "To reduce the size or dimension of embedding vectors by half."
+                ],
+                answer: 1,
+                explain: "Self-Attention measures how related a word is to all other words in the same sentence to enrich its context-aware representation."
+            },
+            {
+                question: "2. In a Word Embedding space, what is demonstrated by the relationship 'Vector(King) - Vector(Man) + Vector(Woman) ≈ Vector(Queen)'?",
+                options: [
+                    "It is a complex grammatical rule code used for dictionary searches.",
+                    "Embedding vectors capture grammatical and semantic word relations, allowing mathematical operations (vector math) to hold semantic meaning.",
+                    "It is a flawed equation that does not actually work in practice.",
+                    "It is used to construct positional encodings."
+                ],
+                answer: 1,
+                explain: "Semantically similar words lie close to each other in the embedding space, enabling vector arithmetic to preserve analogy relations like King-Man+Woman = Queen."
+            },
+            {
+                question: "3. Why is Positional Encoding necessary in the Transformer architecture?",
+                options: [
+                    "To make token IDs unique according to a vocabulary dictionary.",
+                    "To alter embedding sizes and speed up processing.",
+                    "Since the Transformer processes all tokens in parallel, it is needed to preserve word order and sequence information.",
+                    "To prevent the model from looking at future tokens."
+                ],
+                answer: 2,
+                explain: "Because Transformers process all tokens simultaneously rather than sequentially, positional encodings must be added to provide token order information."
+            },
+            {
+                question: "4. What is the primary advantage of 'Dimension Splitting' in Multi-Head Attention?",
+                options: [
+                    "It splits the main embedding dimension into equal pieces for each head, creating parallel subspaces to capture multiple relationships without increasing computational cost.",
+                    "It increases the vocabulary size of the tokenizer.",
+                    "It helps backpropagation by routing gradients directly to previous layers.",
+                    "It is used to stack more blocks and make the model deeper."
+                ],
+                answer: 0,
+                explain: "Dimension Splitting allows each attention head to work on a smaller subspace (d_head = d_model / h) in parallel, capturing diverse contexts efficiently."
+            },
+            {
+                question: "5. Which mechanism prevents a Decoder-Only model from looking ahead at future words (cheating) during training?",
+                options: [
+                    "Layer Normalization",
+                    "Causal Masking",
+                    "Residual/Skip Connection",
+                    "Sub-word Tokenization (BPE)"
+                ],
+                answer: 1,
+                explain: "Causal Masking uses an upper-triangular matrix to mask future attention scores, forcing the model to predict the next word using only previous context."
+            }
+        ];
+
         // --- 2. Logical State Management ---
         let currentTab = "dashboard";
         let activeLessonPreviewId = null;
         
+        // Active pointer arrays based on language
+        let activeLessonsData = lessonsData;
+        let activeGlossaryData = glossaryData;
+        let activeResourcesData = resourcesData;
+        let activeQuizQuestions = quizQuestions;
+
         // Progress State
         let lessonProgress = {};
         let missionGoals = [false, false, false, false];
@@ -2022,13 +2434,134 @@
         let quizCurrentStep = 0; 
         let quizUserAnswers = [];
 
+        // Language state
+        let currentLang = localStorage.getItem('lang') || 'bn';
+
+        // Translation Maps
+        const uiTranslations = {
+            bn: {
+                "nav-text-dashboard": "Dashboard (সংক্ষিপ্তসার)",
+                "nav-text-lessons": "Syllabus (লেসন ম্যাপ)",
+                "nav-text-glossary": "Glossary (শব্দকোষ)",
+                "nav-text-resources": "References (সহায়ক লিংক)",
+                "nav-text-quiz": "Assessment (চূড়ান্ত কুইজ)",
+                "syllabus-progress-lbl": "Syllabus Progress",
+                "total-glossary-lbl": "Total Glossary Terms",
+                "total-glossary-desc": "সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ",
+                "final-assessment-lbl": "Final Assessment",
+                "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)",
+                "mission-tracker-badge": "Interactive Tracker",
+                "mission-card-desc": "LLM (Large Language Model) এর \"behind the scene\" বা ভেতরের মেকানিজম স্পষ্টভাবে বোঝা। কোনো জটিল গাণিতিক ফর্মুলা বা কোডিং জটলা ছাড়া **Conceptual Intuition** নিজের আয়ত্তে আনা, যাতে পরবর্তীতে যেকোনো advanced LLM concept সহজে ধরতে পারেন।",
+                "goal-text-0": "<strong>Core Attention Intuition:</strong> Self-Attention, Query (Q), Key (K), Value (V) এবং Softmax-এর ভেতরের মেকানিজম অনুধাবন করা।",
+                "goal-text-1": "<strong>Input Pipeline:</strong> মানুষের বাক্য কীভাবে Tokenization, Sub-words, Vectors (Embedding) ও Positional Encoding অতিক্রম করে গাণিতিক ফিঙ্গারপ্রিন্ট তৈরি করে তা শেখা।",
+                "goal-text-2": "<strong>Multi-Head Stacking:</strong> একাধিক মনোযোগ হেড কেন লাগে, Dimension Splitting কী এবং Residual Skip Connections ও LayerNorm কীভাবে ট্রেনিং স্থিতিশীল করে তা বোঝা।",
+                "goal-text-3": "<strong>LLM Gen Architecture:</strong> Modern Decoder-Only Transformers (যেমন GPT, LLaMA) কেন ব্যবহৃত হয় এবং Causal Masking কী তা জানা।",
+                "quick-start-title": "<span class=\"card-header-icon\">🚀</span> Quick Start Guide",
+                "quick-start-desc": "শেখ শুরু করার জন্য <strong>\"Syllabus (লেসন ম্যাপ)\"</strong> ট্যাবে চলে যান। সেখানে সিরিয়ালি সাজানো লেসনগুলো পড়তে পারবেন। প্রতিটি লেসন পড়ার সময় আপনি তা **\"In Progress\"** বা **\"Completed\"** হিসেবে চিহ্নিত করতে পারেন, যা উপরে আপনার ড্যাশবোর্ডের প্রোগ্রেস ও ট্র্যাকার আপডেট করে রাখবে!",
+                "quick-start-btn-1": "লেসন ম্যাপে যান",
+                "quick-start-btn-2": "শব্দকোষ সার্চ করুন",
+                "glossary-search-placeholder": "পদক্ষেপ বা ইংরেজি Term দিয়ে সার্চ করুন (যেমন: Attention)...",
+                "glossary-cat-all-opt": "সব ক্যাটাগরি",
+                "resources-intro-title": "<span class=\"card-header-icon\">📚</span> সহায়ক রিসোর্স গাইড",
+                "resources-intro-desc": "ট্রান্সফরমার আর্কিটেকচার নিয়ে ভিজ্যুয়াল অ্যানিমেশন, অরিজিনাল পেপার এবং মডার্ন লার্জ ল্যাঙ্গুয়েজ মডেল শেখার জন্য নিচে চমৎকার কিছু সহায়ক রিসোর্স সাজানো রয়েছে। প্রতিটি রিসোর্সের সংক্ষিপ্ত বিবরণও দেওয়া হলো যাতে আপনি আপনি আপনার সুবিধামতো বেছে নিতে পারেন।",
+                "quiz-intro-title": "Transformer Architecture Assessment",
+                "quiz-intro-desc": "৬টি লেসন শেষ করার পর আপনার অর্জিত জ্ঞান যাচাইয়ের জন্য প্রস্তুত? ৫টি বহুনির্বাচনী প্রশ্নের সঠিক উত্তর দিয়ে সফলতার সাথে উত্তীর্ণ হয়ে অর্জন করুন আপনার **\"Transformer Hub Completion Certificate\"**!",
+                "quiz-start-btn": "কুইজ শুরু করুন",
+                "preview-opt-not-started": "Not Started",
+                "preview-opt-in-progress": "In Progress",
+                "preview-opt-completed": "Completed",
+                "preview-open-tab-text": "New Tab",
+                "quiz-restart-btn": "পুনরায় কুইজ দিন",
+                "quiz-back-btn": "ড্যাশবোর্ডে ফিরে যান"
+            },
+            en: {
+                "nav-text-dashboard": "Dashboard Overview",
+                "nav-text-lessons": "Syllabus / Lessons",
+                "nav-text-glossary": "Glossary Terminology",
+                "nav-text-resources": "References & Links",
+                "nav-text-quiz": "Final Assessment",
+                "syllabus-progress-lbl": "Syllabus Progress",
+                "total-glossary-lbl": "Total Glossary Terms",
+                "total-glossary-desc": "Key terms with simple explanations",
+                "final-assessment-lbl": "Final Assessment",
+                "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission",
+                "mission-tracker-badge": "Interactive Tracker",
+                "mission-card-desc": "To clearly understand the \"behind the scenes\" mechanisms of Large Language Models (LLMs). Master the **conceptual intuition** without complex mathematical derivations or coding details, allowing you to easily grasp advanced LLM concepts later.",
+                "goal-text-0": "<strong>Core Attention Intuition:</strong> Understand the internal mechanisms of Self-Attention, Query (Q), Key (K), Value (V), and Softmax.",
+                "goal-text-1": "<strong>Input Pipeline:</strong> Learn how human text is processed through Tokenization, Sub-words, Vectors (Embedding), and Positional Encoding to create mathematical fingerprints.",
+                "goal-text-2": "<strong>Multi-Head Stacking:</strong> Understand why multiple attention heads are needed, what Dimension Splitting is, and how Residual Skip Connections and LayerNorm stabilize training.",
+                "goal-text-3": "<strong>LLM Gen Architecture:</strong> Know why modern Decoder-Only Transformers (like GPT, LLaMA) are used and what Causal Masking does.",
+                "quick-start-title": "<span class=\"card-header-icon\">🚀</span> Quick Start Guide",
+                "quick-start-desc": "Go to the <strong>\"Syllabus (Lessons Map)\"</strong> tab to start learning. You can read the lessons sequentially and mark them as **\"In Progress\"** or **\"Completed\"** to update your progress metrics and mission tracker.",
+                "quick-start-btn-1": "Go to Lessons Map",
+                "quick-start-btn-2": "Search Glossary",
+                "glossary-search-placeholder": "Search by term or definition (e.g. Attention)...",
+                "glossary-cat-all-opt": "All Categories",
+                "resources-intro-title": "<span class=\"card-header-icon\">📚</span> Reference Resources Guide",
+                "resources-intro-desc": "A curated list of reference resources to learn the Transformer architecture, visual animations, original papers, and modern LLMs. Brief descriptions are provided to help you choose.",
+                "quiz-intro-title": "Transformer Architecture Assessment",
+                "quiz-intro-desc": "Ready to test your knowledge after completing the 6 modules? Answer 5 multiple-choice questions correctly to earn your **\"Transformer Hub Completion Certificate\"**!",
+                "quiz-start-btn": "Start Quiz",
+                "preview-opt-not-started": "Not Started",
+                "preview-opt-in-progress": "In Progress",
+                "preview-opt-completed": "Completed",
+                "preview-open-tab-text": "New Tab",
+                "quiz-restart-btn": "Retake Quiz",
+                "quiz-back-btn": "Back to Dashboard"
+            }
+        };
+
+        const tabTranslations = {
+            bn: {
+                dashboard: {
+                    title: "Dashboard Overview",
+                    subtitle: "স্বাগতম! ট্রান্সফরমার আর্কিটেকচার শেখার যাত্রা শুরু হোক।"
+                },
+                lessons: {
+                    title: "Lessons Map",
+                    subtitle: "৬টি মডিউলের মাধ্যমে ট্রান্সফরমারের প্রতিটি ব্লকের খুঁটিনাটি বিস্তারিত বুঝে নিন।"
+                },
+                glossary: {
+                    title: "Interactive Glossary",
+                    subtitle: "শব্দকোষ এবং জটিল টেকনিক্যাল টার্মগুলোর সহজ বাংলা ব্যাখ্যা।"
+                },
+                resources: {
+                    title: "Reference Resources",
+                    subtitle: "শেখার গভীরতা বাড়াতে ও ধারণা পাকা করতে সহায়ক নিবন্ধ, ভিডিও ও পেপারস।"
+                },
+                quiz: {
+                    title: "Final Assessment",
+                    subtitle: "সম্পূর্ণ মডিউলের জ্ঞান যাচাই করুন এবং সার্টিফিকেট অর্জন করুন।"
+                }
+            },
+            en: {
+                dashboard: {
+                    title: "Dashboard Overview",
+                    subtitle: "Welcome! Begin your journey of learning Transformer architecture."
+                },
+                lessons: {
+                    title: "Lessons Map",
+                    subtitle: "Understand the fine details of each Transformer block across 6 modules."
+                },
+                glossary: {
+                    title: "Interactive Glossary",
+                    subtitle: "Simple explanations for terminology and complex technical terms."
+                },
+                resources: {
+                    title: "Reference Resources",
+                    subtitle: "Articles, videos, and papers to deepen your understanding."
+                },
+                quiz: {
+                    title: "Final Assessment",
+                    subtitle: "Test your knowledge of the entire module set and earn a certificate."
+                }
+            }
+        };
+
         // --- 3. Initial Load Hook ---
         window.addEventListener('load', () => {
             loadStateFromLocalStorage();
-            renderRoadmap();
-            renderGlossary();
-            renderResources();
-            updateDashboardAnalytics();
+            syncLanguage();
             
             // Check for hash navigation
             const hash = window.location.hash.substring(1);
@@ -2039,13 +2572,16 @@
 
         // --- 4. LocalStorage Syncing ---
         function loadStateFromLocalStorage() {
+            // Load language
+            currentLang = localStorage.getItem('lang') || 'bn';
+            
             // Load lesson progress
             const storedProgress = localStorage.getItem('transformer_lessons_progress');
             if (storedProgress) {
                 lessonProgress = JSON.parse(storedProgress);
             } else {
                 // Initialize default
-                lessonsData.forEach(l => {
+                activeLessonsData.forEach(l => {
                     lessonProgress[l.id] = 'not-started';
                 });
                 saveStateToLocalStorage();
@@ -2083,29 +2619,36 @@
         // --- 5. UI Renderers ---
         function renderRoadmap() {
             const container = document.getElementById('lessons-roadmap-nodes');
-            container.innerHTML = lessonsData.map((lesson, idx) => {
+            if (!container) return;
+            container.innerHTML = activeLessonsData.map((lesson, idx) => {
                 const status = lessonProgress[lesson.id] || 'not-started';
                 let nodeClass = '';
                 if (status === 'completed') nodeClass = 'completed';
                 else if (status === 'in-progress') nodeClass = 'in-progress';
+
+                const isEn = (currentLang === 'en');
+                const quickReadText = isEn ? "Quick Read 🧠" : "Quick Read 🧠";
+                const optNotStarted = isEn ? "Not Started" : "শুরু করা হয়নি";
+                const optInProgress = isEn ? "In Progress" : "চলমান";
+                const optCompleted = isEn ? "Completed" : "সম্পন্ন";
 
                 return `
                     <div class="roadmap-node ${nodeClass}" id="node-${lesson.id}">
                         <div class="roadmap-marker"></div>
                         <div class="roadmap-card">
                             <div class="roadmap-card-info">
-                                <span class="roadmap-card-badge">Module ${lesson.num} • ${lesson.duration}</span>
+                                <span class="roadmap-card-badge">${isEn ? 'Module' : 'মডিউল'} ${lesson.num} • ${lesson.duration}</span>
                                 <h3 class="roadmap-card-title">${lesson.title}</h3>
                                 <p class="roadmap-card-desc">${lesson.desc}</p>
                             </div>
                             <div class="roadmap-card-actions">
                                 <select class="status-dropdown" onchange="updateLessonStatus('${lesson.id}', this.value)">
-                                    <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                                    <option value="in-progress" ${status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>Completed</option>
+                                    <option value="not-started" ${status === 'not-started' ? 'selected' : ''}>${optNotStarted}</option>
+                                    <option value="in-progress" ${status === 'in-progress' ? 'selected' : ''}>${optInProgress}</option>
+                                    <option value="completed" ${status === 'completed' ? 'selected' : ''}>${optCompleted}</option>
                                 </select>
                                 <button class="btn btn-primary" onclick="openLessonPreview('${lesson.id}')">
-                                    Quick Read 🧠
+                                    ${quickReadText}
                                 </button>
                             </div>
                         </div>
@@ -2116,7 +2659,8 @@
 
         function renderGlossary() {
             const container = document.getElementById('glossary-container');
-            container.innerHTML = glossaryData.map((term, idx) => `
+            if (!container) return;
+            container.innerHTML = activeGlossaryData.map((term, idx) => `
                 <div class="glossary-card" data-category="${term.category}" data-searchable="${term.term.toLowerCase()} ${term.bnTerm} ${term.def.toLowerCase()}">
                     <div class="glossary-card-header">
                         <div class="glossary-card-category">${term.category}</div>
@@ -2129,13 +2673,17 @@
 
         function renderResources() {
             const container = document.getElementById('resources-container');
-            container.innerHTML = resourcesData.map((res, idx) => `
+            if (!container) return;
+            const isEn = (currentLang === 'en');
+            const resourceBtnText = isEn ? "View Resource ↗" : "Resource দেখুন ↗";
+            
+            container.innerHTML = activeResourcesData.map((res, idx) => `
                 <div class="resource-card">
                     <span class="resource-type-badge resource-type-${res.type}">${res.type}</span>
                     <h3 class="resource-title">${res.title}</h3>
                     <p class="resource-desc">${res.desc}</p>
                     <a href="${res.url}" class="resource-link" target="_blank">
-                        Resource দেখুন ↗
+                        ${resourceBtnText}
                     </a>
                 </div>
             `).join('');
@@ -2143,7 +2691,7 @@
 
         function updateDashboardAnalytics() {
             // Calculate progress percentage
-            const total = lessonsData.length;
+            const total = activeLessonsData.length;
             const completed = Object.values(lessonProgress).filter(v => v === 'completed').length;
             const percentage = Math.round((completed / total) * 100);
 
@@ -2157,11 +2705,12 @@
             document.getElementById('dash-progress-ring').style.strokeDashoffset = strokeDashoffset;
 
             // Update remaining label
+            const isEn = (currentLang === 'en');
             let remainingText = '';
             if (completed === total) {
-                remainingText = 'অসাধারণ! সবগুলো লেসন সম্পন্ন হয়েছে! 🎉';
+                remainingText = isEn ? 'Excellent! All lessons completed! 🎉' : 'অসাধারণ! সবগুলো লেসন সম্পন্ন হয়েছে! 🎉';
             } else {
-                remainingText = `${completed} completed, ${total - completed} remaining`;
+                remainingText = isEn ? `${completed} completed, ${total - completed} remaining` : `${completed} সম্পন্ন, ${total - completed}টি বাকি`;
             }
             document.getElementById('dash-remaining-text').innerText = remainingText;
 
@@ -2171,8 +2720,8 @@
             const badgeEl = document.getElementById('dash-quiz-badge');
 
             if (quizScore !== null) {
-                statusEl.innerText = `Certified (${quizScore}/5)`;
-                scoreSubEl.innerText = `সর্বশেষ স্কোর: ${Math.round((quizScore/5)*100)}% • কুইজ সম্পন্ন`;
+                statusEl.innerText = isEn ? `Certified (${quizScore}/5)` : `Certified (${quizScore}/5)`;
+                scoreSubEl.innerText = isEn ? `Latest Score: ${Math.round((quizScore/5)*100)}% • Quiz Completed` : `সর্বশেষ স্কোর: ${Math.round((quizScore/5)*100)}% • কুইজ সম্পন্ন`;
                 badgeEl.innerText = "🏆";
                 badgeEl.style.filter = "drop-shadow(0 0 10px rgba(16, 185, 129, 0.4))";
             } else {
@@ -2271,32 +2820,46 @@
 
         // --- 7. Lesson Preview Drawer System (iframe inline) ---
         function openLessonPreview(lessonId) {
-            const lesson = lessonsData.find(l => l.id === lessonId);
+            const lesson = activeLessonsData.find(l => l.id === lessonId);
             if (!lesson) return;
             
             activeLessonPreviewId = lessonId;
             
             // Set header parameters
-            document.getElementById('preview-lesson-title').innerText = lesson.title;
-            document.getElementById('preview-open-tab-btn').href = lesson.file;
+            const titleEl = document.getElementById('preview-lesson-title');
+            const openTabBtn = document.getElementById('preview-open-tab-btn');
+            if (titleEl) titleEl.innerText = lesson.title;
+            if (openTabBtn) openTabBtn.href = lesson.file;
             
             // Sync status select
             const status = lessonProgress[lessonId] || 'not-started';
-            document.getElementById('preview-status-dropdown').value = status;
+            const statusDropdown = document.getElementById('preview-status-dropdown');
+            if (statusDropdown) statusDropdown.value = status;
             
-            // Load iframe src
-            document.getElementById('preview-iframe').src = lesson.file;
+            // Load iframe src — force reload by clearing src first (fixes lesson-switching bug)
+            const iframe = document.getElementById('preview-iframe');
+            if (iframe) {
+                iframe.src = "";
+                // Use setTimeout to ensure the src reset is processed before setting the new URL
+                setTimeout(() => { iframe.src = lesson.file; }, 50);
+            }
             
             // Open drawer
-            document.getElementById('preview-drawer').classList.add('open');
-            document.getElementById('preview-backdrop').classList.add('active');
+            const drawer = document.getElementById('preview-drawer');
+            const backdrop = document.getElementById('preview-backdrop');
+            if (drawer) drawer.classList.add('open');
+            if (backdrop) backdrop.classList.add('active');
         }
 
         function closeLessonPreview() {
-            document.getElementById('preview-drawer').classList.remove('open');
-            document.getElementById('preview-backdrop').classList.remove('active');
+            const drawer = document.getElementById('preview-drawer');
+            const backdrop = document.getElementById('preview-backdrop');
+            if (drawer) drawer.classList.remove('open');
+            if (backdrop) backdrop.classList.remove('active');
+            
             // Unload iframe source to stop video/animations in background
-            document.getElementById('preview-iframe').src = "";
+            const iframe = document.getElementById('preview-iframe');
+            if (iframe) iframe.src = "";
             activeLessonPreviewId = null;
         }
 
@@ -2308,8 +2871,12 @@
 
         // --- 8. Glossary Filter Engine ---
         function filterGlossary() {
-            const query = document.getElementById('glossary-search').value.toLowerCase().trim();
-            const cat = document.getElementById('glossary-cat-filter').value;
+            const searchInput = document.getElementById('glossary-search');
+            const catFilter = document.getElementById('glossary-cat-filter');
+            if (!searchInput || !catFilter) return;
+
+            const query = searchInput.value.toLowerCase().trim();
+            const cat = catFilter.value;
             
             const cards = document.querySelectorAll('.glossary-card');
             
@@ -2330,12 +2897,15 @@
 
         // --- 9. Final Quiz Engine ---
         function startQuiz() {
-            document.getElementById('quiz-intro').style.display = 'none';
-            document.getElementById('quiz-questions-area').style.display = 'block';
-            document.getElementById('quiz-result').style.display = 'none';
+            const intro = document.getElementById('quiz-intro');
+            const area = document.getElementById('quiz-questions-area');
+            const result = document.getElementById('quiz-result');
+            if (intro) intro.style.display = 'none';
+            if (area) area.style.display = 'block';
+            if (result) result.style.display = 'none';
             
             quizCurrentStep = 0;
-            quizUserAnswers = new Array(quizQuestions.length).fill(null);
+            quizUserAnswers = new Array(activeQuizQuestions.length).fill(null);
             
             renderQuizQuestions();
             showQuizQuestion(0);
@@ -2343,9 +2913,10 @@
 
         function renderQuizQuestions() {
             const container = document.getElementById('quiz-cards-container');
-            container.innerHTML = quizQuestions.map((q, qIdx) => `
+            if (!container) return;
+            container.innerHTML = activeQuizQuestions.map((q, qIdx) => `
                 <div class="quiz-card" id="quiz-card-${qIdx}">
-                    <div class="quiz-question-number">Question ${qIdx + 1} of ${quizQuestions.length}</div>
+                    <div class="quiz-question-number">${currentLang === 'en' ? `Question ${qIdx + 1} of ${activeQuizQuestions.length}` : `প্রশ্ন ${qIdx + 1}/${activeQuizQuestions.length}`}</div>
                     <div class="quiz-question-text">${q.question}</div>
                     <div class="quiz-options-list">
                         ${q.options.map((opt, oIdx) => `
@@ -2362,18 +2933,31 @@
 
         function showQuizQuestion(idx) {
             document.querySelectorAll('.quiz-card').forEach(c => c.classList.remove('active'));
-            document.getElementById(`quiz-card-${idx}`).classList.add('active');
+            const card = document.getElementById(`quiz-card-${idx}`);
+            if (card) card.classList.add('active');
             
-            document.getElementById('quiz-counter').innerText = `প্রশ্ন ${idx + 1}/${quizQuestions.length}`;
+            const isEn = (currentLang === 'en');
+            const counterEl = document.getElementById('quiz-counter');
+            if (counterEl) {
+                counterEl.innerText = isEn 
+                    ? `Question ${idx + 1} of ${activeQuizQuestions.length}`
+                    : `প্রশ্ন ${idx + 1}/${activeQuizQuestions.length}`;
+            }
             
             const nextBtn = document.getElementById('quiz-next-btn');
-            nextBtn.innerText = idx === quizQuestions.length - 1 ? "ফলাফল দেখুন 🎖️" : "পরবর্তী প্রশ্ন";
-            
-            // Enable next button only if already answered
-            if (quizUserAnswers[idx] !== null) {
-                nextBtn.removeAttribute('disabled');
-            } else {
-                nextBtn.setAttribute('disabled', 'true');
+            if (nextBtn) {
+                if (idx === activeQuizQuestions.length - 1) {
+                    nextBtn.innerText = isEn ? "View Results 🎖️" : "ফলাফল দেখুন 🎖️";
+                } else {
+                    nextBtn.innerText = isEn ? "Next Question" : "পরবর্তী প্রশ্ন";
+                }
+                
+                // Enable next button only if already answered
+                if (quizUserAnswers[idx] !== null) {
+                    nextBtn.removeAttribute('disabled');
+                } else {
+                    nextBtn.setAttribute('disabled', 'true');
+                }
             }
         }
 
@@ -2383,34 +2967,42 @@
             
             quizUserAnswers[qIdx] = oIdx;
             
-            const q = quizQuestions[qIdx];
+            const q = activeQuizQuestions[qIdx];
             const isCorrect = (oIdx === q.answer);
             
             // Color selection UI
             const selectedEl = document.getElementById(`q-${qIdx}-opt-${oIdx}`);
             const feedbackEl = document.getElementById(`quiz-feedback-box-${qIdx}`);
             
-            if (isCorrect) {
-                selectedEl.classList.add('correct');
-                feedbackEl.className = 'quiz-feedback success';
-                feedbackEl.innerHTML = `✓ সঠিক উত্তর! ${q.explain}`;
-            } else {
-                selectedEl.classList.add('incorrect');
-                
-                // Highlight correct option too
-                const correctEl = document.getElementById(`q-${qIdx}-opt-${q.answer}`);
-                correctEl.classList.add('correct');
-                
-                feedbackEl.className = 'quiz-feedback error';
-                feedbackEl.innerHTML = `✕ ভুল উত্তর। সঠিক উত্তর: ${String.fromCharCode(65 + q.answer)}। ${q.explain}`;
+            const isEn = (currentLang === 'en');
+            if (selectedEl && feedbackEl) {
+                if (isCorrect) {
+                    selectedEl.classList.add('correct');
+                    feedbackEl.className = 'quiz-feedback success';
+                    feedbackEl.innerHTML = isEn 
+                        ? `✓ Correct Answer! ${q.explain}`
+                        : `✓ সঠিক উত্তর! ${q.explain}`;
+                } else {
+                    selectedEl.classList.add('incorrect');
+                    
+                    // Highlight correct option too
+                    const correctEl = document.getElementById(`q-${qIdx}-opt-${q.answer}`);
+                    if (correctEl) correctEl.classList.add('correct');
+                    
+                    feedbackEl.className = 'quiz-feedback error';
+                    feedbackEl.innerHTML = isEn 
+                        ? `✕ Incorrect Answer. Correct option: ${String.fromCharCode(65 + q.answer)}. ${q.explain}`
+                        : `✕ ভুল উত্তর। সঠিক উত্তর: ${String.fromCharCode(65 + q.answer)}। ${q.explain}`;
+                }
             }
             
             // Enable navigation button
-            document.getElementById('quiz-next-btn').removeAttribute('disabled');
+            const nextBtn = document.getElementById('quiz-next-btn');
+            if (nextBtn) nextBtn.removeAttribute('disabled');
         }
 
         function nextQuizStep() {
-            if (quizCurrentStep < quizQuestions.length - 1) {
+            if (quizCurrentStep < activeQuizQuestions.length - 1) {
                 quizCurrentStep++;
                 showQuizQuestion(quizCurrentStep);
             } else {
@@ -2421,7 +3013,7 @@
         function finishQuiz() {
             // Calculate final score
             let correctCount = 0;
-            quizQuestions.forEach((q, idx) => {
+            activeQuizQuestions.forEach((q, idx) => {
                 if (quizUserAnswers[idx] === q.answer) {
                     correctCount++;
                 }
@@ -2430,17 +3022,14 @@
             quizScore = correctCount;
             saveStateToLocalStorage();
             
-            // Render certificate parameters
-            document.getElementById('cert-final-score').innerText = `Score: ${correctCount} / ${quizQuestions.length} (${Math.round((correctCount/quizQuestions.length)*100)}%)`;
-            
-            // Show certificate date
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('cert-date-text').innerText = `তারিখ: ${dateStr}`;
+            // Render certificate in correct language
+            renderCertificateLang();
             
             // Hide questions, show results
-            document.getElementById('quiz-questions-area').style.display = 'none';
-            document.getElementById('quiz-result').style.display = 'block';
+            const qaArea = document.getElementById('quiz-questions-area');
+            const resultArea = document.getElementById('quiz-result');
+            if (qaArea) qaArea.style.display = 'none';
+            if (resultArea) resultArea.style.display = 'block';
             
             updateDashboardAnalytics();
         }
@@ -2502,6 +3091,140 @@
             }
         }
 
+        // --- Bilingual Language System ---
+        function toggleLanguage() {
+            currentLang = currentLang === 'bn' ? 'en' : 'bn';
+            localStorage.setItem('lang', currentLang);
+            syncLanguage();
+        }
+
+        function syncLanguage() {
+            // 1. Update language button text
+            const langBtn = document.getElementById('lang-toggle-btn');
+            if (langBtn) {
+                langBtn.innerText = currentLang === 'bn' ? '🌐 English' : '🌐 বাংলা';
+            }
+
+            // 2. Set active data arrays
+            if (currentLang === 'en') {
+                activeLessonsData = lessonsDataEn;
+                activeGlossaryData = glossaryDataEn;
+                activeResourcesData = resourcesDataEn;
+                activeQuizQuestions = quizQuestionsEn;
+            } else {
+                activeLessonsData = lessonsData;
+                activeGlossaryData = glossaryData;
+                activeResourcesData = resourcesData;
+                activeQuizQuestions = quizQuestions;
+            }
+
+            // 3. Dynamically translate static UI elements in DOM
+            translateDOM();
+
+            // 4. Re-render dynamic list containers
+            renderRoadmap();
+            renderGlossary();
+            renderResources();
+            updateDashboardAnalytics();
+
+            // 5. Update certificate if completed
+            if (quizScore !== null) {
+                renderCertificateLang();
+            }
+
+            // 6. Reload active preview lesson with the correct language version if drawer open
+            if (activeLessonPreviewId) {
+                const lesson = activeLessonsData.find(l => l.id === activeLessonPreviewId);
+                if (lesson) {
+                    const titleEl = document.getElementById('preview-lesson-title');
+                    const openTabBtn = document.getElementById('preview-open-tab-btn');
+                    const iframe = document.getElementById('preview-iframe');
+                    
+                    if (titleEl) titleEl.innerText = lesson.title;
+                    if (openTabBtn) openTabBtn.href = lesson.file;
+                    if (iframe) iframe.src = lesson.file;
+                }
+            }
+        }
+
+        function translateDOM() {
+            const dict = uiTranslations[currentLang];
+            
+            // Update text content or innerHTML of elements by ID
+            for (const [id, text] of Object.entries(dict)) {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (text.includes('<') || text.includes('&') || text.includes('strong>')) {
+                        el.innerHTML = text;
+                    } else {
+                        el.innerText = text;
+                    }
+                }
+            }
+            
+            // Specially translate placeholder for search input
+            const searchInput = document.getElementById('glossary-search');
+            if (searchInput) {
+                searchInput.placeholder = dict["glossary-search-placeholder"];
+            }
+
+            // Specially update headings and subheadings for active tab
+            const heading = document.getElementById('page-heading');
+            const subheading = document.getElementById('page-subheading');
+            const trans = tabTranslations[currentLang][currentTab];
+            if (trans && heading && subheading) {
+                heading.innerText = trans.title;
+                subheading.innerText = trans.subtitle;
+            }
+        }
+
+        function renderCertificateLang() {
+            if (quizScore === null) return;
+            
+            const isEn = (currentLang === 'en');
+            
+            // Title & Subtitle
+            const titleEl = document.getElementById('cert-title');
+            const subtitleEl = document.getElementById('cert-subtitle');
+            if (titleEl) titleEl.innerText = isEn ? "Certificate of Completion" : "Certificate of Completion";
+            if (subtitleEl) subtitleEl.innerText = isEn ? "Transformer Learning Hub" : "Bengali Transformer Learning Hub";
+            
+            // Statement
+            const statementEl = document.getElementById('cert-statement');
+            if (statementEl) {
+                if (isEn) {
+                    statementEl.innerHTML = `This is to certify that<br>
+                        <strong style="font-size: 1.6rem; color: var(--text-primary); display: inline-block; margin: 0.5rem 0;" id="cert-user-name">Student</strong><br>
+                        has successfully completed the assessment for **Transformer Architecture and LLM Mechanics**.`;
+                } else {
+                    statementEl.innerHTML = `গর্বের সাথে প্রত্যয়ন করা যাচ্ছে যে,<br>
+                        <strong style="font-size: 1.6rem; color: var(--text-primary); display: inline-block; margin: 0.5rem 0;" id="cert-user-name">শিক্ষার্থী</strong><br>
+                        সাফল্যের সাথে **Transformer Architecture and LLM Mechanics**-এর কুইজ সম্পন্ন করেছেন।`;
+                }
+            }
+            
+            // Score
+            const scoreEl = document.getElementById('cert-final-score');
+            if (scoreEl) {
+                scoreEl.innerText = isEn 
+                    ? `Score: ${quizScore} / ${activeQuizQuestions.length} (${Math.round((quizScore/activeQuizQuestions.length)*100)}%)`
+                    : `স্কোর: ${quizScore} / ${activeQuizQuestions.length} (${Math.round((quizScore/activeQuizQuestions.length)*100)}%)`;
+            }
+            
+            // Date
+            const dateEl = document.getElementById('cert-date-text');
+            if (dateEl) {
+                const today = new Date();
+                if (isEn) {
+                    const dateStr = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    dateEl.innerText = `Date: ${dateStr}`;
+                } else {
+                    const dateStr = today.toLocaleDateString('bn-BD', { year: 'numeric', month: 'long', day: 'numeric' });
+                    dateEl.innerText = `তারিখ: ${dateStr}`;
+                }
+            }
+        }
+
         // Initialize theme immediately
         initTheme();
 
@@ -2513,7 +3236,10 @@
         });
 
         // Listen for iframe load events to apply theme dynamically
-        document.getElementById('preview-iframe').addEventListener('load', syncIFrameTheme);
+        const previewIframe = document.getElementById('preview-iframe');
+        if (previewIframe) {
+            previewIframe.addEventListener('load', syncIFrameTheme);
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 4: Multi-Head Attention and Layer Stacking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Multi-Head Simulator Widgets */
+        .head-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .head-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .head-btn.active {
+            color: white !important;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.2);
+        }
+
+        .head1-active.active { background: var(--accent-cyan); }
+        .head2-active.active { background: var(--accent-purple); }
+        .head3-active.active { background: var(--accent-green); }
+        .head4-active.active { background: var(--accent-orange); }
+
+        .visualizer-tokens {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .viz-token {
+            background: #1e293b;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.05rem;
+        }
+
+        .viz-token:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .viz-token.query-token {
+            background: var(--text-primary) !important;
+            color: #0f172a !important;
+            border-color: var(--text-primary) !important;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .viz-details-panel {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .layer-detail-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .viz-explanation {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            padding: 0.75rem;
+            border-left: 3.5px solid;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 0 6px 6px 0;
+            margin-bottom: 1.5rem;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .border-head1 { border-color: var(--accent-cyan); }
+        .border-head2 { border-color: var(--accent-purple); }
+        .border-head3 { border-color: var(--accent-green); }
+        .border-head4 { border-color: var(--accent-orange); }
+
+        .color-head1 { background: var(--accent-cyan); }
+        .color-head2 { background: var(--accent-purple); }
+        .color-head3 { background: var(--accent-green); }
+        .color-head4 { background: var(--accent-orange); }
+
+        .attention-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .chart-label {
+            width: 80px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .chart-bar-container {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 5px;
+        }
+
+        .chart-value {
+            width: 40px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: bold;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Layer Stacking visual block */
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+            margin: 1.5rem 0;
+        }
+
+        .layer-group {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .layer-group:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        .layer-group.active {
+            border-color: var(--accent-cyan);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+        }
+
+        .layer-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .layer-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+        }
+
+        .layer-arrow {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: bold;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(3px); }
+        }
+
+        .layer-detail-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Quiz Styles */
+        .quiz-question-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Head buttons and visualizer custom overrides (Lesson 4) */
+        :root.light .head-btn {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #475569;
+        }
+
+        :root.light .head-btn:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            color: #0f172a;
+        }
+
+        :root.light .head-btn.active {
+            color: #ffffff !important;
+        }
+
+        :root.light .visualizer-tokens {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .viz-token {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+            color: #334155;
+        }
+
+        :root.light .viz-token:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        :root.light .viz-token.query-token {
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            background: #0f172a !important;
+            color: #ffffff !important;
+            border-color: #0f172a !important;
+        }
+
+        :root.light .viz-details-panel,
+        :root.light .layer-detail-box {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .viz-explanation {
+            color: #334155;
+        }
+
+        :root.light .layer-group {
+            background: rgba(255, 255, 255, 0.55);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .layer-group:hover {
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .layer-group.active {
+            background: #ffffff;
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 4</span>
+            <h1>Multi-Head Attention and Layer Stacking</h1>
+            <p class="subtitle">How do multiple Attention Heads and stacked layers construct deep semantic reasoning?</p>
+        </header>
+
+        <!-- Intro Card -->
+        <div class="card">
+            <h2>Why Do We Need Multiple Attention Heads?</h2>
+            <p>In the previous lesson, we saw how the <span class="tech-term">Self-Attention Mechanism</span> identifies relationships between words in a sentence. However, human language is highly complex. A single word in a sentence can simultaneously be involved in multiple grammatical and semantic relationships.</p>
+            
+            <p>Consider the sentence: <span class="highlight">"The cute dog chased the cat because it was running fast."</span></p>
+            <p>Focus on the word <span class="tech-term">dog</span>:</p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; list-style-type: square;">
+                <li>What kind of dog? - A <span class="highlight">"cute"</span> dog (Adjective-Noun relationship).</li>
+                <li>What did the dog do? - It <span class="highlight">"chased"</span> (Subject-Verb relationship).</li>
+                <li>Why did it chase? - Because the cat was running away (Causal relationship).</li>
+            </ul>
+
+            <p>If we had only a single attention mechanism (called <span class="tech-term">Single-Head Attention</span>), the model would have to average all these diverse relationships into a single attention representation. This averaging would wash away the subtle nuances, causing the model to miss key connections.</p>
+            
+            <p>To solve this, <span class="tech-term">Multi-Head Attention</span> was introduced. Multiple "Attention Heads" are executed in parallel. Each Head independently learns to focus on different aspects of the relationships:</p>
+            
+            <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: #cbd5e1; list-style-type: decimal;">
+                <li><span class="highlight">Head 1 (Subject-Verb):</span> Focuses on subject-verb relationships (e.g., dog & chased).</li>
+                <li><span class="highlight">Head 2 (Pronoun Resolution):</span> Resolves pronoun references (e.g., identifying whether "it" refers to the dog or the cat).</li>
+                <li><span class="highlight">Head 3 (Modifier/Adjective):</span> Identifies adjectives and the nouns they modify (e.g., cute & dog).</li>
+                <li><span class="highlight">Head 4 (Positional Context):</span> Tracks word sequence and local syntax patterns.</li>
+            </ul>
+        </div>
+
+        <!-- Dimension Splitting Card -->
+        <div class="card">
+            <h2>Dimension Splitting: The Mathematical Configuration of Heads</h2>
+            <p>At first glance, running multiple heads in parallel might seem computationally expensive. However, the Transformer manages this process incredibly efficiently.</p>
+            
+            <p>Suppose our model's embedding dimension (<span class="tech-term">d_model</span>) is <span class="highlight">512</span>, and we have <span class="highlight">8</span> attention heads (<span class="tech-term">h</span>).</p>
+            
+            <p>Instead of letting each head process the full 512 dimensions, the model splits the dimension into 8 parts:</p>
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">
+                d_head = d_model / h = 512 / 8 = 64
+            </div>
+            
+            <p>Each head computes attention in a smaller subspace of only <span class="highlight">64 dimensions</span> (<span class="tech-term">d_head</span>). Finally, the 64-dimensional outputs from all 8 heads are concatenated back into the original 512 dimensions.</p>
+            <p>This allows us to analyze the text from 8 different semantic perspectives simultaneously, without increasing computational cost!</p>
+        </div>
+
+        <!-- Interactive Visualizer Card -->
+        <div class="card">
+            <h2>Interactive Multi-Head Attention Visualizer</h2>
+            <p>Select different Attention Heads below and click on any word in the sentence (which acts as the **Query Word**). Observe how different heads shift their attention distribution across the sentence.</p>
+            
+            <!-- Head Selector Tabs -->
+            <div class="head-selector">
+                <button class="head-btn head1-active active" id="btn-head1" onclick="selectHead('head1')">Head 1: Subject-Verb</button>
+                <button class="head-btn" id="btn-head2" onclick="selectHead('head2')">Head 2: Pronoun Resolution</button>
+                <button class="head-btn" id="btn-head3" onclick="selectHead('head3')">Head 3: Modifier/Adjective</button>
+                <button class="head-btn" id="btn-head4" onclick="selectHead('head4')">Head 4: Local Context</button>
+            </div>
+
+            <!-- Tokens Workspace -->
+            <div class="visualizer-tokens" id="tokens-container">
+                <!-- Javascript will inject tokens here -->
+            </div>
+
+            <!-- Visualizer Feedback & Bars -->
+            <div class="viz-details-panel">
+                <div class="layer-detail-title" style="color: var(--accent-cyan);">
+                    <span>Selected Query:</span> <strong id="query-word-display" style="font-family: 'Outfit', sans-serif; background: rgba(255,255,255,0.1); padding: 0.1rem 0.6rem; border-radius:4px;">cute</strong>
+                </div>
+                <div class="viz-explanation border-head1" id="explanation-box">
+                    "cute" (adjective) directly points to the noun it modifies - which is "dog".
+                </div>
+                
+                <h3 style="font-size:1rem; margin-bottom:0.75rem; color:var(--text-secondary);">Attention Weights:</h3>
+                <div class="attention-chart" id="chart-container">
+                    <!-- Javascript will inject chart rows here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Layer Stacking Card -->
+        <div class="card">
+            <h2>Layer Stacking: Unlocking Depth Layer by Layer</h2>
+            <p>A Transformer does not contain just a single block of Self-Attention and Feed-Forward Networks. These blocks are stacked on top of each other in a process called <span class="tech-term">Layer Stacking</span>.</p>
+            <p>For example, LLaMA-3-8B has 32 layers, and GPT-4 has well over 100 layers. Stacking allows the model to build hierarchical representations from raw text to deep conceptual understanding:</p>
+            
+            <div class="layer-stack">
+                <!-- Top Layers -->
+                <div class="layer-group top-group" id="layer-top" onclick="selectLayer('top')">
+                    <div class="layer-title">Top Layers (Layers 9-12): Global Reasoning & Completion</div>
+                    <div class="layer-desc">Deals with abstract concepts, reasoning, sentiment, and final next-token predictions.</div>
+                </div>
+                <div class="layer-arrow">↓</div>
+                <!-- Middle Layers -->
+                <div class="layer-group mid-group active" id="layer-mid" onclick="selectLayer('mid')">
+                    <div class="layer-title">Middle Layers (Layers 5-8): Syntax & Relations</div>
+                    <div class="layer-desc">Processes grammatical structures, clause connections, and pronoun resolution.</div>
+                </div>
+                <div class="layer-arrow">↓</div>
+                <!-- Bottom Layers -->
+                <div class="layer-group bottom-group" id="layer-bottom" onclick="selectLayer('bottom')">
+                    <div class="layer-title">Bottom Layers (Layers 1-4): Surface Lexical Features</div>
+                    <div class="layer-desc">Focuses on basic parts of speech, spelling, and local word sequences.</div>
+                </div>
+            </div>
+
+            <!-- Layer Details Explorer Panel -->
+            <div class="layer-detail-box" id="layer-detail-panel">
+                <div class="layer-detail-title" id="layer-panel-title" style="color:var(--accent-purple);">
+                    Middle Layers (Layers 5-8): Syntax & Relations
+                </div>
+                <div id="layer-panel-content">
+                    <p><strong>Primary Responsibility:</strong> Analyzing grammatical syntax and connections between different clauses.</p>
+                    <p><strong>Example:</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-purple); font-size:0.9rem; font-style:italic;">
+                        At this stage, the model understands that the action 'chased' occurs between 'dog' and 'cat'. It resolves 'it' to refer to 'cat' (Pronoun Resolution).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (Quiz)</h2>
+            <p>Test your understanding with the following 3 questions:</p>
+            
+            <div class="quiz-container">
+                <!-- Question 1 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">Question 1: What is the primary reason for using Multi-Head Attention?</div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'Incorrect! Increasing computational speed is not the reason for multiple heads.')">
+                        A) To double the model's training speed.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, true, 'Excellent! Multiple heads allow the model to simultaneously pay attention to different semantic and syntactic aspects of the text.')">
+                        B) To capture different types of relationships (e.g., subject-verb and modifier) for the same word in parallel.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'Incorrect! This is the job of the embedding layer, not attention heads.')">
+                        C) To increase the vocabulary size of the dictionary.
+                    </div>
+                    <div id="quiz-feedback-1" class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">Question 2: Which layer group in Layer Stacking is responsible for abstract reasoning and semantic comprehension?</div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'Incorrect! Bottom layers work on basic grammar and superficial patterns.')">
+                        A) Bottom Layers
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'Incorrect! Middle layers resolve syntax and clause connections.')">
+                        B) Middle Layers
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, true, 'Correct! Top layers are closest to the output and synthesize global meaning, causal reasoning, and next-token probability distributions.')">
+                        C) Top Layers
+                    </div>
+                    <div id="quiz-feedback-2" class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-question-card">
+                    <div class="quiz-question">Question 3: If a Transformer's Embedding Dimension (d_model) is 768 and it has 12 Attention Heads, what is the dimension of each head (d_head)?</div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'Incorrect! 12 is the number of heads, not the dimension.')">
+                        A) 12
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, true, 'Excellent! The 768 dimensions are split equally among 12 heads, meaning d_head = 768 / 12 = 64.')">
+                        B) 64 (since 768 / 12 = 64)
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'Incorrect! The entire dimension is not processed by a single head; it is split.')">
+                        C) 768
+                    </div>
+                    <div id="quiz-feedback-3" class="quiz-feedback"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>Helpful and Authoritative References (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Original Transformer Paper: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
+                <li>Visual Guide: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>Layer Stacking Explanation: <a href="https://transformer-circuits.pub/2021/framework/index.html" target="_blank">A Mathematical Framework for Transformer Circuits (Anthropic Research)</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn how Transformers stack hundreds of layers using <strong>Residual Connections and Layer Normalization</strong>.</p>
+        </div>
+
+        <footer>
+            <p>After reading this lesson, return to the chat and discuss any questions you have with the agent.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Tokens for the visualizer
+        const tokens = ["The", "cute", "dog", "chased", "the", "cat", "because", "it", "was", "running", "fast."];
+
+        const attnData = {
+            head1: { // Subject-Verb
+                name: "Head 1: Subject-Verb",
+                accentColor: "var(--accent-cyan)",
+                className: "head1-active",
+                colorClass: "color-head1",
+                borderClass: "border-head1",
+                weights: [
+                    [0.60, 0.05, 0.15, 0.05, 0.05, 0.05, 0.01, 0.01, 0.01, 0.01, 0.01], // The
+                    [0.05, 0.70, 0.15, 0.03, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.00], // cute
+                    [0.05, 0.15, 0.20, 0.45, 0.02, 0.05, 0.02, 0.02, 0.02, 0.01, 0.01], // dog
+                    [0.02, 0.03, 0.65, 0.15, 0.02, 0.10, 0.01, 0.01, 0.01, 0.00, 0.00], // chased
+                    [0.01, 0.01, 0.03, 0.05, 0.60, 0.20, 0.05, 0.02, 0.01, 0.01, 0.01], // the
+                    [0.01, 0.01, 0.05, 0.55, 0.03, 0.25, 0.02, 0.04, 0.02, 0.01, 0.01], // cat
+                    [0.01, 0.01, 0.02, 0.05, 0.01, 0.05, 0.70, 0.05, 0.05, 0.03, 0.02], // because
+                    [0.01, 0.01, 0.05, 0.05, 0.01, 0.15, 0.05, 0.20, 0.10, 0.35, 0.02], // it
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.05, 0.05, 0.50, 0.20, 0.10, 0.03], // was
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.03, 0.02, 0.60, 0.10, 0.15, 0.03], // running
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.02, 0.70, 0.16]  // fast
+                ],
+                explanations: {
+                    "chased": "'chased' identifies who performs the action ('dog') and who it is performed on ('cat').",
+                    "dog": "'dog' (subject) relates to its main action ('chased').",
+                    "cat": "'cat' (object) is linked to the verb 'chased' acting upon it.",
+                    "running": "'running' focuses on its subject 'it' (which refers to the cat).",
+                    "was": "'was' focuses on its subject 'it'."
+                },
+                defaultExplanation: "This head looks for syntactic connections between subjects and verbs in the sentence."
+            },
+            head2: { // Pronoun Resolution
+                name: "Head 2: Pronoun Resolution",
+                accentColor: "var(--accent-purple)",
+                className: "head2-active",
+                colorClass: "color-head2",
+                borderClass: "border-head2",
+                weights: [
+                    [0.80, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02],
+                    [0.02, 0.85, 0.03, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.02, 0.08, 0.80, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.01, 0.01, 0.05, 0.85, 0.01, 0.04, 0.01, 0.01, 0.01, 0.00, 0.00],
+                    [0.01, 0.01, 0.02, 0.02, 0.80, 0.10, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.01, 0.01, 0.05, 0.05, 0.02, 0.70, 0.01, 0.12, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.02, 0.85, 0.02, 0.02, 0.01, 0.01],
+                    [0.01, 0.01, 0.15, 0.02, 0.01, 0.70, 0.02, 0.05, 0.01, 0.01, 0.01], // "it" focus 70% on "cat" and 15% on "dog"
+                    [0.01, 0.01, 0.05, 0.02, 0.01, 0.35, 0.02, 0.50, 0.02, 0.01, 0.01],
+                    [0.01, 0.01, 0.05, 0.02, 0.01, 0.25, 0.02, 0.40, 0.05, 0.15, 0.03],
+                    [0.01, 0.01, 0.02, 0.02, 0.01, 0.10, 0.02, 0.15, 0.02, 0.05, 0.60]
+                ],
+                explanations: {
+                    "it": "'it' (pronoun) establishes a 70% connection with the noun 'cat' (and 15% with 'dog'), resolving its reference. It focuses more on the cat because the cat was running.",
+                    "cat": "Shows the connection between the cat and the pronoun 'it' referring to it.",
+                    "was": "Attends back towards 'it' and 'cat' to maintain subject-verb-complement agreement."
+                },
+                defaultExplanation: "This head resolves pronoun references by linking pronouns to their antecedent nouns."
+            },
+            head3: { // Modifier & Adjective
+                name: "Head 3: Modifier & Adjective",
+                accentColor: "var(--accent-green)",
+                className: "head3-active",
+                colorClass: "color-head3",
+                borderClass: "border-head3",
+                weights: [
+                    [0.70, 0.10, 0.10, 0.02, 0.02, 0.02, 0.01, 0.01, 0.01, 0.00, 0.01],
+                    [0.02, 0.10, 0.82, 0.01, 0.01, 0.01, 0.01, 0.01, 0.00, 0.00, 0.01], // cute -> dog
+                    [0.01, 0.75, 0.20, 0.01, 0.01, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00], // dog -> cute
+                    [0.01, 0.01, 0.02, 0.90, 0.01, 0.02, 0.01, 0.01, 0.00, 0.01, 0.00],
+                    [0.01, 0.01, 0.01, 0.02, 0.75, 0.15, 0.01, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.02, 0.60, 0.30, 0.01, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.90, 0.01, 0.01, 0.01, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.85, 0.03, 0.02, 0.01],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.80, 0.05, 0.02],
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.05, 0.15, 0.72], // running -> fast
+                    [0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.85, 0.07]  // fast -> running
+                ],
+                explanations: {
+                    "cute": "'cute' (adjective) focuses 82% of its attention on 'dog', showing which noun it describes.",
+                    "dog": "Connects back with the modifying adjective 'cute'.",
+                    "fast": "'fast' (adverb) modifies the action 'running', indicating the speed of the run.",
+                    "running": "Links with 'fast' to capture the description of the action."
+                },
+                defaultExplanation: "This head connects adjectives and adverbs to the nouns and verbs they modify."
+            },
+            head4: { // Positional / Local Context
+                name: "Head 4: Positional & Local Context",
+                accentColor: "var(--accent-orange)",
+                className: "head4-active",
+                colorClass: "color-head4",
+                borderClass: "border-head4",
+                weights: [
+                    [0.95, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // The
+                    [0.80, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // cute -> The
+                    [0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // dog -> cute
+                    [0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00], // chased -> dog
+                    [0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00], // the -> chased
+                    [0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00, 0.00, 0.00], // cat -> the
+                    [0.00, 0.00, 0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00, 0.00, 0.00], // because -> cat
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03, 0.00, 0.00], // it -> because
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.78, 0.15, 0.05, 0.00], // was -> it
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.80, 0.15, 0.03], // running -> was
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.02, 0.82, 0.16]  // fast -> running
+                ],
+                explanations: {},
+                defaultExplanation: "This head focuses on local sequences, usually attending to the immediately preceding token, helping to preserve word order context."
+            }
+        };
+
+        const layerDetails = {
+            bottom: {
+                title: "Bottom Layers (Layers 1-4): Surface Lexical Features",
+                color: "var(--accent-green)",
+                border: "var(--accent-green)",
+                content: `
+                    <p><strong>Primary Responsibility:</strong> Identifying basic part-of-speech tags (Noun, Verb, Adjective), spelling structures, and local word neighborhoods.</p>
+                    <p><strong>Example ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-green); font-size:0.9rem; font-style:italic;">
+                        At this stage, the model identifies 'The' as a determiner, 'cute' as an adjective, and 'dog' and 'cat' as nouns, using positional encodings to track their relative order.
+                    </p>
+                `
+            },
+            mid: {
+                title: "Middle Layers (Layers 5-8): Syntax & Relations",
+                color: "var(--accent-purple)",
+                border: "var(--accent-purple)",
+                content: `
+                    <p><strong>Primary Responsibility:</strong> Analyzing grammatical syntax and connections between different clauses.</p>
+                    <p><strong>Example ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-purple); font-size:0.9rem; font-style:italic;">
+                        At this stage, the model understands that the action 'chased' occurs between 'dog' and 'cat'. It resolves 'it' to refer to 'cat' (Pronoun Resolution).
+                    </p>
+                `
+            },
+            top: {
+                title: "Top Layers (Layers 9-12): Global Reasoning & Completion",
+                color: "var(--accent-cyan)",
+                border: "var(--accent-cyan)",
+                content: `
+                    <p><strong>Primary Responsibility:</strong> Synthesizing global sentence meaning, causal relations, abstract reasoning, and predicting the next token.</p>
+                    <p><strong>Example ("The cute dog chased the cat because it was running fast"):</strong></p>
+                    <p style="background: rgba(0,0,0,0.2); padding: 0.6rem; border-radius: 6px; border-left: 3px solid var(--accent-cyan); font-size:0.9rem; font-style:italic;">
+                        The model understands the causal logic ('because'): the cat was running, which prompted the dog to chase it. Top layers integrate this overall causality to answer reasoning questions or predict subsequent words.
+                    </p>
+                `
+            }
+        };
+
+        let activeHeadKey = 'head1';
+        let activeQueryIndex = 1; // "cute"
+
+        // Initialize Visualizer Tokens
+        function initVisualizer() {
+            const container = document.getElementById('tokens-container');
+            container.innerHTML = tokens.map((t, idx) => `
+                <div class="viz-token" id="token-${idx}" onclick="clickToken(${idx})">
+                    ${t}
+                </div>
+            `).join('');
+            
+            updateVisualizer();
+        }
+
+        function clickToken(index) {
+            activeQueryIndex = index;
+            updateVisualizer();
+        }
+
+        function selectHead(headKey) {
+            activeHeadKey = headKey;
+            
+            // Update button active classes
+            document.querySelectorAll('.head-btn').forEach(btn => {
+                btn.className = 'head-btn'; // reset
+            });
+            
+            const selectedBtn = document.getElementById(`btn-${headKey}`);
+            const head = attnData[headKey];
+            selectedBtn.classList.add('active', head.className);
+
+            updateVisualizer();
+        }
+
+        function updateVisualizer() {
+            const head = attnData[activeHeadKey];
+            const weights = head.weights[activeQueryIndex];
+            const word = tokens[activeQueryIndex];
+            
+            // Highlight query token
+            document.querySelectorAll('.viz-token').forEach((el, idx) => {
+                el.classList.remove('query-token');
+                el.style.background = '';
+                el.style.color = '';
+                el.style.borderColor = '';
+                
+                if (idx === activeQueryIndex) {
+                    el.classList.add('query-token');
+                } else {
+                    const w = weights[idx];
+                    // Apply color depending on active head and attention weight
+                    el.style.background = getFadedColor(activeHeadKey, w);
+                    el.style.borderColor = `rgba(255, 255, 255, ${0.1 + w * 0.4})`;
+                    el.style.color = `rgba(248, 250, 252, ${0.5 + w * 0.5})`;
+                    if (w > 0.3) {
+                        el.style.fontWeight = '600';
+                    } else {
+                        el.style.fontWeight = '400';
+                    }
+                }
+            });
+
+            // Update display query text
+            document.getElementById('query-word-display').innerText = word;
+            
+            // Update explanation
+            const expBox = document.getElementById('explanation-box');
+            expBox.className = `viz-explanation ${head.borderClass}`;
+            const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").trim().toLowerCase();
+            expBox.innerText = head.explanations[cleanWord] || head.defaultExplanation;
+
+            // Draw attention chart
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.innerHTML = tokens.map((t, idx) => {
+                const w = weights[idx];
+                const percentage = (w * 100).toFixed(0);
+                return `
+                    <div class="chart-row">
+                        <span class="chart-label">${t}</span>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar ${head.colorClass}" style="width: ${percentage}%"></div>
+                        </div>
+                        <span class="chart-value">${percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getFadedColor(headKey, weight) {
+            // Generates faded background color based on head colors
+            if (headKey === 'head1') {
+                return `rgba(6, 182, 212, ${weight * 0.85})`; // Cyan
+            } else if (headKey === 'head2') {
+                return `rgba(168, 85, 247, ${weight * 0.85})`; // Purple
+            } else if (headKey === 'head3') {
+                return `rgba(16, 185, 129, ${weight * 0.85})`; // Green
+            } else {
+                return `rgba(245, 158, 11, ${weight * 0.85})`; // Orange
+            }
+        }
+
+        // Initialize Layer Explorer
+        function selectLayer(layerKey) {
+            // Remove active classes
+            document.querySelectorAll('.layer-group').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Add active class
+            document.getElementById(`layer-${layerKey}`).classList.add('active');
+
+            // Update details
+            const detail = layerDetails[layerKey];
+            const titleEl = document.getElementById('layer-panel-title');
+            titleEl.style.color = detail.color;
+            titleEl.innerText = detail.title;
+            document.getElementById('layer-panel-content').innerHTML = detail.content;
+        }
+
+        // Quiz handler
+        function checkAnswer(qNum, element, isCorrect, feedbackText) {
+            const parentNode = element.parentNode;
+            
+            // Clear choices in this question
+            parentNode.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = document.getElementById(`quiz-feedback-${qNum}`);
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerText = feedbackText;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerText = feedbackText;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+
+        // Boot
+        window.onload = () => {
+            initVisualizer();
+            selectHead('head1');
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 3: Self-Attention Mechanism</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .highlight-purple {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Attention Simulator Widgets */
+        .analogy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .analogy-card {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .analogy-card:hover {
+            border-color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        .analogy-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .analogy-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .simulator {
+            margin-top: 1.5rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .sim-input-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        select, input, button {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select, input {
+            width: 100%;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .attention-visualization-container {
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .row-label {
+            align-self: flex-start;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .word-row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            z-index: 5;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .word-node {
+            background: #1e293b;
+            border: 1.5px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .word-node:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .query-node.active-query {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(168, 85, 247, 0.2));
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+            color: var(--text-primary);
+        }
+
+        .key-node.active-key {
+            border-color: var(--accent-purple);
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--text-primary);
+        }
+
+        .attention-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .attention-svg path {
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+
+        .query-row {
+            margin-bottom: 7rem; /* Space for the connecting curves */
+        }
+
+        .key-row {
+            margin-top: 1rem;
+        }
+
+        .attention-details-panel {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            animation: popIn 0.3s ease;
+        }
+
+        .weight-bars-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-top: 1rem;
+        }
+
+        .weight-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .weight-label {
+            width: 90px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .weight-bar-bg {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.05);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .weight-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+            border-radius: 5px;
+        }
+
+        .weight-val {
+            width: 40px;
+            text-align: right;
+            font-size: 0.85rem;
+            font-weight: bold;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Quiz Styles */
+        .quiz-question-container {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Attention Simulator Nodes (Lesson 3) */
+        :root.light .word-node {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .word-node:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(8, 145, 178, 0.08);
+        }
+
+        :root.light .query-node.active-query {
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(147, 51, 234, 0.15));
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.25);
+            color: #0f172a;
+        }
+
+        :root.light .key-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .key-node.active-key {
+            border-color: var(--accent-purple);
+            background: rgba(147, 51, 234, 0.08);
+        }
+
+        :root.light .attention-details-panel {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .row-label {
+            background: rgba(241, 245, 249, 0.95);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #475569;
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 3</span>
+            <h1>Self-Attention Mechanism</h1>
+            <p class="subtitle">How does a word extract the correct context from its surrounding words?</p>
+        </header>
+
+        <!-- Context Problem Card -->
+        <div class="card">
+            <h2>The Context Problem</h2>
+            <p>Consider a common English word like <span class="tech-term">bank</span>. It can have two completely different meanings:</p>
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--accent-cyan);">
+                <p style="margin-bottom: 0.5rem;"><strong>Sentence 1:</strong> "I deposited my money at the <span class="highlight">bank</span>." <br>
+                👉 Here, <span class="highlight">bank</span> refers to a financial institution (Financial Institution).</p>
+                <p style="margin: 0;"><strong>Sentence 2:</strong> "We sat on the muddy <span class="highlight">bank</span> of the river." <br>
+                👉 Here, <span class="highlight">bank</span> refers to the side of a river (Riverbank).</p>
+            </div>
+            <p>As humans, we read the entire sentence and instantly understand the difference. But how does a computer understand? To a computer, each word is just a lifeless list of numbers (<span class="tech-term">Embedding Vector</span>).</p>
+            <p>Popular architectures before the Transformer (such as <span class="tech-term">RNNs</span> or <span class="tech-term">LSTMs</span>) processed words sequentially (one by one). Consequently, if a sentence was too long, the context of the early words would fail to reach the end.</p>
+            <p>The revolutionary solution to this problem is the Transformer's <span class="tech-term">Self-Attention Mechanism</span>. It allows each word to establish a direct connection with all other words in the sentence, perfectly extracting context-dependent meanings.</p>
+        </div>
+
+        <!-- Analogy Card -->
+        <div class="card">
+            <h2>An Analogy for Query, Key, and Value</h2>
+            <p>Self-Attention performs all calculations using three vectors: <span class="highlight">Query (Q)</span>, <span class="highlight-purple">Key (K)</span>, and <span class="tech-term">Value (V)</span>. To understand them, we can use a **YouTube Search Engine** analogy:</p>
+            
+            <div class="analogy-grid">
+                <div class="analogy-card">
+                    <div class="analogy-icon">🔍</div>
+                    <div class="analogy-title">Query (Q)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The search term you type into the YouTube search bar (e.g., <em>"Deep Learning Course"</em>). This is your Query. 
+                    <br><br>
+                    <strong>Word Perspective:</strong> "Which other words in the sentence do I need to relate to?"</p>
+                </div>
+                <div class="analogy-card">
+                    <div class="analogy-icon">🏷️</div>
+                    <div class="analogy-title">Key (K)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The titles, tags, or descriptions of the videos hosted on YouTube. This is the Key.
+                    <br><br>
+                    <strong>Word Perspective:</strong> "Why should other words pay attention to me? This is a label of what information I contain."</p>
+                </div>
+                <div class="analogy-card">
+                    <div class="analogy-icon">🎞️</div>
+                    <div class="analogy-title">Value (V)</div>
+                    <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The actual video content that you play once your Query matches a video's Key. This is the Value.
+                    <br><br>
+                    <strong>Word Perspective:</strong> "If a relationship is established with me, what actual semantic content or information will I provide?"</p>
+                </div>
+            </div>
+            <p>The Transformer multiplies each input word's embedding vector by three distinct weight matrices (learned during training) to produce the <span class="tech-term">Q</span>, <span class="tech-term">K</span>, and <span class="tech-term">V</span> vectors.</p>
+        </div>
+
+        <!-- Step-by-Step Mechanism -->
+        <div class="card">
+            <h2>How Self-Attention Works (4 Easy Steps)</h2>
+            <p>Let's break down the mathematical process in simple terms without complex formulas:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
+                    <strong style="color: var(--accent-cyan);">Step 1: Similarity (Dot Product)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The Query of the word we want to analyze is dotted with the Keys of every word in the sentence (<span class="tech-term">Dot Product</span>). The dot product mathematically measures how aligned or similar two vectors are. The result is called the **Raw Score**.</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-purple);">
+                    <strong style="color: var(--accent-purple);">Step 2: Scaling</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">If the vector size or dimensionality ($d_k$) is very large, the dot product scores can grow extremely large. To keep these values stable, they are divided by $\sqrt{d_k}$.</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-cyan);">
+                    <strong style="color: var(--accent-cyan);">Step 3: Softmax (Attention Weights)</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">The scaled scores are passed through a <span class="tech-term">Softmax</span> function. Softmax normalizes all scores into fractions between 0 and 1 that sum up to exactly 1 (or 100%). These fractions are the **Attention Weights**, telling the model what percentage of attention should be paid to each word.</p>
+                </div>
+
+                <div style="background: rgba(15, 23, 42, 0.4); padding: 1.2rem; border-radius: 10px; border-left: 3px solid var(--accent-green);">
+                    <strong style="color: var(--accent-green);">Step 4: Weighted Sum of Values</strong>
+                    <p style="font-size: 0.95rem; margin: 0.3rem 0 0 0;">Finally, the Value ($V$) vector of each word is multiplied by its corresponding Attention Weight, and these weighted vectors are added together (**Weighted Sum**). This combined vector is the final, context-rich representation of the word!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Simulator Card -->
+        <div class="card">
+            <h2>Interactive Attention Simulator</h2>
+            <p>Select a sentence below (or enter a **Custom Sentence**). Click on any word in the **Query (Q) Row** to see how the connection lines and **Attention Weights** dynamically adjust based on context.</p>
+
+            <div class="simulator">
+                <div class="sim-input-group">
+                    <select id="sentence-select">
+                        <option value="animal-tired">The animal didn't cross the street because it was too tired.</option>
+                        <option value="animal-wide">The animal didn't cross the street because it was too wide.</option>
+                        <option value="bank-money">I deposited my money at the bank.</option>
+                        <option value="bank-river">We sat on the muddy bank of the river.</option>
+                        <option value="custom">-- Custom Sentence (Write your own English sentence) --</option>
+                    </select>
+                </div>
+
+                <div id="custom-input-container" style="display: none; margin-bottom: 1.5rem; gap: 0.5rem; flex-wrap: wrap;">
+                    <input type="text" id="custom-sentence-input" placeholder="e.g., The dog barked at the cat because it was loud (Max 10 words)">
+                    <button id="custom-visualize-btn">Visualize Custom</button>
+                </div>
+
+                <!-- Visualization Area -->
+                <div class="attention-visualization-container" id="attn-viz-container">
+                    <div class="row-label query-label">Query Row (Q) - Click a word</div>
+                    <div class="word-row query-row" id="query-word-row"></div>
+                    
+                    <!-- Connection lines canvas -->
+                    <svg class="attention-svg" id="attention-svg"></svg>
+                    
+                    <div class="word-row key-row" id="key-word-row"></div>
+                    <div class="row-label key-label">Key/Value Row (K/V)</div>
+                </div>
+
+                <!-- Explanation Panel -->
+                <div class="attention-details-panel" id="details-panel" style="display: none;">
+                    <h3 id="details-title" style="color: var(--accent-cyan); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.1rem;"></h3>
+                    <p id="details-text" style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 1rem;"></p>
+                    
+                    <div class="weight-bars-list" id="weight-bars-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (Quiz)</h2>
+            <p>Select the correct answer to verify your understanding:</p>
+            
+            <div class="quiz-question-container">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">1. What do the Query (Q), Key (K), and Value (V) vectors represent in Self-Attention?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, true, 'Excellent! Query represents what the word is looking for, Key represents its label, and Value holds its core content.')">
+                    A) Query is the search for word relationships, Key is the label/index of a word, and Value is its actual semantic content.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, false, 'Incorrect. Recall the YouTube search analogy.')">
+                    B) Query is the next token ID, Key is the embedding matrix, and Value is the Softmax value.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 1, false, 'Incorrect! Query, Key, and Value are vectors derived from the word embeddings; none represent dictionaries or output labels.')">
+                    C) Query is the dictionary database, Key is the grammar rules, and Value is the final output word.
+                </div>
+                <div id="quiz-feedback-1" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question-container" style="margin-top: 2rem;">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">2. What is the primary reason for Scaling after computing the dot product in Self-Attention?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, false, 'Incorrect! Scaling is done for mathematical stability rather than memory optimization.')">
+                    A) To shrink vector sizes in memory and accelerate GPU speeds.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, true, 'Correct! Without scaling, very large dot products push the Softmax function into flat regions where its gradient vanishes, stalling learning.')">
+                    B) Large dot products can saturate the Softmax function, leading to vanishing gradients and hindered learning.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 2, false, 'Incorrect! It does not affect vocabulary token counts or embedding sizes.')">
+                    C) It is impossible to count the total number of tokens in the sentence without it.
+                </div>
+                <div id="quiz-feedback-2" class="quiz-feedback"></div>
+            </div>
+
+            <div class="quiz-question-container" style="margin-top: 2rem;">
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">3. In \"The animal didn't cross the street because it was too tired\" and \"...it was too wide\", how does the meaning of 'it' change?</p>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, false, 'Incorrect! Transformers do not use hand-crafted grammar rules.')">
+                    A) The two sentences use different rule-based grammar code.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, true, 'Outstanding! Through Self-Attention, \'it\' associates with \'tired\' (linking to \'animal\' with 55% weight) and with \'wide\' (linking to \'street\' with 60% weight).')">
+                    B) Through Self-Attention, 'it' connects with the descriptive adjectives ('tired' or 'wide') to shift attention to 'animal' or 'street' respectively.
+                </div>
+                <div class="quiz-option" onclick="checkAnswer(this, 3, false, 'Incorrect! The spelling and initial embedding of \'it\' are identical. It changes dynamically based on surrounding tokens.')">
+                    C) The computer sees a spelling difference in the embedding of 'it' in both sentences.
+                </div>
+                <div id="quiz-feedback-3" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>Helpful and Authoritative References (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Original Transformer Research Paper: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al., 2017)</a></li>
+                <li>Popular Visual Guide: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>Mathematical Analysis From Scratch: <a href="https://sebastianraschka.com/blog/2023/self-attention-from-scratch.html" target="_blank">Understanding Self-Attention From Scratch by Sebastian Raschka</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn how multiple attention streams work in parallel: the <strong>Multi-Head Attention Mechanism</strong>.</p>
+        </div>
+
+        <footer>
+            <p>After reading this lesson, return to the chat and discuss any questions you have with the agent.</p>
+        </footer>
+    </div>
+
+    <script>
+        // High-fidelity pre-defined attention dataset for specific word queries
+        const sentenceDatasets = {
+            'animal-tired': {
+                sentence: "The animal didn't cross the street because it was too tired",
+                queryDetails: {
+                    'it': {
+                        title: "Query Focus: 'it'",
+                        text: "Here, the word 'it' focuses 55% of its attention (Attention Weight) on 'animal' because the trait 'tired' is semantically associated with a living creature rather than a street.",
+                        weights: { 'The': 0.02, 'animal': 0.55, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.05, 'because': 0.03, 'it': 0.15, 'was': 0.02, 'too': 0.03, 'tired': 0.10 }
+                    },
+                    'street': {
+                        title: "Query Focus: 'street'",
+                        text: "Here, the word 'street' is closely connected with 'cross' and 'the' to identify the object being crossed.",
+                        weights: { 'The': 0.02, 'animal': 0.10, "didn't": 0.03, 'cross': 0.35, 'the': 0.15, 'street': 0.20, 'because': 0.02, 'it': 0.03, 'was': 0.02, 'too': 0.03, 'tired': 0.05 }
+                    },
+                    'tired': {
+                        title: "Query Focus: 'tired'",
+                        text: "Here, the word 'tired' establishes a strong connection with 'it' and 'animal', clarifying who is tired.",
+                        weights: { 'The': 0.01, 'animal': 0.40, "didn't": 0.02, 'cross': 0.05, 'the': 0.01, 'street': 0.03, 'because': 0.05, 'it': 0.25, 'was': 0.05, 'too': 0.08, 'tired': 0.10 }
+                    }
+                }
+            },
+            'animal-wide': {
+                sentence: "The animal didn't cross the street because it was too wide",
+                queryDetails: {
+                    'it': {
+                        title: "Query Focus: 'it'",
+                        text: "Here, the word 'it' shifts 60% of its attention to 'street' because 'wide' is a characteristic of a street rather than an animal. By changing a single adjective, 'it' completely changes its referent! This is the power of context.",
+                        weights: { 'The': 0.02, 'animal': 0.05, "didn't": 0.03, 'cross': 0.05, 'the': 0.02, 'street': 0.60, 'because': 0.03, 'it': 0.12, 'was': 0.02, 'too': 0.03, 'wide': 0.08 }
+                    },
+                    'wide': {
+                        title: "Query Focus: 'wide'",
+                        text: "Here, the word 'wide' is associated with 'street' and 'it', describing the street's physical structure.",
+                        weights: { 'The': 0.01, 'animal': 0.02, "didn't": 0.02, 'cross': 0.05, 'the': 0.02, 'street': 0.45, 'because': 0.03, 'it': 0.20, 'was': 0.05, 'too': 0.10, 'wide': 0.08 }
+                    }
+                }
+            },
+            'bank-money': {
+                sentence: "I deposited my money at the bank",
+                queryDetails: {
+                    'bank': {
+                        title: "Query Focus: 'bank'",
+                        text: "Here, the word 'bank' allocates a combined 70% of its attention to 'money' and 'deposited', enabling the model to resolve its meaning as a financial institution.",
+                        weights: { 'I': 0.03, 'deposited': 0.25, 'my': 0.02, 'money': 0.45, 'at': 0.03, 'the': 0.02, 'bank': 0.20 }
+                    },
+                    'deposited': {
+                        title: "Query Focus: 'deposited'",
+                        text: "The action of depositing is semantically linked with 'money' and 'bank'.",
+                        weights: { 'I': 0.05, 'deposited': 0.30, 'my': 0.03, 'money': 0.35, 'at': 0.02, 'the': 0.02, 'bank': 0.23 }
+                    }
+                }
+            },
+            'bank-river': {
+                sentence: "We sat on the muddy bank of the river",
+                queryDetails: {
+                    'bank': {
+                        title: "Query Focus: 'bank'",
+                        text: "Here, the word 'bank' establishes a strong relationship (approx 70%) with 'river' and 'muddy', confirming that it refers to the side of a body of water.",
+                        weights: { 'We': 0.02, 'sat': 0.05, 'on': 0.03, 'the': 0.02, 'muddy': 0.28, 'bank': 0.15, 'of': 0.02, 'the': 0.03, 'river': 0.40 }
+                    },
+                    'river': {
+                        title: "Query Focus: 'river'",
+                        text: "'river' draws context from 'bank' and 'muddy' to resolve its surrounding features.",
+                        weights: { 'We': 0.02, 'sat': 0.03, 'on': 0.02, 'the': 0.02, 'muddy': 0.20, 'bank': 0.45, 'of': 0.03, 'the': 0.03, 'river': 0.20 }
+                    }
+                }
+            }
+        };
+
+        let activeQueryWord = null;
+        let selectedSentenceKey = 'animal-tired';
+        let currentWords = [];
+
+        // Elements
+        const sentenceSelect = document.getElementById('sentence-select');
+        const customInputContainer = document.getElementById('custom-input-container');
+        const customSentenceInput = document.getElementById('custom-sentence-input');
+        const customVisualizeBtn = document.getElementById('custom-visualize-btn');
+        
+        const queryWordRow = document.getElementById('query-word-row');
+        const keyWordRow = document.getElementById('key-word-row');
+        const attentionSvg = document.getElementById('attention-svg');
+        
+        const detailsPanel = document.getElementById('details-panel');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsText = document.getElementById('details-text');
+        const weightBarsList = document.getElementById('weight-bars-list');
+
+        // Initialize
+        window.addEventListener('load', () => {
+            loadSentence(selectedSentenceKey);
+            
+            // Set initial click on a keyword to showcase immediately
+            setTimeout(() => {
+                const initialNode = queryWordRow.querySelector('[data-word="it"], [data-word="bank"]');
+                if (initialNode) {
+                    initialNode.click();
+                }
+            }, 300);
+        });
+
+        window.addEventListener('resize', () => {
+            if (activeQueryWord) {
+                drawAttentionLines(activeQueryWord);
+            }
+        });
+
+        sentenceSelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            selectedSentenceKey = val;
+            if (val === 'custom') {
+                customInputContainer.style.display = 'flex';
+                clearVisualization();
+            } else {
+                customInputContainer.style.display = 'none';
+                loadSentence(val);
+            }
+        });
+
+        customVisualizeBtn.addEventListener('click', () => {
+            const rawText = customSentenceInput.value.trim();
+            if (!rawText) return;
+            loadCustomSentence(rawText);
+        });
+
+        customSentenceInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                customVisualizeBtn.click();
+            }
+        });
+
+        function clearVisualization() {
+            queryWordRow.innerHTML = '';
+            keyWordRow.innerHTML = '';
+            attentionSvg.innerHTML = '';
+            detailsPanel.style.display = 'none';
+            activeQueryWord = null;
+        }
+
+        function loadSentence(key) {
+            clearVisualization();
+            const dataset = sentenceDatasets[key];
+            if (!dataset) return;
+            
+            currentWords = dataset.sentence.split(' ').filter(w => w.trim() !== '');
+            renderWords(currentWords);
+        }
+
+        function loadCustomSentence(text) {
+            clearVisualization();
+            // Split, clean punctuation, limit to 10 words
+            let cleanWords = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").split(/\s+/).filter(w => w.trim() !== '');
+            if (cleanWords.length > 10) {
+                cleanWords = cleanWords.slice(0, 10);
+            }
+            currentWords = cleanWords;
+            renderWords(currentWords);
+            
+            // Auto click first word
+            setTimeout(() => {
+                const first = queryWordRow.querySelector('.query-node');
+                if (first) first.click();
+            }, 100);
+        }
+
+        function renderWords(words) {
+            queryWordRow.innerHTML = words.map((w, idx) => `
+                <div class="word-node query-node" data-index="${idx}" data-word="${w}">${w}</div>
+            `).join('');
+
+            keyWordRow.innerHTML = words.map((w, idx) => `
+                <div class="word-node key-node" id="key-node-${idx}" data-word="${w}">${w}</div>
+            `).join('');
+
+            // Click handler
+            queryWordRow.querySelectorAll('.query-node').forEach(node => {
+                node.addEventListener('click', (e) => {
+                    const idx = parseInt(e.target.getAttribute('data-index'));
+                    handleQueryClick(idx, e.target);
+                });
+            });
+        }
+
+        function handleQueryClick(index, node) {
+            // Update active state in Query Row
+            queryWordRow.querySelectorAll('.query-node').forEach(n => n.classList.remove('active-query'));
+            node.classList.add('active-query');
+            activeQueryWord = node;
+
+            const wordName = currentWords[index];
+            let weights = {};
+            let explanationTitle = `Query word: "${wordName}"`;
+            let explanationText = `You clicked: <strong>"${wordName}"</strong>. Observe how it establishes contextual connections with other words in the sentence.`;
+
+            // Check if pre-defined sentence and pre-defined query details exist
+            const isPredefined = sentenceDatasets[selectedSentenceKey];
+            let predefinedDetail = null;
+            if (isPredefined && isPredefined.queryDetails) {
+                // Try matching word with key
+                const matchWord = wordName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+                predefinedDetail = isPredefined.queryDetails[matchWord];
+            }
+
+            if (predefinedDetail) {
+                explanationTitle = predefinedDetail.title;
+                explanationText = predefinedDetail.text;
+                weights = predefinedDetail.weights;
+            } else {
+                // Heuristically calculate simulated weights
+                const calcWeights = calculateHeuristicWeights(currentWords, index);
+                explanationTitle = `Query Focus: "${wordName}"`;
+                explanationText = `The computer calculated the relationships using dot-products. Estimated Attention Weights are shown below:`;
+                
+                currentWords.forEach((w, i) => {
+                    weights[w] = calcWeights[i];
+                });
+            }
+
+            // Apply weights to key nodes and calculate details
+            currentWords.forEach((w, i) => {
+                const keyNode = document.getElementById(`key-node-${i}`);
+                const weight = weights[w] !== undefined ? weights[w] : weights[Object.keys(weights)[i]] || 0.05;
+                keyNode.setAttribute('data-weight', weight);
+            });
+
+            // Update explanation panel
+            detailsTitle.innerText = explanationTitle;
+            detailsText.innerText = explanationText;
+            detailsPanel.style.display = 'block';
+
+            // Show weight bars
+            weightBarsList.innerHTML = currentWords.map((w, i) => {
+                const weight = parseFloat(document.getElementById(`key-node-${i}`).getAttribute('data-weight')) || 0;
+                const percentage = (weight * 100).toFixed(0);
+                return `
+                    <div class="weight-row">
+                        <span class="weight-label">"${w}"</span>
+                        <div class="weight-bar-bg">
+                            <div class="weight-bar-fill" id="fill-${i}" style="width: 0%;"></div>
+                        </div>
+                        <span class="weight-val">${percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+
+            // Trigger progress bar animation
+            setTimeout(() => {
+                currentWords.forEach((w, i) => {
+                    const fillEl = document.getElementById(`fill-${i}`);
+                    const weight = parseFloat(document.getElementById(`key-node-${i}`).getAttribute('data-weight')) || 0;
+                    if (fillEl) fillEl.style.width = `${weight * 100}%`;
+                });
+            }, 50);
+
+            // Draw attention lines on SVG
+            drawAttentionLines(node);
+        }
+
+        function calculateHeuristicWeights(words, queryIndex) {
+            const queryWord = words[queryIndex].toLowerCase();
+            let scores = new Array(words.length).fill(0);
+            
+            words.forEach((word, idx) => {
+                const w = word.toLowerCase();
+                let score = 0;
+                
+                if (idx === queryIndex) {
+                    score += 3.0; // self attention
+                }
+                
+                const distance = Math.abs(idx - queryIndex);
+                score += Math.max(0, 2.0 - distance * 0.5); // proximity
+                
+                // Specific semantic connections heuristic
+                if (queryWord === 'bank') {
+                    if (['river', 'water', 'muddy', 'slope', 'shore', 'green'].includes(w)) {
+                        score += 4.5;
+                    }
+                    if (['money', 'deposited', 'cash', 'save', 'account', 'interest'].includes(w)) {
+                        score += 4.5;
+                    }
+                }
+                if (['river', 'water', 'muddy', 'money', 'deposited', 'cash', 'account'].includes(queryWord) && w === 'bank') {
+                    score += 4.5;
+                }
+                
+                // Pronouns
+                if (['it', 'its', 'he', 'she', 'they', 'them'].includes(queryWord)) {
+                    // Attends back to potential nouns
+                    if (idx < queryIndex && idx > 0) {
+                        score += 3.0;
+                    }
+                }
+                
+                // Random jitter
+                score += Math.random() * 0.4;
+                scores[idx] = score;
+            });
+            
+            // Softmax Normalization
+            const expScores = scores.map(s => Math.exp(s));
+            const sumExp = expScores.reduce((a, b) => a + b, 0);
+            return expScores.map(e => e / sumExp);
+        }
+
+        function drawAttentionLines(queryNode) {
+            const container = document.getElementById('attn-viz-container');
+            const svg = document.getElementById('attention-svg');
+            
+            svg.innerHTML = '';
+            
+            const containerRect = container.getBoundingClientRect();
+            svg.setAttribute('width', containerRect.width);
+            svg.setAttribute('height', containerRect.height);
+            
+            const queryRect = queryNode.getBoundingClientRect();
+            const x1 = queryRect.left + queryRect.width / 2 - containerRect.left;
+            const y1 = queryRect.bottom - containerRect.top;
+            
+            const keyNodes = keyWordRow.querySelectorAll('.key-node');
+            keyNodes.forEach((keyNode) => {
+                const keyRect = keyNode.getBoundingClientRect();
+                const x2 = keyRect.left + keyRect.width / 2 - containerRect.left;
+                const y2 = keyRect.top - containerRect.top;
+                
+                const weight = parseFloat(keyNode.getAttribute('data-weight')) || 0.05;
+                
+                // Draw bezier path
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const cpY = (y1 + y2) / 2;
+                const d = `M ${x1} ${y1} C ${x1} ${cpY}, ${x2} ${cpY}, ${x2} ${y2}`;
+                
+                path.setAttribute('d', d);
+                path.setAttribute('fill', 'none');
+                
+                const strokeColor = weight > 0.35 
+                    ? `rgba(6, 182, 212, ${0.2 + weight * 0.8})` // Cyan
+                    : `rgba(168, 85, 247, ${0.1 + weight * 0.7})`; // Purple
+                
+                const strokeWidth = 1 + weight * 9;
+                
+                path.setAttribute('stroke', strokeColor);
+                path.setAttribute('stroke-width', strokeWidth);
+                path.setAttribute('class', 'connection-line');
+                
+                svg.appendChild(path);
+
+                if (weight > 0.2) {
+                    keyNode.classList.add('active-key');
+                } else {
+                    keyNode.classList.remove('active-key');
+                }
+            });
+        }
+
+        // Quiz checker
+        function checkAnswer(element, questionNum, isCorrect, feedback) {
+            const questionContainer = element.closest('.quiz-question-container');
+            const options = questionContainer.querySelectorAll('.quiz-option');
+            
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = document.getElementById(`quiz-feedback-${questionNum}`);
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerText = feedback;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerText = feedback;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

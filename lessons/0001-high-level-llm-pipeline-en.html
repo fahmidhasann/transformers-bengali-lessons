@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lesson 1: LLM Pipeline-এর High-Level Intuition</title>
+    <title>Lesson 1: High-Level Intuition of the LLM Pipeline</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -699,53 +699,53 @@
         </button>
         <header>
             <span class="badge">Lesson 1</span>
-            <h1>LLM Pipeline-এর High-Level Intuition</h1>
-            <p class="subtitle">কীভাবে একটি sentence মডেলের ভেতরে প্রসেস হয়ে output তৈরি করে?</p>
+            <h1>High-Level Intuition of the LLM Pipeline</h1>
+            <p class="subtitle">How is a sentence processed inside the model to produce output?</p>
         </header>
 
         <!-- Intro Card -->
         <div class="card">
             <h2><span class="tech-term">The Goal of an LLM</span></h2>
-            <p>ChatGPT, Gemini বা LLaMA-এর মতো <span class="tech-term">Large Language Models (LLMs)</span> মূলত একটি অত্যন্ত শক্তিশালী "পরবর্তী শব্দ অনুমানকারী যন্ত্র" বা <span class="highlight">Next Token Predictor</span>।</p>
-            <p>মডেলের কাজ খুব সহজ: আপনি তাকে কিছু ইনপুট টেক্সট (যাকে <span class="tech-term">Prompt</span> বলা হয়) দেবেন, আর সে গণিত ও পরিসংখ্যান ব্যবহার করে হিসাব করবে ওই টেক্সটের পর সবচেয়ে সম্ভাব্য শব্দ বা টোকেন কোনটি হতে পারে। এই কাজটিকে বলা হয় <span class="tech-term">Autoregressive Generation</span>, কারণ মডেল নিজের তৈরি করা আগের শব্দগুলোকে ইনপুট হিসেবে নিয়ে বারবার পরবর্তী শব্দ প্রেডিক্ট করতে থাকে।</p>
-            <p>এই পুরো ম্যাজিকটি যার ওপর দাঁড়িয়ে আছে, তা হলো <span class="tech-term">Transformer Architecture</span>।</p>
+            <p>Large Language Models (LLMs) like ChatGPT, Gemini, or LLaMA are essentially extremely powerful "next word estimators" or a <span class="highlight">Next Token Predictor</span>.</p>
+            <p>The model's job is simple: you give it some input text (called a <span class="tech-term">Prompt</span>), and it calculates using math and statistics which word or token is most likely to follow that text. This process is called <span class="tech-term">Autoregressive Generation</span>, because the model feeds its own previously generated words back as input to continuously predict the next word.</p>
+            <p>This entire magic stands on the foundation of the <span class="tech-term">Transformer Architecture</span>.</p>
         </div>
 
         <!-- Pipeline Nodes -->
         <div class="card">
-            <h2><span class="tech-term">The Core Pipeline</span> (৪টি মূল ধাপ)</h2>
-            <p>একটি Prompt কীভাবে মডেলের ভেতর দিয়ে প্রসেস হয়, তার ৪টি ধাপ নিচে দেওয়া হলো:</p>
+            <h2><span class="tech-term">The Core Pipeline</span> (4 Core Steps)</h2>
+            <p>Here are the 4 main steps that outline how a prompt is processed through the model:</p>
             
             <div class="pipeline-steps">
                 <div class="step-node" id="node-token">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <h3>Tokenization (টোকেনাইজেশন)</h3>
-                        <p>কম্পিউটার সরাসরি ভাষা বা শব্দ বোঝে না। তাই ইনপুট টেক্সটকে ছোট ছোট টুকরোতে ভাগ করা হয়, যাদের <span class="tech-term">Tokens</span> বলে। প্রতিটি টোকেনকে একটি ইউনিক সংখ্যা বা <span class="tech-term">Token ID</span> দেওয়া হয়।</p>
+                        <h3>Tokenization</h3>
+                        <p>Computers do not understand language or words directly. Therefore, the input text is broken down into smaller pieces called <span class="tech-term">Tokens</span>. Each token is assigned a unique number or <span class="tech-term">Token ID</span>.</p>
                     </div>
                 </div>
 
                 <div class="step-node" id="node-embed">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <h3>Embedding (এম্বেডিং)</h3>
-                        <p>প্রতিটি Token ID-কে একটি উচ্চ-মাত্রিক ভেক্টর (<span class="tech-term">High-dimensional Vector</span>) বা সংখ্যার তালিকায় রূপান্তর করা হয়। এটি শব্দের ব্যাকরণগত ও অর্থগত সম্পর্ক ধারণ করে। যেমন: "রাজা" ও "রাণী" ভেক্টর দুটি স্পেসে কাছাকাছি অবস্থান করবে।</p>
+                        <h3>Embedding</h3>
+                        <p>Each Token ID is converted into a <span class="tech-term">High-dimensional Vector</span> (a list of numbers). This vector captures the grammatical and semantic relationships of the words. For example, the vectors for "king" and "queen" will be close to each other in this space.</p>
                     </div>
                 </div>
 
                 <div class="step-node" id="node-trans">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <h3>Transformer Blocks (ট্রান্সফরমার ব্লকস)</h3>
-                        <p>এটি মডেলের মস্তিষ্ক। এর ভেতরে রয়েছে <span class="tech-term">Self-Attention Mechanism</span>। এটি প্রতিটি টোকেনকে তার আশেপাশের অন্যান্য টোকেনগুলোর দিকে তাকাতে সাহায্য করে এবং বুঝতে পারে কোন শব্দের সাথে কোন শব্দ বেশি সম্পর্কিত (Context Extraction)।</p>
+                        <h3>Transformer Blocks</h3>
+                        <p>This is the brain of the model. Inside lies the <span class="tech-term">Self-Attention Mechanism</span>. It allows each token to look at other tokens around it and determine how they relate to one another (Context Extraction).</p>
                     </div>
                 </div>
 
                 <div class="step-node" id="node-softmax">
                     <div class="step-number">4</div>
                     <div class="step-content">
-                        <h3>Output & Softmax (পরবর্তী টোকেন প্রেডিকশন)</h3>
-                        <p>Transformer-এর শেষ স্তরে পুরো vocabulary-র প্রতিটি শব্দের জন্য একটি প্রব্যাবিলিটি স্কোর হিসাব করা হয়। <span class="tech-term">Softmax</span> ফাংশন ব্যবহার করে এই স্কোরগুলোকে প্রব্যাবিলিটিতে (০ থেকে ১ এর মধ্যে) রূপান্তর করা হয় এবং সর্বোচ্চ সম্ভাবনার টোকেনটি নির্বাচন করা হয়।</p>
+                        <h3>Output & Softmax (Next Token Prediction)</h3>
+                        <p>At the final layer of the Transformer, a probability score is computed for every word in the model's entire vocabulary. The <span class="tech-term">Softmax</span> function converts these scores into probabilities (between 0 and 1), and the token with the highest probability is selected.</p>
                     </div>
                 </div>
             </div>
@@ -754,7 +754,7 @@
         <!-- Interactive Simulator Card -->
         <div class="card">
             <h2>Interactive Pipeline Simulator</h2>
-            <p>নিচের যেকোনো একটি Prompt সিলেক্ট করে <strong>"Run Step-by-Step"</strong> বাটনে ক্লিক করুন এবং দেখুন কীভাবে ডেটা প্রবাহিত হচ্ছে।</p>
+            <p>Select any prompt below and click the <strong>"Run Step-by-Step"</strong> button to see how data flows through the pipeline.</p>
 
             <div class="simulator">
                 <div class="sim-input-group">
@@ -777,33 +777,33 @@
                 <div class="sim-output">
                     <!-- Token Tab -->
                     <div class="tab-panel active" id="tab-token">
-                        <p style="font-size:0.9rem; color:var(--text-secondary);">টেক্সটকে টোকেনে বিভক্ত করা হয়েছে এবং প্রতিটির জন্য Vocabulary ID নির্ধারণ করা হয়েছে:</p>
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">The text has been divided into tokens, and a Vocabulary ID has been assigned to each:</p>
                         <div class="token-container" id="token-display">
-                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                            <span style="color:var(--text-secondary)">Select a prompt and click Run...</span>
                         </div>
                     </div>
 
                     <!-- Embed Tab -->
                     <div class="tab-panel" id="tab-embed">
-                        <p style="font-size:0.9rem; color:var(--text-secondary);">প্রতিটি টোকেন এখন একটি 8-dimensional Vector (বাস্তবে এটি ৪০৯৬+ ডাইমেনশন হয়):</p>
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">Each token is now represented as an 8-dimensional vector (in practice, this is usually 4096+ dimensions):</p>
                         <div class="embedding-grid" id="embed-display">
-                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                            <span style="color:var(--text-secondary)">Select a prompt and click Run...</span>
                         </div>
                     </div>
 
                     <!-- Transformer Tab -->
                     <div class="tab-panel" id="tab-trans">
-                        <p style="font-size:0.9rem; color:var(--text-secondary);">Self-Attention-এর মাধ্যমে শেষ টোকেনটি পেছনের টোকেনগুলোর ওপর কতখানি মনোযোগ (Attention Weight) দিচ্ছে তা দেখুন:</p>
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">Observe how much attention (Attention Weight) the last token places on the preceding tokens via Self-Attention:</p>
                         <div class="attention-map" id="trans-display">
-                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                            <span style="color:var(--text-secondary)">Select a prompt and click Run...</span>
                         </div>
                     </div>
 
                     <!-- Softmax Tab -->
                     <div class="tab-panel" id="tab-softmax">
-                        <p style="font-size:0.9rem; color:var(--text-secondary);">পরবর্তী সম্ভাব্য টোকেনের তালিকা (Probability Distribution):</p>
+                        <p style="font-size:0.9rem; color:var(--text-secondary);">List of next possible tokens (Probability Distribution):</p>
                         <ul class="prediction-list" id="prediction-display">
-                            <span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run চাপুন...</span>
+                            <span style="color:var(--text-secondary)">Select a prompt and click Run...</span>
                         </ul>
                     </div>
                 </div>
@@ -812,19 +812,19 @@
 
         <!-- Quiz Card -->
         <div class="card">
-            <h2>Quick Assessment (কুইজ)</h2>
-            <p>আপনার ধারণাকে ঝালাই করতে নিচের প্রশ্নটির উত্তর দিন:</p>
+            <h2>Quick Assessment (Quiz)</h2>
+            <p>Answer the question below to test your understanding:</p>
             <div style="margin-top: 1.5rem;">
-                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">প্রশ্ন: Transformer block-এর ভেতরে থাকা Self-Attention Mechanism-এর মূল কাজ কী?</p>
+                <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">Question: What is the primary function of the Self-Attention Mechanism inside a Transformer block?</p>
                 
-                <div class="quiz-option" onclick="checkAnswer(this, false, 'দুঃখিত! Tokenizer-এর কাজ হলো টেক্সট ভাঙা, Self-Attention-এর নয়।')">
-                    ক) টেক্সটকে টুকরো টুকরো করে টোকেনে ভাগ করা।
+                <div class="quiz-option" onclick="checkAnswer(this, false, 'Incorrect! Breaking text down is the job of the Tokenizer, not Self-Attention.')">
+                    A) Breaking the text down into small tokens.
                 </div>
-                <div class="quiz-option" onclick="checkAnswer(this, true, 'চমৎকার! Self-Attention-এর কাজ হলো বাক্যের প্রতিটি টোকেন বা শব্দের মধ্যকার পারস্পরিক সম্পর্ক ও কনটেক্সট খুঁজে বের করা।')">
-                    খ) একটি বাক্যের বিভিন্ন টোকেনের মধ্যকার পারস্পরিক সম্পর্ক এবং কনটেক্সট তৈরি করা।
+                <div class="quiz-option" onclick="checkAnswer(this, true, 'Excellent! Self-Attention calculates semantic relationships and context between every token or word in the sentence.')">
+                    B) Establishing contextual relationships between different tokens in a sentence.
                 </div>
-                <div class="quiz-option" onclick="checkAnswer(this, false, 'ভুল উত্তর! এটি শেষ স্তরের Softmax ফাংশনের কাজ।')">
-                    গ) পরবর্তী টোকেনের সম্ভাবনা বা Probability স্কোর গণনা করা।
+                <div class="quiz-option" onclick="checkAnswer(this, false, 'Incorrect! This is the job of the Softmax function in the final layer.')">
+                    C) Calculating probability scores for the next token.
                 </div>
 
                 <div id="quiz-feedback-box" class="quiz-feedback"></div>
@@ -833,17 +833,17 @@
 
         <!-- Resources & Citations -->
         <div class="card citations">
-            <h3>সহায়ক ও বিশ্বস্ত রেফারেন্সসমূহ (Citations):</h3>
+            <h3>Helpful and Authoritative References (Citations):</h3>
             <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
-                <li>Transformer-এর মূল পেপার: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
-                <li>ভিজুয়াল গাইড: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
-                <li>GPT আর্কিটেকচার নিয়ে আলোচনা: <a href="https://jalammar.github.io/illustrated-gpt2/" target="_blank">The Illustrated GPT-2 by Jay Alammar</a></li>
+                <li>Original Transformer Paper: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
+                <li>Visual Guide: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>GPT Architecture Discussion: <a href="https://jalammar.github.io/illustrated-gpt2/" target="_blank">The Illustrated GPT-2 by Jay Alammar</a></li>
             </ul>
-            <p style="margin-top: 1rem; font-style: italic;">পরবর্তী লেসনে আমরা শিখবো কীভাবে শব্দসমূহ সংখ্যায় রূপান্তরিত হয় অর্থাৎ <strong>Tokens and Embeddings</strong>-এর বিস্তারিত রূপ।</p>
+            <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will explore how words are mathematically converted to numbers: the details of <strong>Tokens and Embeddings</strong>.</p>
         </div>
 
         <footer>
-            <p>এই লেসনটি পড়ার পর চ্যাটে ফিরে যান এবং এজেন্টের সাথে কোনো প্রশ্ন থাকলে আলোচনা করুন।</p>
+            <p>After reading this lesson, return to the chat and discuss any questions you have with the agent.</p>
         </footer>
     </div>
 
@@ -957,17 +957,17 @@
         }
 
         function clearDisplays() {
-            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
         }
 
         function resetPlaceholders() {
-            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run বা Next চাপুন...</span>';
-            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run বা Next চাপুন...</span>';
-            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run বা Next চাপুন...</span>';
-            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">Prompt সিলেক্ট করে Run বা Next চাপুন...</span>';
+            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">Select a prompt and click Run or Next...</span>';
+            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">Select a prompt and click Run or Next...</span>';
+            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">Select a prompt and click Run or Next...</span>';
+            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">Select a prompt and click Run or Next...</span>';
         }
 
         document.getElementById('run-sim-btn').addEventListener('click', () => {
@@ -1066,13 +1066,13 @@
 
             const manualBtn = document.getElementById('manual-sim-btn');
             if (manualBtn) {
-                const btnTextsBn = [
-                    'পরবর্তী: Embedding',
-                    'পরবর্তী: Attention',
-                    'পরবর্তী: Prediction',
-                    'পুনরায় শুরু করুন (Restart)'
+                const btnTexts = [
+                    'Next: Embedding',
+                    'Next: Attention',
+                    'Next: Prediction',
+                    'Restart Manual'
                 ];
-                manualBtn.innerText = btnTextsBn[index];
+                manualBtn.innerText = btnTexts[index];
             }
         }
 
@@ -1153,10 +1153,10 @@
             ];
 
             // Clear all displays at the start of simulation
-            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
-            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">প্রস্তুত করা হচ্ছে... (Processing...)</span>';
+            document.getElementById('token-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('embed-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('trans-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
+            document.getElementById('prediction-display').innerHTML = '<span style="color:var(--text-secondary)">Preparing...</span>';
 
             const delay = 2200;
             steps.forEach((step, index) => {
@@ -1245,13 +1245,13 @@
                 const manualBtn = document.getElementById('manual-sim-btn');
                 if (manualBtn) {
                     const idx = getStepIndex(tabId);
-                    const btnTextsBn = [
-                        'পরবর্তী: Embedding',
-                        'পরবর্তী: Attention',
-                        'পরবর্তী: Prediction',
-                        'পুনরায় শুরু করুন (Restart)'
+                    const btnTexts = [
+                        'Next: Embedding',
+                        'Next: Attention',
+                        'Next: Prediction',
+                        'Restart Manual'
                     ];
-                    manualBtn.innerText = btnTextsBn[idx];
+                    manualBtn.innerText = btnTexts[idx];
                 }
             }
 

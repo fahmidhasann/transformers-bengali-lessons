@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 2: Tokens, Embeddings, and Positional Encoding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Vector Visualizer Specific Styles */
+        .vector-container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media(max-width: 768px) {
+            .vector-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .vector-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .vector-visualizer {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-grid {
+            width: 100%;
+            height: auto;
+            max-height: 350px;
+        }
+
+        .grid-line {
+            stroke: rgba(255, 255, 255, 0.04);
+            stroke-width: 1;
+        }
+
+        .axis-line {
+            stroke: #94a3b8;
+            stroke-width: 1.5;
+        }
+
+        .axis-label {
+            fill: #94a3b8;
+            font-size: 11px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .word-point circle {
+            fill: var(--accent-purple);
+            stroke: #0f172a;
+            stroke-width: 2;
+            transition: all 0.3s ease;
+        }
+
+        .word-point text {
+            fill: var(--text-primary);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .formula-box {
+            background: rgba(168, 85, 247, 0.15);
+            border: 1.5px dashed var(--accent-purple);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #f8fafc;
+            font-weight: 500;
+        }
+
+        /* Positional Encoding Widgets */
+        .pe-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .pe-word-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pe-word-btn.active {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        .vector-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .vector-table th, .vector-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .vector-table th {
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .vector-display-row {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .vector-block {
+            flex-grow: 1;
+            max-width: 60px;
+            text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.2rem;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #0f172a;
+            box-shadow: inset 0 0 5px rgba(255,255,255,0.2);
+            transition: all 0.5s ease;
+        }
+
+        .vector-math-symbol {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-secondary);
+            display: inline-block;
+        }
+
+        /* Quiz Styles */
+        .quiz-question {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .quiz-q-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* SVG Vector Visualizer Overrides (Lesson 2) */
+        :root.light .grid-line {
+            stroke: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .axis-line {
+            stroke: #475569;
+        }
+
+        :root.light .axis-label {
+            fill: #475569;
+        }
+
+        :root.light .word-point circle {
+            stroke: #f8fafc;
+        }
+
+        :root.light .vector-math-symbol {
+            color: #475569;
+        }
+
+        :root.light .vector-table {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 2</span>
+            <h1>Tokens, Embeddings, and Positional Encoding</h1>
+            <p class="subtitle">How is human language converted into mathematical vectors and how are word positions preserved?</p>
+        </header>
+
+        <!-- Intro Section -->
+        <div class="card">
+            <h2>Introduction</h2>
+            <p>In the previous lesson, we learned that an LLM or Transformer essentially works to predict the next word. But the question is: <strong>computers do not understand the text or writing we provide directly. They only understand numbers!</strong></p>
+            <p>To send a sentence into a Transformer, it must undergo 3 fundamental processes:</p>
+            <ol>
+                <li><span class="highlight">Tokenization:</span> Breaking the sentence down into smaller pieces or tokens and assigning a unique number (ID) to each.</li>
+                <li><span class="highlight">Embedding:</span> Converting the token IDs into a meaningful high-dimensional vector or a list of numbers.</li>
+                <li><span class="highlight">Positional Encoding:</span> Adding positional information to the vector indicating where each word is located in the sentence.</li>
+            </ol>
+            <p>Let's dive deep into these three concepts using simple explanations and interactive simulations.</p>
+        </div>
+
+        <!-- Section 1: Tokenization -->
+        <div class="card">
+            <h2>1. Tokenization</h2>
+            <p><span class="tech-term">Tokenization</span> is the process of breaking input text down into small, meaningful pieces called <span class="tech-term">Tokens</span>. These tokens can be whole words, sub-words, or even individual characters.</p>
+            
+            <p>Key tokenization concepts are outlined below:</p>
+            <ul>
+                <li><strong>Vocabulary:</strong> This is the model's own dictionary. The total number of unique tokens the model knows is the vocabulary size (e.g., GPT-4's vocab size is around 100,000).</li>
+                <li><strong>Token IDs:</strong> After tokenizing, each token is assigned a number or ID corresponding to its index in the dictionary. For example, <code>"cat"</code> might be <code>3797</code>.</li>
+            </ul>
+
+            <p style="margin-top: 1rem; font-weight: 600;">Why is Sub-word Tokenization used in modern LLMs?</p>
+            <p>If we work only with whole words (word-level), the dictionary becomes extremely large, and if there is any unfamiliar word or typo, the model cannot recognize it (known as the <strong>Out-of-Vocabulary or OOV</strong> problem). On the other hand, if we only use individual characters (character-level, e.g., a, b, c), the token count per sentence becomes very large, making it difficult to process.</p>
+            <p>Sub-word algorithms like <span class="tech-term">Byte Pair Encoding (BPE)</span> solve this issue. BPE keeps frequently used words whole while splitting unfamiliar words into familiar sub-words.</p>
+            
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px dashed var(--border-color); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                <p style="font-weight: 600; margin-bottom: 0.5rem; color: var(--accent-purple);">Example of Sub-word Tokenization:</p>
+                <p>If the model does not find the word <code>"unhappiness"</code> in its vocabulary, it splits it into three familiar sub-word tokens: <br>
+                <code class="tech-term">"un"</code> (ID: 421) + <code class="tech-term">"happi"</code> (ID: 8932) + <code class="tech-term">"ness"</code> (ID: 1205)</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Embeddings -->
+        <div class="card">
+            <h2>2. Embeddings</h2>
+            <p>After tokenization, we have token IDs or numbers. However, IDs alone are not enough for mathematical processing. For example, if <code>"cat"</code> has ID <code>3797</code> and <code>"dog"</code> has ID <code>4251</code>, mathematically <code>4251 > 3797</code> has no meaning. It does not explain what relationship exists between cats and dogs.</p>
+            
+            <p>This is where <span class="tech-term">Embeddings</span> come in. Each token ID is converted into a <span class="tech-term">High-dimensional Dense Vector</span> (a list of numbers). This is called the <span class="tech-term">Embedding Space</span>. In practice, the vector size ($d_{model}$) ranges from 768 up to 4096 or more.</p>
+            
+            <p style="font-weight: 600;">Semantic Space:</p>
+            <p>Each dimension of the embedding vector represents some subtle semantic meaning or grammatical feature (e.g., gender, royalty, animacy, etc.). Words with similar meanings will have vectors positioned close to each other in this multi-dimensional space.</p>
+            <p>As a result, we can perform semantic vector math on words! For example:</p>
+            <div class="formula-box">
+                Vector("King") - Vector("Man") + Vector("Woman") ≈ Vector("Queen")
+            </div>
+        </div>
+
+        <!-- Interactive Visualizer 1 -->
+        <div class="card">
+            <h2>Interactive Semantic Vector Space (Vector Space Simulator)</h2>
+            <p>Select a relationship below and click the <strong>"Run Vector Math"</strong> button to witness the magic of semantic vector arithmetic.</p>
+            
+            <div class="vector-container">
+                <div class="vector-controls">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label for="relation-select" style="font-size: 0.9rem; color: var(--text-secondary);">Select relationship:</label>
+                        <select id="relation-select" onchange="resetVisualizer()">
+                            <option value="gender">Gender Relationship (King - Man + Woman = Queen)</option>
+                            <option value="capital">Country & Capital (France - Paris + Tokyo = Japan)</option>
+                            <option value="verb">Verb Tense (Walking - Walk + Run = Running)</option>
+                        </select>
+                    </div>
+                    <button id="run-math-btn" onclick="runVectorMath()" style="margin-top: 0.5rem; padding: 0.85rem;">Run Vector Math</button>
+                    
+                    <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); min-height: 120px;">
+                        <h4 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Explanation & Equation:</h4>
+                        <div id="vector-narration" style="font-size: 0.95rem; line-height: 1.5;">
+                            Select a relationship and click Run...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vector-visualizer">
+                    <svg class="svg-grid" viewBox="0 0 500 400" id="vector-svg">
+                        <defs>
+                            <marker id="arrow-cyan" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-cyan)" />
+                            </marker>
+                            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" />
+                            </marker>
+                            <marker id="arrow-purple" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-purple)" />
+                            </marker>
+                            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent-green)" />
+                            </marker>
+                        </defs>
+                        <!-- Grid lines -->
+                        <g id="grid-lines"></g>
+                        
+                        <!-- Axes lines -->
+                        <line x1="50" y1="350" x2="470" y2="350" class="axis-line" marker-end="url(#arrow-cyan)" />
+                        <line x1="50" y1="350" x2="50" y2="20" class="axis-line" marker-end="url(#arrow-cyan)" />
+                        <text x="460" y="370" class="axis-label" text-anchor="middle">Semantic Dimension X</text>
+                        <text x="25" y="30" class="axis-label" text-anchor="middle" transform="rotate(-90 25 30)">Semantic Dimension Y</text>
+                        <text x="40" y="365" class="axis-label">0</text>
+
+                        <!-- Math Vector Lines -->
+                        <line id="vector-A" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-cyan)" stroke-width="2.5" marker-end="url(#arrow-cyan)" style="opacity:0" />
+                        <line id="vector-B" x1="0" y1="0" x2="0" y2="0" stroke="#ef4444" stroke-width="2.5" marker-end="url(#arrow-red)" style="opacity:0" />
+                        <line id="vector-C" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-purple)" stroke-width="2.5" marker-end="url(#arrow-purple)" style="opacity:0" />
+                        <line id="vector-R" x1="0" y1="0" x2="0" y2="0" stroke="var(--accent-green)" stroke-width="4" marker-end="url(#arrow-green)" style="opacity:0; filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));" />
+
+                        <!-- Plotted word dots -->
+                        <g id="word-points"></g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Positional Encoding -->
+        <div class="card">
+            <h2>3. Positional Encoding</h2>
+            <p>We now have word meanings represented as embeddings. However, a unique feature of the Transformer architecture is that it <strong>processes all tokens simultaneously in parallel</strong>. It does not process words one by one like older RNN or LSTM models.</p>
+            
+            <p>While parallel processing makes the model extremely fast, it introduces a new problem: <strong>the model loses track of word order or sequence (Permutation Invariance)</strong>.</p>
+            <p>Without positional encoding, the model cannot distinguish between these two sentences:</p>
+            <div style="background: rgba(255, 255, 255, 0.03); border-left: 4px solid #ef4444; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem;">
+                1. <strong>"The cat ate the mouse"</strong><br>
+                2. <strong>"The mouse ate the cat"</strong>
+            </div>
+            <p>Since both sentences contain the exact same tokens, they would look identical to the model without positional information.</p>
+
+            <p style="font-weight: 600;">Solution: Adding Positional Encoding Vectors</p>
+            <p>For each position in the sentence (Index 0, 1, 2...), a unique mathematical vector of the same size as the embedding vector is constructed. This position vector is then added to the token embedding vector:</p>
+            <div class="formula-box">
+                Combined Representation = Token Embedding + Positional Encoding
+            </div>
+            <p>Trigonometric sine and cosine waves are used to generate positional vectors, enabling the model to learn relative and absolute word positions.</p>
+        </div>
+
+        <!-- Interactive Visualizer 2 -->
+        <div class="card">
+            <h2>Interactive Positional Encoding Simulator</h2>
+            <p>Sentence: <strong style="color: var(--accent-cyan);">"The cat ate the mouse"</strong>. Click on the words below to see how their positions generate a <strong>Position Vector</strong>, which is added to the <strong>Word Vector</strong> to form a unique fingerprint (<strong>Combined Representation</strong>).</p>
+            
+            <div class="pe-selector">
+                <button class="pe-word-btn active" onclick="selectPEWord(0)">The (Index 0)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(1)">cat (Index 1)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(2)">ate (Index 2)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(3)">the (Index 3)</button>
+                <button class="pe-word-btn" onclick="selectPEWord(4)">mouse (Index 4)</button>
+            </div>
+
+            <table class="vector-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Vector Type</th>
+                        <th style="width: 75%;">Vector Value (6-Dimensions Heatmap)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">
+                            Word Vector (<span style="color: var(--accent-cyan);">W</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">Meaning representation</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-word-vector"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; vertical-align: middle;">
+                            <span class="vector-math-symbol" style="position: absolute; margin-top: -1.7rem; margin-left: 2rem;">+</span>
+                            Position Vector (<span style="color: var(--accent-purple);">P</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">Position representation</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-pos-vector"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600; vertical-align: middle;">
+                            <span class="vector-math-symbol" style="position: absolute; margin-top: -1.7rem; margin-left: 2rem;">=</span>
+                            Combined Vector (<span style="color: var(--accent-green);">C</span>)
+                            <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">Input to model (W + P)</div>
+                        </td>
+                        <td>
+                            <div class="vector-display-row" id="pe-combined-vector"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div id="pe-explanation" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.95rem;">
+                <!-- Dynamically loaded -->
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment (Quiz)</h2>
+            <p>Answer the questions below to test your understanding:</p>
+            
+            <!-- Question 1 -->
+            <div class="quiz-question" id="q1">
+                <p class="quiz-q-text">1. How do modern tokenizers (like BPE in GPT) handle Out-Of-Vocabulary (OOV) or unfamiliar words?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'incorrect', 'Incorrect! Character-level tokenization makes the sequence length too long, consuming excessive memory. BPE uses a better approach.')">
+                    A) Breaking every word down into individual characters.
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'correct', 'Excellent! BPE splits unfamiliar or long words into smaller, familiar sub-words that already exist in the vocabulary.')">
+                    B) Splitting unfamiliar words into smaller, familiar sub-words (sub-words).
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 1, 'incorrect', 'Incorrect! Dropping words would alter the meaning of the sentence, so the model does not do this.')">
+                    C) Removing unfamiliar words from the sentence entirely.
+                </div>
+                <div id="q1-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="quiz-question" id="q2">
+                <p class="quiz-q-text">2. What does 'King - Man + Woman = Queen' represent in the Word Embedding space?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'incorrect', 'Incorrect! This is not a text search query.')">
+                    A) A lookup algorithm to find definitions in a dictionary.
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'correct', 'Outstanding! Embedding vectors capture grammatical and semantic meanings, enabling vector math directly on words.')">
+                    B) Embedding vectors capture semantic and grammatical relationships, enabling mathematical operations on words.
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 2, 'incorrect', 'Incorrect! This equation is a classic, successful demonstration of embedding properties.')">
+                    C) A flawed equation that does not actually work in practice.
+                </div>
+                <div id="q2-feedback" class="quiz-feedback"></div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="quiz-question" id="q3">
+                <p class="quiz-q-text">3. Why is it essential to add Positional Encoding in the Transformer architecture?</p>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'incorrect', 'Incorrect! Uniqueness of IDs is handled by the tokenizer, not positional encoding.')">
+                    A) To make each Token ID unique.
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'incorrect', 'Incorrect! Positional encoding does not shrink the vectors; it enriches them.')">
+                    B) To reduce the size or dimensionality of the embedding vectors.
+                </div>
+                <div class="quiz-option" onclick="checkQAnswer(this, 3, 'correct', 'Exactly! Because Transformers process tokens in parallel, adding positional encodings is mandatory to retain word order.')">
+                    C) Since Transformers process all tokens in parallel, it is needed to represent their order or sequence in the sentence.
+                </div>
+                <div id="q3-feedback" class="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>Helpful and Authoritative References (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Tokenization Guide: <a href="https://huggingface.co/docs/transformers/tokenizer_summary" target="_blank">Hugging Face Tokenizer Summary</a></li>
+                <li>Visual Guide to Embeddings & Positional Encodings: <a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">The Illustrated Transformer by Jay Alammar</a></li>
+                <li>Mathematical details of Positional Waves: <a href="https://kazemnejad.com/blog/transformer_architecture_positional_encoding/" target="_blank">Transformer Positional Embedding Explained by Amir Kazemnejad</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn how the <strong>Self-Attention Mechanism</strong> works and how the model extracts context.</p>
+        </div>
+
+        <footer>
+            <p>After reading this lesson, return to the chat and discuss any questions you have with the agent.</p>
+        </footer>
+    </div>
+
+    <script>
+        // ------------------ Vector Space Simulator ------------------
+        const relations = {
+            gender: {
+                A: { name: "King", x: 8, y: 2 },
+                B: { name: "Man", x: 2, y: 2 },
+                C: { name: "Woman", x: 2, y: 6 },
+                D: { name: "Queen", x: 8, y: 6 },
+                formula: "King - Man + Woman = Queen",
+                explain: {
+                    step0: "Let's watch the vector math animation for gender relationships. Equation: King - Man + Woman = Queen",
+                    step1: "1. A vector is drawn from the origin (0,0) to Word A (King). King vector: [8.0, 2.0]",
+                    step2: "2. Next, Word B (Man) [2.0, 2.0] is subtracted. This means moving in the opposite direction of Man from the head of the King vector, arriving at [6.0, 0.0].",
+                    step3: "3. Now, Word C (Woman) [2.0, 6.0] is added. Moving in the direction of Woman from [6.0, 0.0] brings us to [8.0, 6.0].",
+                    step4: "4. Magic! Our final coordinate [8.0, 6.0] is the exact position of Word D (Queen)! Therefore: King - Man + Woman = Queen"
+                }
+            },
+            capital: {
+                A: { name: "France", x: 8, y: 7 },
+                B: { name: "Paris", x: 3, y: 7 },
+                C: { name: "Tokyo", x: 3, y: 2 },
+                D: { name: "Japan", x: 8, y: 2 },
+                formula: "France - Paris + Tokyo = Japan",
+                explain: {
+                    step0: "Let's view the vector math for country-capital relationships. Equation: France - Paris + Tokyo = Japan",
+                    step1: "1. A vector is drawn from the origin (0,0) to Word A (France). France vector: [8.0, 7.0]",
+                    step2: "2. Next, Word B (Paris) [3.0, 7.0] is subtracted. Moving in the opposite direction of Paris from the France vector head leads to [5.0, 0.0].",
+                    step3: "3. Now, Word C (Tokyo) [3.0, 2.0] is added. Moving in the direction of Tokyo from [5.0, 0.0] brings us to [8.0, 2.0].",
+                    step4: "4. Brilliant! The resulting coordinate [8.0, 2.0] is the exact position of Word D (Japan)! Therefore: France - Paris + Tokyo = Japan"
+                }
+            },
+            verb: {
+                A: { name: "Walking", x: 3, y: 7 },
+                B: { name: "Walk", x: 3, y: 3 },
+                C: { name: "Run", x: 7, y: 3 },
+                D: { name: "Running", x: 7, y: 7 },
+                formula: "Walking - Walk + Run = Running",
+                explain: {
+                    step0: "Let's look at the vector math for verb tenses. Equation: Walking - Walk + Run = Running",
+                    step1: "1. A vector is drawn from the origin (0,0) to Word A (Walking). Walking vector: [3.0, 7.0]",
+                    step2: "2. Next, Word B (Walk) [3.0, 3.0] is subtracted. Moving in the opposite direction of Walk from the Walking vector head lands us at [0.0, 4.0].",
+                    step3: "3. Now, Word C (Run) [7.0, 3.0] is added. Moving in the direction of Run from [0.0, 4.0] brings us to [7.0, 7.0].",
+                    step4: "4. Wow! The final coordinate [7.0, 7.0] matches Word D (Running) vector exactly! Therefore: Walking - Walk + Run = Running"
+                }
+            }
+        };
+
+        let isAnimating = false;
+
+        function toSVG(x, y) {
+            return {
+                x: 50 + x * 40,
+                y: 350 - y * 40
+            };
+        }
+
+        function initVisualizer() {
+            // Draw grid lines
+            const gridG = document.getElementById('grid-lines');
+            let gridHTML = '';
+            for (let x = 1; x <= 10; x++) {
+                const pos = toSVG(x, 0);
+                gridHTML += `<line x1="${pos.x}" y1="20" x2="${pos.x}" y2="350" class="grid-line" />`;
+                gridHTML += `<text x="${pos.x}" y="365" class="axis-label" text-anchor="middle">${x}</text>`;
+            }
+            for (let y = 1; y <= 8; y++) {
+                const pos = toSVG(0, y);
+                gridHTML += `<line x1="50" y1="${pos.y}" x2="470" y2="${pos.y}" class="grid-line" />`;
+                gridHTML += `<text x="35" y="${pos.y + 4}" class="axis-label" text-anchor="end">${y}</text>`;
+            }
+            gridG.innerHTML = gridHTML;
+
+            resetVisualizer();
+        }
+
+        function resetVisualizer() {
+            if (isAnimating) return;
+            const relationKey = document.getElementById('relation-select').value;
+            const rel = relations[relationKey];
+
+            // Reset vectors opacity
+            document.getElementById('vector-A').style.opacity = 0;
+            document.getElementById('vector-B').style.opacity = 0;
+            document.getElementById('vector-C').style.opacity = 0;
+            document.getElementById('vector-R').style.opacity = 0;
+
+            // Redraw word points
+            const pointsG = document.getElementById('word-points');
+            pointsG.innerHTML = '';
+            
+            const keys = ['A', 'B', 'C', 'D'];
+            keys.forEach(k => {
+                const pt = rel[k];
+                const svgPt = toSVG(pt.x, pt.y);
+                pointsG.innerHTML += `
+                    <g class="word-point" id="pt-${pt.name.replace(/\s+/g, '')}">
+                        <circle cx="${svgPt.x}" cy="${svgPt.y}" r="6" />
+                        <text x="${svgPt.x}" y="${svgPt.y - 12}" text-anchor="middle">${pt.name}</text>
+                    </g>
+                `;
+            });
+
+            document.getElementById('vector-narration').innerHTML = `Relationship: <span class="highlight">${rel.formula}</span><br>Click <strong>Run Vector Math</strong> to watch the animation.`;
+        }
+
+        function animateLine(lineId, x1, y1, x2, y2, duration, callback) {
+            const line = document.getElementById(lineId);
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x1);
+            line.setAttribute('y2', y1);
+            line.style.opacity = 1;
+            
+            const startTime = performance.now();
+            
+            function update(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const currentX = x1 + (x2 - x1) * progress;
+                const currentY = y1 + (y2 - y1) * progress;
+                
+                line.setAttribute('x2', currentX);
+                line.setAttribute('y2', currentY);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function runVectorMath() {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            const btn = document.getElementById('run-math-btn');
+            btn.disabled = true;
+            btn.style.opacity = 0.5;
+            
+            const relationKey = document.getElementById('relation-select').value;
+            const rel = relations[relationKey];
+            
+            const vA = document.getElementById('vector-A');
+            const vB = document.getElementById('vector-B');
+            const vC = document.getElementById('vector-C');
+            const vR = document.getElementById('vector-R');
+            
+            vA.style.opacity = 0;
+            vB.style.opacity = 0;
+            vC.style.opacity = 0;
+            vR.style.opacity = 0;
+            
+            const org = toSVG(0, 0);
+            const svgA = toSVG(rel.A.x, rel.A.y);
+            
+            const ab_x = rel.A.x - rel.B.x;
+            const ab_y = rel.A.y - rel.B.y;
+            const svgAB = toSVG(ab_x, ab_y);
+            
+            const svgD = toSVG(rel.D.x, rel.D.y);
+            
+            const narration = document.getElementById('vector-narration');
+            narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step0}</p>`;
+            
+            // Step 1: Animate Vector A
+            setTimeout(() => {
+                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step1}</p>`;
+                animateLine('vector-A', org.x, org.y, svgA.x, svgA.y, 1000, () => {
+                    // Step 2: Animate Vector -B
+                    setTimeout(() => {
+                        narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step2}</p>`;
+                        animateLine('vector-B', svgA.x, svgA.y, svgAB.x, svgAB.y, 1000, () => {
+                            // Step 3: Animate Vector +C
+                            setTimeout(() => {
+                                narration.innerHTML = `<p style="animation: popIn 0.3s">${rel.explain.step3}</p>`;
+                                animateLine('vector-C', svgAB.x, svgAB.y, svgD.x, svgD.y, 1000, () => {
+                                    // Step 4: Animate Result Vector
+                                    setTimeout(() => {
+                                        narration.innerHTML = `<p style="color:var(--accent-green); font-weight:bold; animation: popIn 0.3s">${rel.explain.step4}</p>`;
+                                        animateLine('vector-R', org.x, org.y, svgD.x, svgD.y, 1200, () => {
+                                            const ptD = document.getElementById(`pt-${rel.D.name.replace(/\s+/g, '')}`);
+                                            if (ptD) {
+                                                ptD.querySelector('circle').style.fill = 'var(--accent-green)';
+                                                ptD.querySelector('circle').setAttribute('r', '9');
+                                                setTimeout(() => {
+                                                    ptD.querySelector('circle').setAttribute('r', '6');
+                                                }, 1000);
+                                            }
+                                            isAnimating = false;
+                                            btn.disabled = false;
+                                            btn.style.opacity = 1;
+                                        });
+                                    }, 400);
+                                });
+                            }, 400);
+                        });
+                    }, 400);
+                });
+            }, 600);
+        }
+
+        // ------------------ Positional Encoding Simulator ------------------
+        const peWords = [
+            { word: "The", idx: 0, embed: [0.15, -0.62, 0.48, -0.09, 0.35, -0.21] },
+            { word: "cat", idx: 1, embed: [0.34, 0.81, -0.15, 0.92, -0.45, 0.73] },
+            { word: "ate", idx: 2, embed: [-0.22, 0.44, 0.89, -0.56, 0.12, -0.37] },
+            { word: "the", idx: 3, embed: [0.15, -0.62, 0.48, -0.09, 0.35, -0.21] }, // same as index 0 to prove positional impact
+            { word: "mouse", idx: 4, embed: [0.41, 0.72, -0.28, 0.85, -0.51, 0.61] }
+        ];
+
+        function computePE(pos, d = 6) {
+            const pe = [];
+            const base = 100;
+            for (let i = 0; i < d; i += 2) {
+                const denom = Math.pow(base, i / d);
+                pe[i] = Math.sin(pos / denom);
+                pe[i+1] = Math.cos(pos / denom);
+            }
+            return pe;
+        }
+
+        function getColorForVal(val, type) {
+            let norm;
+            if (type === 'comb') {
+                norm = (val + 2) / 4; // combined max range is roughly -2 to +2
+                norm = Math.max(0, Math.min(1, norm));
+            } else {
+                norm = (val + 1) / 2; // -1 to +1 range
+                norm = Math.max(0, Math.min(1, norm));
+            }
+            
+            if (type === 'word') {
+                return `rgba(6, 182, 212, ${0.15 + norm * 0.85})`; // Cyan glow
+            } else if (type === 'pos') {
+                return `rgba(168, 85, 247, ${0.15 + norm * 0.85})`; // Purple glow
+            } else {
+                return `rgba(16, 185, 129, ${0.15 + norm * 0.85})`; // Green glow
+            }
+        }
+
+        function selectPEWord(idx) {
+            // Update button UI
+            const btns = document.querySelectorAll('.pe-word-btn');
+            btns.forEach((btn, bIdx) => {
+                if (bIdx === idx) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const data = peWords[idx];
+            const wordEmbed = data.embed;
+            const posEmbed = computePE(idx, 6);
+            const combined = wordEmbed.map((w, i) => w + posEmbed[i]);
+
+            // Render W Row
+            const wordRow = document.getElementById('pe-word-vector');
+            wordRow.innerHTML = wordEmbed.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'word')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Render P Row
+            const posRow = document.getElementById('pe-pos-vector');
+            posRow.innerHTML = posEmbed.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'pos')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Render C Row
+            const combRow = document.getElementById('pe-combined-vector');
+            combRow.innerHTML = combined.map(val => `
+                <div class="vector-block" style="background-color: ${getColorForVal(val, 'comb')}">
+                    ${val.toFixed(2)}
+                </div>
+            `).join('');
+
+            // Set Explanation
+            const expDiv = document.getElementById('pe-explanation');
+            let explanationText = `
+                <p>You selected: <strong class="highlight">"${data.word}" (Position Index: ${data.idx})</strong></p>
+                <p>• Word Vector <code>W</code> represents the word's semantic meaning.</p>
+                <p>• Position Vector <code>P</code> is generated via sine/cosine waves for <code>pos = ${data.idx}</code>.</p>
+                <p>• The final vector <code>C = W + P</code> is sent directly to the Transformer blocks.</p>
+            `;
+
+            if (data.idx === 0 || data.idx === 3) {
+                explanationText += `
+                    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 0.75rem; margin-top: 0.75rem;">
+                        <strong>💡 Special Observation:</strong> <br>
+                        Note that the input sentence contains two occurrences of <strong>"The" / "the"</strong> (index 0 and index 3).
+                        Both have the <strong>exact same Word Vector (W)</strong> [0.15, -0.62, 0.48, -0.09, 0.35, -0.21]. However, because they are at different positions, their <strong>Position Vectors (P) are different</strong>.
+                        Consequently, their final <strong>Combined Vectors (C) are completely distinct</strong>! This allows the model to know which word came first and which came later, despite processing them in parallel.
+                    </div>
+                `;
+            }
+
+            expDiv.innerHTML = explanationText;
+        }
+
+        // ------------------ Quiz Functions ------------------
+        function checkQAnswer(element, questionId, status, feedback) {
+            const questionBox = document.getElementById(`q${questionId}`);
+            const options = questionBox.querySelectorAll('.quiz-option');
+            const feedbackBox = document.getElementById(`q${questionId}-feedback`);
+
+            // Reset option states
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            feedbackBox.className = 'quiz-feedback';
+
+            if (status === 'correct') {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerHTML = `✅ ${feedback}`;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerHTML = `❌ ${feedback}`;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+
+        // Window load initializer
+        window.onload = () => {
+            initVisualizer();
+            selectPEWord(0); // init PE widget
+        };
+    </script>
+</body>
+</html>

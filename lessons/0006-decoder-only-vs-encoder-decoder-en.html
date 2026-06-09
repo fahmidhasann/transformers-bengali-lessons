@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson 6: Decoder-Only Architecture & Causal Masking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', 'Hind Siliguri', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #cbd5e1;
+        }
+
+        .highlight {
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .tech-term {
+            font-family: 'Outfit', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Comparison Table Styles */
+        .arch-comparison-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .arch-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .arch-card.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+            background: rgba(30, 41, 59, 0.4);
+        }
+
+        .arch-card-header {
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .arch-card-header.encoder-only {
+            background: rgba(168, 85, 247, 0.2);
+            color: var(--accent-purple);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .arch-card-header.decoder-only {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent-cyan);
+            border-bottom: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .arch-card-header.enc-dec {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .arch-card-body {
+            padding: 1.2rem;
+        }
+
+        .arch-card-body ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .arch-card-body li {
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .arch-card-body li strong {
+            color: var(--text-primary);
+        }
+
+        /* Simulator Styles */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .simulator-layout {
+                grid-template-columns: 1.2fr 1fr;
+            }
+        }
+
+        .sim-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .step-indicator-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.8rem;
+        }
+
+        .step-label {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .step-number-badge {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .context-label, .prediction-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .context-display-tokens {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            min-height: 48px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .sim-token {
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            color: var(--accent-cyan);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            animation: popIn 0.3s ease;
+        }
+
+        .sim-token.newly-added {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: var(--accent-purple);
+            color: #e9d5ff;
+        }
+
+        .explanation-box {
+            background: rgba(30, 41, 59, 0.3);
+            border-left: 4px solid var(--accent-purple);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            min-height: 100px;
+            line-height: 1.6;
+        }
+
+        .prediction-value {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            color: var(--accent-green);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prediction-probability {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .sim-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .sim-btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            flex-grow: 1;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+        }
+
+        .secondary-btn {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .secondary-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .reset-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            flex-grow: 0;
+        }
+
+        .reset-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .grid-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 1.2rem;
+            border-radius: 12px;
+        }
+
+        /* 2D Grid Styles */
+        .mask-grid {
+            display: grid;
+            grid-template-columns: 75px repeat(5, 1fr);
+            grid-template-rows: auto repeat(5, 1fr);
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .grid-header-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            padding: 4px;
+            text-align: center;
+            word-break: break-word;
+        }
+
+        .grid-header-cell.y-axis {
+            color: var(--accent-purple);
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 0.75rem;
+        }
+
+        .grid-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .grid-cell.active-attention {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.4);
+            color: var(--text-primary);
+        }
+
+        .grid-cell.active-attention:hover {
+            background: rgba(6, 182, 212, 0.25);
+            border-color: var(--accent-cyan);
+        }
+
+        .grid-cell.masked {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(30, 41, 59, 0.7),
+                rgba(30, 41, 59, 0.7) 6px,
+                rgba(15, 23, 42, 0.8) 6px,
+                rgba(15, 23, 42, 0.8) 12px
+            );
+            border-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .grid-cell.masked:hover {
+            opacity: 0.9;
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        .grid-cell.inactive-row {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .grid-cell .percentage {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .grid-cell .label {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tooltip style */
+        .cell-tooltip {
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 200px;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .grid-cell:hover .cell-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Quiz Styles */
+        .quiz-question {
+            margin-bottom: 2rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-bottom: 1.5rem;
+        }
+
+        .quiz-question:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .quiz-option {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-cyan);
+        }
+
+        .quiz-option.correct {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent-green);
+        }
+
+        .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .quiz-feedback.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: block;
+        }
+
+        .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: block;
+        }
+
+        /* Citations */
+        .citations {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 2rem;
+        }
+
+        .citations a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .citations a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Light Theme Overrides */
+        :root.light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --border-color: rgba(15, 23, 42, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent-cyan: #0891b2;
+            --accent-purple: #9333ea;
+            --accent-green: #059669;
+            --shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.04);
+        }
+
+        :root.light body {
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
+        }
+
+        :root.light h1 {
+            background: linear-gradient(135deg, #0f172a, #475569);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        :root.light p, :root.light ul, :root.light ol, :root.light li {
+            color: #334155;
+        }
+
+        :root.light [style*="color: #cbd5e1"],
+        :root.light [style*="color:#cbd5e1"] {
+            color: #334155 !important;
+        }
+
+        :root.light [style*="color: var(--text-secondary)"] {
+            color: #475569 !important;
+        }
+
+        :root.light .tech-term {
+            background: rgba(0, 0, 0, 0.04);
+            color: #0f172a;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .step-node {
+            background: rgba(255, 255, 255, 0.5);
+            border-left-color: var(--accent-purple);
+        }
+
+        :root.light .step-node.active {
+            background: rgba(255, 255, 255, 0.9);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.1);
+        }
+
+        :root.light .simulator,
+        :root.light .attention-visualization-container,
+        :root.light .analogy-card,
+        :root.light .quiz-question {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .analogy-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .sim-output {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light select, :root.light input {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+        }
+
+        :root.light button {
+            color: #ffffff !important;
+        }
+
+        :root.light .token-box {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: var(--accent-purple);
+        }
+
+        :root.light .token-id {
+            color: #475569;
+        }
+
+        :root.light .embed-box {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        :root.light .attn-bar-container,
+        :root.light .weight-bar-bg {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .prediction-item {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-item.top {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.3);
+            color: #0891b2;
+        }
+
+        :root.light .quiz-option {
+            background: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #334155;
+        }
+
+        :root.light .quiz-option:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .quiz-option.correct {
+            background: rgba(5, 150, 105, 0.1);
+            border-color: var(--accent-green);
+            color: #047857;
+        }
+
+        :root.light .quiz-option.incorrect {
+            background: rgba(239, 68, 68, 0.10);
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        :root.light .quiz-feedback.success {
+            background: rgba(5, 150, 105, 0.08);
+            color: #047857;
+            border-color: rgba(5, 150, 105, 0.15);
+        }
+
+        :root.light .quiz-feedback.error {
+            background: rgba(239, 68, 68, 0.08);
+            color: #b91c1c;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        :root.light .citations {
+            border-top-color: rgba(0, 0, 0, 0.08);
+        }
+
+        /* Simulator controls and causal grids custom overrides (Lesson 6) */
+        :root.light .arch-card {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .arch-card.active {
+            border-color: var(--accent-cyan);
+            background: #ffffff;
+            box-shadow: 0 0 15px rgba(8, 145, 178, 0.08);
+        }
+
+        :root.light .arch-card-body li {
+            color: #334155;
+        }
+
+        :root.light .sim-controls,
+        :root.light .grid-panel {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .context-display-tokens {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .sim-token {
+            background: rgba(8, 145, 178, 0.08);
+            border-color: rgba(8, 145, 178, 0.2);
+        }
+
+        :root.light .sim-token.newly-added {
+            background: rgba(147, 51, 234, 0.1);
+            border-color: rgba(147, 51, 234, 0.3);
+            color: #7c3aed;
+        }
+
+        :root.light .explanation-box {
+            background: rgba(255, 255, 255, 0.4);
+            color: #334155;
+        }
+
+        :root.light .prediction-value {
+            background: rgba(5, 150, 105, 0.08);
+            border-color: rgba(5, 150, 105, 0.2);
+            color: #047857;
+        }
+
+        :root.light .prediction-probability {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        :root.light .secondary-btn {
+            background: #ffffff;
+            color: #334155;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        :root.light .mask-grid {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        :root.light .grid-cell {
+            border-color: rgba(0, 0, 0, 0.05);
+        }
+
+        :root.light .grid-cell.active-attention {
+            background: rgba(8, 145, 178, 0.1);
+            border-color: rgba(8, 145, 178, 0.25);
+            color: #0f172a;
+        }
+
+        :root.light .grid-cell.active-attention:hover {
+            background: rgba(8, 145, 178, 0.18);
+            border-color: var(--accent-cyan);
+        }
+
+        :root.light .grid-cell.masked {
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(241, 245, 249, 0.9),
+                rgba(241, 245, 249, 0.9) 6px,
+                rgba(226, 232, 240, 0.9) 6px,
+                rgba(226, 232, 240, 0.9) 12px
+            );
+            border-color: rgba(0, 0, 0, 0.02);
+            color: #94a3b8;
+            opacity: 0.9;
+        }
+
+        :root.light .cell-tooltip {
+            background: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+
+        /* Theme Toggle Button Styles */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        :root.light .theme-toggle-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        :root.light .theme-toggle-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+        }
+
+        .theme-toggle-btn .icon-sun {
+            display: block;
+        }
+        
+        .theme-toggle-btn .icon-moon {
+            display: none;
+        }
+
+        :root.light .theme-toggle-btn .icon-sun {
+            display: none;
+        }
+        
+        :root.light .theme-toggle-btn .icon-moon {
+            display: block;
+        }
+
+        /* Transitions */
+        *, *::before, *::after {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Theme Toggle Button -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <header>
+            <span class="badge">Lesson 6</span>
+            <h1>Decoder-Only Architecture & Causal Masking</h1>
+            <p class="subtitle">How do modern LLMs generate the next word without seeing the future?</p>
+        </header>
+
+        <!-- Section 1: Intro and Comparison -->
+        <div class="card">
+            <h2>Three Transformer Architectures</h2>
+            <p>In 2017, when Google proposed the original <span class="tech-term">Transformer Architecture</span>, it contained both an <span class="tech-term">Encoder</span> and a <span class="tech-term">Decoder</span>. However, over time, researchers discovered that not all tasks require both components. This realization led to three main architectures:</p>
+            
+            <div class="arch-comparison-container">
+                <!-- BERT -->
+                <div class="arch-card">
+                    <div class="arch-card-header encoder-only">BERT (Encoder-Only)</div>
+                    <div class="arch-card-body">
+                        <ul>
+                            <li><strong>Attention Type:</strong> Bidirectional Attention. Each token can directly attend to all other tokens to its left and right.</li>
+                            <li><strong>Core Goal:</strong> Deeply understanding text (Understanding).</li>
+                            <li><strong>Use Cases:</strong> Sentiment analysis, text classification, Named Entity Recognition (NER).</li>
+                            <li><strong>Example:</strong> BERT, RoBERTa.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- GPT / LLaMA -->
+                <div class="arch-card active">
+                    <div class="arch-card-header decoder-only">GPT / LLaMA (Decoder-Only)</div>
+                    <div class="arch-card-body">
+                        <ul>
+                            <li><strong>Attention Type:</strong> Causal Attention (one-way / past-facing). Each token can only attend to previous tokens to its left.</li>
+                            <li><strong>Core Goal:</strong> Creating new text (Generative).</li>
+                            <li><strong>Use Cases:</strong> Autoregressive text generation, chatbots (e.g., ChatGPT, Claude), coding assistants.</li>
+                            <li><strong>Example:</strong> GPT-4, LLaMA, Mistral, Gemini (Decoder-only).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- T5 -->
+                <div class="arch-card">
+                    <div class="arch-card-header enc-dec">T5 (Encoder-Decoder)</div>
+                    <div class="arch-card-body">
+                        <ul>
+                            <li><strong>Attention Type:</strong> Bidirectional attention in the Encoder, and Causal attention in the Decoder.</li>
+                            <li><strong>Core Goal:</strong> Transforming one format sequence into another format sequence (Seq2Seq).</li>
+                            <li><strong>Use Cases:</strong> Machine translation, text summarization.</li>
+                            <li><strong>Example:</strong> T5, BART.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <p style="margin-top: 1.5rem;"><strong>Why are modern LLMs mostly Decoder-Only?</strong><br>The Decoder-Only architecture is highly scalable and ideal for direct <span class="highlight">Unsupervised Pre-training</span> on massive text datasets. It can process the entire sentence at once to predict the next tokens, making excellent use of GPU parallel processing power.</p>
+        </div>
+
+        <!-- Section 2: Causal Masking -->
+        <div class="card">
+            <h2>Causal Masking: The Technique of Hiding Future Words</h2>
+            <p>Suppose we are training the model with this sentence: <span class="highlight">"LLMs are changing our world"</span>.</p>
+            <p>To take advantage of parallel training, we feed the entire sentence into the model at once. However, the model's task is to predict <code>"are"</code> given <code>"LLMs"</code>, and predict <code>"changing"</code> given <code>"LLMs are"</code>.</p>
+            <p>If the model can see all tokens at once, it will simply cheat by looking ahead at the future words (e.g., <code>"changing"</code>). To stop the model from "seeing the future," we use <span class="tech-term">Causal Masking</span>.</p>
+            
+            <div style="display: flex; justify-content: center; margin: 1.5rem 0;">
+                <div style="font-family: 'Outfit', monospace; background: rgba(15, 23, 42, 0.7); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); display: inline-block; width: 100%; max-width: 320px;">
+                    <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.8rem; text-align: center; font-weight: bold;">Causal Mask Matrix (M)</div>
+                    <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; align-items: center;">
+                        <div>[ &nbsp; 0, -&infin;, -&infin;, -&infin;, -&infin; ]</div>
+                        <div>[ &nbsp; 0, &nbsp; 0, -&infin;, -&infin;, -&infin; ]</div>
+                        <div>[ &nbsp; 0, &nbsp; 0, &nbsp; 0, -&infin;, -&infin; ]</div>
+                        <div>[ &nbsp; 0, &nbsp; 0, &nbsp; 0, &nbsp; 0, -&infin; ]</div>
+                        <div>[ &nbsp; 0, &nbsp; 0, &nbsp; 0, &nbsp; 0, &nbsp; 0 ]</div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Mathematical Formulation:</strong><br>In the Attention mechanism, after calculating the dot product of Query and Key, we get raw attention scores or logits. We add the <span class="tech-term">Causal Mask Matrix (M)</span> to these logits before applying Softmax.</p>
+            
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Outfit', monospace; text-align: center; font-size: 1.05rem; margin: 1rem 0;">
+                Attention(Q, K, V) = Softmax( <span class="highlight">Q K<sup>T</sup> / &radic;d<sub>k</sub></span> + <span style="color: var(--accent-purple); font-weight: bold;">M</span> ) V
+            </div>
+            
+            <p>Here, the value of $M$ is <span class="highlight">$-\infty$ (Negative Infinity)</span> for future positions. When we calculate <span class="tech-term">Softmax</span> over these scores, $e^{-\infty}$ becomes <span class="highlight">0 (Zero)</span>. As a result, the probability of attending to future words becomes mathematically zero!</p>
+        </div>
+
+        <!-- Section 3: Autoregressive Generation -->
+        <div class="card">
+            <h2>Autoregressive Generation</h2>
+            <p>When we use ChatGPT or Gemini, words appear on the screen one by one. This is called <span class="tech-term">Autoregressive Generation</span>. The steps are as follows:</p>
+            <p>
+                1. <strong>Input Prompt:</strong> The model first takes the user's prompt (e.g., <code>"LLMs are"</code>).<br>
+                2. <strong>Next Token Prediction:</strong> Processing through the Causal Mask, the model calculates probabilities for the next token and selects the one with the highest probability (e.g., <code>"changing"</code>).<br>
+                3. <strong>Context Update:</strong> The new token is appended to the previous input (making the new input: <code>"LLMs are changing"</code>).<br>
+                4. <strong>Loop and Stop Signal:</strong> This loop continues iteratively until the model generates a special token called <span class="tech-term">&lt;EOS&gt; (End of Sequence)</span>.
+            </p>
+        </div>
+
+        <!-- Interactive simulator card -->
+        <div class="card">
+            <h2>Interactive Causal Masking & Autoregressive Grid</h2>
+            <p>Click the <strong>"Next Step"</strong> button in the simulator below to see how the model generates a new word at each step, and how future words are locked by the 🔒 symbol in the <strong>2D Attention Matrix</strong>. You can hover your mouse over the cells to see detailed descriptions.</p>
+
+            <div class="simulator-layout">
+                <!-- Control panel -->
+                <div class="sim-controls">
+                    <div class="step-indicator-container">
+                        <span class="step-label">Generation Step:</span>
+                        <span id="step-number" class="step-number-badge">1 / 5</span>
+                    </div>
+                    
+                    <div class="context-container">
+                        <div class="context-label">Current Model Input (Context):</div>
+                        <div id="context-display" class="context-display-tokens">
+                            <!-- JS will inject tokens here -->
+                        </div>
+                    </div>
+
+                    <div class="explanation-box" id="step-explanation">
+                        <!-- JS will inject explanation here -->
+                    </div>
+
+                    <div class="prediction-box">
+                        <div class="prediction-label">Next Token Prediction (Output):</div>
+                        <div id="prediction-display-box" class="prediction-value">
+                            <!-- JS will inject prediction here -->
+                        </div>
+                    </div>
+
+                    <div class="sim-buttons">
+                        <button id="prev-btn" class="sim-btn secondary-btn" disabled>◀ Previous Step</button>
+                        <button id="next-btn" class="sim-btn primary-btn">Next Step ▶</button>
+                        <button id="reset-btn" class="sim-btn reset-btn">🔄 Reset</button>
+                    </div>
+                </div>
+
+                <!-- Grid Visualizer -->
+                <div class="grid-panel">
+                    <div style="text-align: center; margin-bottom: 0.8rem; font-size: 0.85rem; color: var(--text-secondary);">
+                        <span style="color: var(--accent-purple); font-weight: bold;">Query Token (Row)</span> vs. <span style="color: var(--accent-cyan); font-weight: bold;">Key Token (Column)</span> Attention Matrix
+                    </div>
+                    
+                    <div class="mask-grid" id="causal-grid">
+                        <!-- Grid cells will be dynamically generated by JS -->
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem; justify-content: center; margin-top: 1rem; font-size: 0.75rem; color: var(--text-secondary);">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 12px; height: 12px; background: rgba(6, 182, 212, 0.15); border: 1px solid var(--accent-cyan); border-radius: 2px;"></span>
+                            <span>Allowed Attention</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 12px; height: 12px; background: repeating-linear-gradient(45deg, rgba(30,41,59,0.7), rgba(30,41,59,0.7) 3px, rgba(15,23,42,0.8) 3px, rgba(15,23,42,0.8) 6px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2px;"></span>
+                            <span>Causal Masked (Future words, blocked)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Card -->
+        <div class="card">
+            <h2>Quick Assessment</h2>
+            <p>Answer the following questions to test your understanding:</p>
+            
+            <div style="margin-top: 1.5rem;">
+                
+                <!-- Question 1 -->
+                <div class="quiz-question">
+                    <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">Question 1: Why is Causal Masking used in Decoder-Only models like GPT or LLaMA?</p>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'Sorry! Parallel processing on GPUs is a native feature of the Transformer itself; Causal Masking is not required for it.')">
+                        A) To increase model processing speed, allowing parallel computations on GPUs.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, true, 'Excellent! Causal Masking hides future words so that the model learns the correct strategy of predicting the next token using only preceding ones.')">
+                        B) To prevent the model from seeing future tokens during training (preventing cheating) so it learns to predict the next token.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(1, this, false, 'Incorrect! This is the job of the Tokenization step and has nothing to do with Causal Masking.')">
+                        C) To divide input text into small tokens.
+                    </div>
+                    <div class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-question">
+                    <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">Question 2: What mathematical operation is performed to zero out attention on future tokens in Causal Masking?</p>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'Incorrect! Adding 0 to the attention score doesn\'t change it, so attention won\'t be zero.')">
+                        A) 0 (Zero) is added to the attention scores.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, true, 'Amazing! Adding -inf to attention logits causes Softmax to calculate e^(-inf) as 0, completely shutting off attention.')">
+                        B) -inf (Negative Infinity) is added to the attention logits, which becomes 0 (Zero) after applying Softmax.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(2, this, false, 'Sorry! We do not delete columns directly; we add a mask matrix.')">
+                        C) The future token columns are deleted from the attention matrix.
+                    </div>
+                    <div class="quiz-feedback"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-question">
+                    <p style="font-weight: 600; font-size: 1.1rem; margin-bottom: 1rem;">Question 3: What signal does the model generate to terminate the loop in Autoregressive Generation?</p>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'Incorrect! The model generates text fully automatically and decides when to stop on its own.')">
+                        A) The user clicks the stop button.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, true, 'Exactly correct! When the model predicts the special <EOS> (End of Sequence) token as the next token, the generation loop terminates automatically.')">
+                        B) Generating the <EOS> (End of Sequence) token.
+                    </div>
+                    <div class="quiz-option" onclick="checkAnswer(3, this, false, 'Incorrect! Although there is a maximum sequence length limit, architecturally, the termination is driven by generating a stop token.')">
+                        C) Generating the same number of words as the input prompt.
+                    </div>
+                    <div class="quiz-feedback"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Resources & Citations -->
+        <div class="card citations">
+            <h3>Reliable Reference Sources (Citations):</h3>
+            <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                <li>Architectural comparison: <a href="https://arxiv.org/abs/1910.10683" target="_blank">Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer (T5 Paper)</a></li>
+                <li>Visual explanation of GPT and Causal Attention: <a href="https://jalammar.github.io/illustrated-gpt2/" target="_blank">The Illustrated GPT-2 (Visualizing Transformer Language Models) by Jay Alammar</a></li>
+                <li>Causal Masking and Autoregressive decoding: <a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (Vaswani et al.)</a></li>
+            </ul>
+            <p style="margin-top: 1rem; font-style: italic;">In the next lesson, we will learn about Multi-Head Attention and how it helps the model attend to different parts of the sequence simultaneously.</p>
+        </div>
+
+        <footer>
+            <p>After reading this lesson, return to the chat and discuss any questions with the AI agent.</p>
+        </footer>
+    </div>
+
+    <script>
+        const tokens = ["LLMs", " are", " changing", " our", " world"];
+        const attnMatrix = [
+            [100, 0, 0, 0, 0],
+            [75, 25, 0, 0, 0],
+            [20, 50, 30, 0, 0],
+            [10, 15, 60, 15, 0],
+            [15, 5, 25, 15, 40]
+        ];
+
+        let currentStep = 1;
+
+        function updateSimulator() {
+            // 1. Update step number badge
+            document.getElementById('step-number').innerText = `${currentStep} / 5`;
+            
+            // 2. Update context display
+            const contextDiv = document.getElementById('context-display');
+            contextDiv.innerHTML = tokens.slice(0, currentStep).map((tok, idx) => {
+                const isNew = (idx === currentStep - 1 && currentStep > 1);
+                return `<span class="sim-token ${isNew ? 'newly-added' : ''}">${tok.trim()}</span>`;
+            }).join('');
+
+            // 3. Update prediction display
+            const predDiv = document.getElementById('prediction-display-box');
+            if (currentStep < 5) {
+                predDiv.innerHTML = `
+                    <span>"${tokens[currentStep].trim()}"</span>
+                    <span class="prediction-probability">Prob: ${[88, 76, 62, 92][currentStep - 1]}%</span>
+                `;
+            } else {
+                predDiv.innerHTML = `
+                    <span>"&lt;EOS&gt;"</span>
+                    <span class="prediction-probability" style="background: var(--accent-green); color: black;">End of Sequence</span>
+                `;
+            }
+
+            // 4. Update explanation box
+            const explanations = [
+                `<strong>Step 1: (First Input Token)</strong><br>The prompt <code>"LLMs"</code> is given as input to the model. Since this is the first word, by Causal Masking rules it can only see itself (100% attention). Based on this, the model predicts the next word: <code>" are"</code> (88% probability).`,
+                `<strong>Step 2: (First Predicted Token Appended)</strong><br>The previously generated word <code>" are"</code> is now appended to the input, making it <code>"LLMs are"</code>. Look at the second row (Query: " are"); it can see the previous word <code>"LLMs"</code> and itself, but future tokens are masked. The model predicts: <code>" changing"</code> (76% probability).`,
+                `<strong>Step 3: (Second Predicted Token Appended)</strong><br>The input is now <code>"LLMs are changing"</code>. The third Query token <code>" changing"</code> can attend to the preceding tokens <code>"LLMs"</code> and <code>" are"</code>. Through conditional attention, it gives the highest importance to <code>" are"</code> (50%). The model outputs: <code>" our"</code> (62% probability).`,
+                `<strong>Step 4: (Third Predicted Token Appended)</strong><br>The input is now <code>"LLMs are changing our"</code>. The fourth Query token <code>" our"</code> attends to its preceding 3 tokens, with the majority of attention on <code>" changing"</code> (60%). The model predicts: <code>" world"</code> (92% probability).`,
+                `<strong>Step 5: (Generation Complete)</strong><br>Our target sentence has been generated: <code>"LLMs are changing our world"</code>. The final Query token <code>" world"</code> can attend to all tokens in the sentence. Finally, the model predicts the special <code>"&lt;EOS&gt;"</code> (End of Sequence) token, ending the generation loop.`
+            ];
+            document.getElementById('step-explanation').innerHTML = explanations[currentStep - 1];
+
+            // 5. Enable/Disable buttons
+            document.getElementById('prev-btn').disabled = (currentStep === 1);
+            document.getElementById('next-btn').disabled = (currentStep === 5);
+
+            // 6. Render Grid
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const gridDiv = document.getElementById('causal-grid');
+            gridDiv.innerHTML = '';
+
+            // Add Top-Left Corner Header Cell
+            const corner = document.createElement('div');
+            corner.className = 'grid-header-cell';
+            corner.innerHTML = 'Q \\ K';
+            gridDiv.appendChild(corner);
+
+            // Add Column Headers (Keys)
+            for (let j = 0; j < 5; j++) {
+                const header = document.createElement('div');
+                header.className = 'grid-header-cell';
+                header.innerText = tokens[j].trim();
+                gridDiv.appendChild(header);
+            }
+
+            // Add Rows
+            for (let i = 0; i < 5; i++) {
+                // Row Label (Query)
+                const rowLabel = document.createElement('div');
+                rowLabel.className = 'grid-header-cell y-axis';
+                rowLabel.innerText = tokens[i].trim();
+                gridDiv.appendChild(rowLabel);
+
+                // Grid Cells for this row
+                for (let j = 0; j < 5; j++) {
+                    const cell = document.createElement('div');
+                    
+                    // Check state
+                    const isInactiveRow = (i >= currentStep);
+                    const isMasked = (j > i);
+
+                    if (isInactiveRow) {
+                        cell.className = 'grid-cell inactive-row';
+                        cell.innerHTML = `
+                            <span class="percentage">-</span>
+                            <span class="label">pending</span>
+                            <div class="cell-tooltip">This step has not been processed yet.</div>
+                        `;
+                    } else if (isMasked) {
+                        cell.className = 'grid-cell masked';
+                        cell.innerHTML = `
+                            <span class="percentage">🔒</span>
+                            <span class="label">-&infin; (0%)</span>
+                            <div class="cell-tooltip">Query: '${tokens[i].trim()}', Key: '${tokens[j].trim()}'. This is a future token, so its attention is blocked by Causal Masking (-inf).</div>
+                        `;
+                    } else {
+                        const attnVal = attnMatrix[i][j];
+                        cell.className = 'grid-cell active-attention';
+                        // Highlight current active row's cells with a slight effect
+                        if (i === currentStep - 1) {
+                            cell.style.background = 'rgba(6, 182, 212, 0.25)';
+                            cell.style.borderColor = 'var(--accent-cyan)';
+                        }
+                        cell.innerHTML = `
+                            <span class="percentage">${attnVal}%</span>
+                            <span class="label">attn</span>
+                            <div class="cell-tooltip">Query: '${tokens[i].trim()}', Key: '${tokens[j].trim()}'. This cell is open. When generating the token '${tokens[i].trim()}', the model placed ${attnVal}% attention on '${tokens[j].trim()}'.</div>
+                        `;
+                    }
+                    gridDiv.appendChild(cell);
+                }
+            }
+        }
+
+        // Button Event Listeners
+        document.getElementById('next-btn').addEventListener('click', () => {
+            if (currentStep < 5) {
+                currentStep++;
+                updateSimulator();
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateSimulator();
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            currentStep = 1;
+            updateSimulator();
+        });
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSimulator();
+        });
+
+        // Quiz checking logic
+        function checkAnswer(questionNum, element, isCorrect, feedback) {
+            // Find the parent container or options list for this question
+            const questionCard = element.closest('.quiz-question');
+            const options = questionCard.querySelectorAll('.quiz-option');
+            
+            // Clear previous states for this question only
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+
+            const feedbackBox = questionCard.querySelector('.quiz-feedback');
+            feedbackBox.className = 'quiz-feedback';
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackBox.classList.add('success');
+                feedbackBox.innerHTML = '✨ ' + feedback;
+            } else {
+                element.classList.add('incorrect');
+                feedbackBox.classList.add('error');
+                feedbackBox.innerHTML = '❌ ' + feedback;
+            }
+        }
+
+        // --- Theme Synchronization Logic ---
+        function toggleTheme() {
+            const isLight = document.documentElement.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            
+            // If inside iframe, notify parent window
+            if (window.parent && window.parent !== window && typeof window.parent.syncThemeFromChild === 'function') {
+                window.parent.syncThemeFromChild(isLight ? 'light' : 'dark');
+            }
+        }
+
+        // Listen for storage events to sync tabs instantly
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme') {
+                const theme = e.newValue;
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
