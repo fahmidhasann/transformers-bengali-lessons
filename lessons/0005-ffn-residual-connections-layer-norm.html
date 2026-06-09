@@ -971,7 +971,7 @@
             <p><strong>Intuition (Key-Value Memory Bank):</strong></p>
             <p>গবেষকদের মতে, FFN মূলত একটি <span class="highlight">মেমোরি স্টোরেজ বা কী-ভ্যালু ডাটাবেজ</span> হিসেবে কাজ করে। 
             <ul>
-                <li style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #cbd5e1;">প্রথম লেয়ারটি ইনপুট টোকেন ভেক্টরকে একটি অত্যন্ত উচ্চ মাত্রায় (যেমন $d_{model}$ থেকে $4 \times d_{model}$) প্রজেক্ট করে। এটি ইনপুটের সাথে বিভিন্ন ধারণাগত প্যাটার্ন বা <strong>"Keys"</strong> ম্যাচ করায়।</li>
+                <li style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #cbd5e1;">প্রথম লেয়ারটি ইনপুট টোকেন ভেক্টরকে একটি অত্যন্ত উচ্চ মাত্রায় (যেমন d<sub>model</sub> থেকে 4 &times; d<sub>model</sub>) প্রজেক্ট করে। এটি ইনপুটের সাথে বিভিন্ন ধারণাগত প্যাটার্ন বা <strong>"Keys"</strong> ম্যাচ করায়।</li>
                 <li style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #cbd5e1;">নন-লিনিয়ার অ্যাক্টিভেশন ফাংশনটি গেট হিসেবে কাজ করে নির্ধারণ করে কোন কোন প্যাটার্ন বা জ্ঞান অ্যাক্টিভেট হওয়া উচিত।</li>
                 <li style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #cbd5e1;">দ্বিতীয় লেয়ারটি অ্যাক্টিভেট হওয়া ফিচারগুলোকে আবার মূল ডাইমেনশনে সংকুচিত করে আনে এবং সংগৃহীত নলেজ বা <strong>"Values"</strong> আমাদের টোকেন রিপ্রেজেন্টেশনে যোগ করে।</li>
             </ul>

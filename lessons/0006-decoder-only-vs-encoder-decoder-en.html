@@ -1048,7 +1048,7 @@
                 Attention(Q, K, V) = Softmax( <span class="highlight">Q K<sup>T</sup> / &radic;d<sub>k</sub></span> + <span style="color: var(--accent-purple); font-weight: bold;">M</span> ) V
             </div>
             
-            <p>Here, the value of $M$ is <span class="highlight">$-\infty$ (Negative Infinity)</span> for future positions. When we calculate <span class="tech-term">Softmax</span> over these scores, $e^{-\infty}$ becomes <span class="highlight">0 (Zero)</span>. As a result, the probability of attending to future words becomes mathematically zero!</p>
+            <p>Here, the value of M is <span class="highlight">&minus;&infin; (Negative Infinity)</span> for future positions. When we calculate <span class="tech-term">Softmax</span> over these scores, e<sup>&minus;&infin;</sup> becomes <span class="highlight">0 (Zero)</span>. As a result, the probability of attending to future words becomes mathematically zero!</p>
         </div>
 
         <!-- Section 3: Autoregressive Generation -->

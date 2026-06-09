@@ -739,7 +739,7 @@
             <h2>2. Embeddings</h2>
             <p>After tokenization, we have token IDs or numbers. However, IDs alone are not enough for mathematical processing. For example, if <code>"cat"</code> has ID <code>3797</code> and <code>"dog"</code> has ID <code>4251</code>, mathematically <code>4251 > 3797</code> has no meaning. It does not explain what relationship exists between cats and dogs.</p>
             
-            <p>This is where <span class="tech-term">Embeddings</span> come in. Each token ID is converted into a <span class="tech-term">High-dimensional Dense Vector</span> (a list of numbers). This is called the <span class="tech-term">Embedding Space</span>. In practice, the vector size ($d_{model}$) ranges from 768 up to 4096 or more.</p>
+            <p>This is where <span class="tech-term">Embeddings</span> come in. Each token ID is converted into a <span class="tech-term">High-dimensional Dense Vector</span> (a list of numbers). This is called the <span class="tech-term">Embedding Space</span>. In practice, the vector size (d<sub>model</sub>) ranges from 768 up to 4096 or more.</p>
             
             <p style="font-weight: 600;">Semantic Space:</p>
             <p>Each dimension of the embedding vector represents some subtle semantic meaning or grammatical feature (e.g., gender, royalty, animacy, etc.). Words with similar meanings will have vectors positioned close to each other in this multi-dimensional space.</p>

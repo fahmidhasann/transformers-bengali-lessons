@@ -1050,7 +1050,7 @@
                 Attention(Q, K, V) = Softmax( <span class="highlight">Q K<sup>T</sup> / &radic;d<sub>k</sub></span> + <span style="color: var(--accent-purple); font-weight: bold;">M</span> ) V
             </div>
             
-            <p>এখানে ভবিষ্যতের পজিশনগুলোর জন্য $M$-এর মান হয় <span class="highlight">$-\infty$ (Negative Infinity)</span>। যখন আমরা এটার ওপর <span class="tech-term">Softmax</span> হিসাব করি, তখন $e^{-\infty}$ হয়ে যায় <span class="highlight">0 (Zero)</span>। ফলে ভবিষ্যতের শব্দগুলোর ওপর মনোযোগ দেওয়ার সম্ভাবনা গাণিতিকভাবে সম্পূর্ণ শূন্য হয়ে যায়!</p>
+            <p>এখানে ভবিষ্যতের পজিশনগুলোর জন্য M-এর মান হয় <span class="highlight">&minus;&infin; (Negative Infinity)</span>। যখন আমরা এটার ওপর <span class="tech-term">Softmax</span> হিসাব করি, তখন e<sup>&minus;&infin;</sup> হয়ে যায় <span class="highlight">0 (Zero)</span>। ফলে ভবিষ্যতের শব্দগুলোর ওপর মনোযোগ দেওয়ার সম্ভাবনা গাণিতিকভাবে সম্পূর্ণ শূন্য হয়ে যায়!</p>
         </div>
 
         <!-- Section 3: Autoregressive Generation -->
