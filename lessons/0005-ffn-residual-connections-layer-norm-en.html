@@ -1122,7 +1122,7 @@
             <p>Classical convolutional networks use <span class="tech-term">Batch Normalization</span>, which calculates statistics across a batch of multiple samples. However, in NLP, sequence lengths vary, and batch sizes can change dynamically. BatchNorm is not well-suited for sequential models. In contrast, <strong>LayerNorm</strong> processes each token vector individually, making it completely independent of batch size or sequence length.</p>
 
             <p><strong>Pre-LN vs. Post-LN Architectures:</strong></p>
-            <p>The original Transformer paper used <span class="tech-term">Post-LN</span>, where normalization occurred after the residual addition: <span class="math-inline">LN(x + SubLayer(x))</span>. However, modern large language models (like LLaMA, GPT-3) use <span class="tech-term">Pre-LN</span>, where the input is normalized before entering the sub-layer: <span class="math-inline">x + SubLayer(LN(x))</span>. This prevents gradients from exploding at the start of training and makes model optimization significantly more stable.</p>
+            <p>The original Transformer paper used <span class="tech-term">Post-LN</span> — normalization happened <em>after</em> the sub-layer finished its work: <span class="math-inline">LN(x + SubLayer(x))</span>. Modern models like LLaMA and GPT-3 use <span class="tech-term">Pre-LN</span> instead — the input is normalized <em>before</em> it enters the sub-layer: <span class="math-inline">x + SubLayer(LN(x))</span>. This keeps numbers from growing out of control at the start of training, so the model learns in a much more stable way.</p>
         </div>
 
         <!-- Interactive Simulator Card -->
