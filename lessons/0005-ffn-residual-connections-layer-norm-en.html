@@ -178,6 +178,26 @@
             font-weight: 600;
         }
 
+        .control-hint {
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            opacity: 0.8;
+            line-height: 1.35;
+            margin: -0.15rem 0 0.1rem;
+        }
+
+        .sim-tip {
+            background: rgba(56, 189, 248, 0.07);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin: 0.75rem 0 1.25rem;
+        }
+
         .toggle-switch {
             display: flex;
             background: rgba(30, 41, 59, 0.8);
@@ -1130,11 +1150,14 @@
             <h2>Interactive Layer Explorer: Skip Connection & LayerNorm</h2>
             <p>Using the simulator below, you can see how signal and gradient flow through a sub-layer when <strong>Skip Connection</strong> and <strong>Layer Normalization</strong> are turned on or off.</p>
 
+            <div class="sim-tip"><strong>How to use:</strong> Flip the switches on the left, then press <strong>Run Forward Pass</strong> to send numbers through the layer, or <strong>Run Backward Pass</strong> to send the learning signal back. Watch the bars on the right — do the numbers stay healthy, or do they blow up or fade away?</div>
+
             <div class="sim-container">
                 <!-- Controls -->
                 <div class="control-panel">
                     <div class="control-group">
                         <label>Skip Connection</label>
+                        <p class="control-hint">A shortcut that copies the input and adds it back at the end.</p>
                         <div class="toggle-switch" id="skip-toggle">
                             <button class="active" onclick="setSkip(true)">ON</button>
                             <button onclick="setSkip(false)">OFF</button>
@@ -1143,6 +1166,7 @@
 
                     <div class="control-group">
                         <label>Layer Normalization</label>
+                        <p class="control-hint">Rescales the numbers so they stay tidy — not too big, not too small.</p>
                         <div class="toggle-switch" id="ln-toggle">
                             <button class="active" onclick="setLN(true)">ON</button>
                             <button onclick="setLN(false)">OFF</button>
@@ -1150,10 +1174,11 @@
                     </div>
 
                     <div class="control-group">
-                        <label>Sub-Layer Weights</label>
+                        <label>Inner Layer Strength</label>
+                        <p class="control-hint">How strongly the inner layer (FFN) changes the numbers.</p>
                         <div class="toggle-switch" id="weight-toggle">
-                            <button class="active" onclick="setWeightScale(0.1)">Dampening (x0.1)</button>
-                            <button onclick="setWeightScale(3.0)">Amplifying (x3.0)</button>
+                            <button class="active" onclick="setWeightScale(0.1)">Shrink (×0.1)</button>
+                            <button onclick="setWeightScale(3.0)">Grow (×3.0)</button>
                         </div>
                     </div>
 
@@ -1194,14 +1219,14 @@
                         <g id="node-ln" class="node-group">
                             <rect x="210" y="120" width="180" height="45" rx="8" class="graph-node" />
                             <text x="300" y="139" class="node-text">Layer Normalization</text>
-                            <text x="300" y="155" id="lbl-ln-status" class="node-subtext" style="font-size: 10px;">Status: Active</text>
+                            <text x="300" y="155" id="lbl-ln-status" class="node-subtext" style="font-size: 10px;">On — numbers rescaled</text>
                         </g>
 
                         <!-- Sub-layer / FFN Node -->
                         <g id="node-ffn" class="node-group">
                             <rect x="210" y="200" width="180" height="45" rx="8" class="graph-node" />
-                            <text x="300" y="219" class="node-text">Sub-Layer (FFN)</text>
-                            <text x="300" y="235" id="lbl-ffn-status" class="node-subtext" style="font-size: 10px;">Weight Scale: 0.1x</text>
+                            <text x="300" y="219" class="node-text">Inner Layer (FFN)</text>
+                            <text x="300" y="235" id="lbl-ffn-status" class="node-subtext" style="font-size: 10px;">Signal shrunk to 0.1×</text>
                         </g>
 
                         <!-- Addition Node (circle) -->
@@ -1224,39 +1249,39 @@
                     <div class="console-grid">
                         <!-- Left: Checklist -->
                         <div class="console-steps">
-                            <h4 id="console-steps-title">Flow Steps (Forward Pass):</h4>
+                            <h4 id="console-steps-title">Forward pass — step by step:</h4>
                             <ul id="console-step-list">
-                                <li id="step-1">1. Input vector received</li>
-                                <li id="step-2">2. Layer Normalization applied</li>
-                                <li id="step-3">3. Sub-layer processing (FFN)</li>
-                                <li id="step-4">4. Skip Connection addition</li>
-                                <li id="step-5">5. Final output generated</li>
+                                <li id="step-1">1. Input numbers come in</li>
+                                <li id="step-2">2. Normalize — tidy the numbers</li>
+                                <li id="step-3">3. Inner layer (FFN) transforms them</li>
+                                <li id="step-4">4. Add the shortcut copy back</li>
+                                <li id="step-5">5. Output is ready</li>
                             </ul>
                         </div>
                         <!-- Right: Values & Mini Vectors -->
                         <div class="console-values">
-                            <h4 id="console-vals-title">Vector Mathematical State:</h4>
+                            <h4 id="console-vals-title">The numbers at each step:</h4>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-1">Input (x):</span>
+                                <span class="val-lbl" id="lbl-inspect-1">Input:</span>
                                 <div id="inspect-1" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-2">LayerNorm:</span>
+                                <span class="val-lbl" id="lbl-inspect-2">After Norm:</span>
                                 <div id="inspect-2" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-3">FFN Out:</span>
+                                <span class="val-lbl" id="lbl-inspect-3">After FFN:</span>
                                 <div id="inspect-3" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-4">Final (y):</span>
+                                <span class="val-lbl" id="lbl-inspect-4">Output:</span>
                                 <div id="inspect-4" class="val-box"></div>
                             </div>
                         </div>
                     </div>
                     <!-- Live feedback message -->
                     <div class="summary-banner" id="sim-summary-banner">
-                        Stable forward pass and healthy backward gradient. This is the ideal behavior of a Transformer block!
+                        A stable forward pass and a healthy learning signal coming back — this is exactly how a Transformer block should behave!
                     </div>
                 </div>
             </div>
@@ -1385,8 +1410,8 @@
         }
 
         function updateLabelDisplays() {
-            document.getElementById('lbl-ln-status').textContent = state.ln ? "Status: Active (LN)" : "Status: Bypassed";
-            document.getElementById('lbl-ffn-status').textContent = `Weight Scale: ${state.ffnScale}x (${state.ffnScale === 0.1 ? 'Dampening' : 'Amplifying'})`;
+            document.getElementById('lbl-ln-status').textContent = state.ln ? "On — numbers rescaled" : "Off — skipped";
+            document.getElementById('lbl-ffn-status').textContent = state.ffnScale === 0.1 ? "Signal shrunk to 0.1×" : "Signal grown to 3×";
             
             // Stylize nodes in SVG graph based on activation
             const lnNode = document.getElementById('node-ln').querySelector('rect');
@@ -1422,11 +1447,11 @@
             updateConsoleHeaders(true);
             const stepList = document.getElementById('console-step-list');
             stepList.innerHTML = `
-                <li id="step-1">1. Input vector received</li>
-                <li id="step-2">2. Layer Normalization applied</li>
-                <li id="step-3">3. Sub-layer processing (FFN)</li>
-                <li id="step-4">4. Skip Connection addition</li>
-                <li id="step-5">5. Final output generated</li>
+                <li id="step-1">1. Input numbers come in</li>
+                <li id="step-2">2. Normalize — tidy the numbers</li>
+                <li id="step-3">3. Inner layer (FFN) transforms them</li>
+                <li id="step-4">4. Add the shortcut copy back</li>
+                <li id="step-5">5. Output is ready</li>
             `;
 
             // Clear vectors
@@ -1441,19 +1466,19 @@
 
         function updateConsoleHeaders(isForward) {
             if (isForward) {
-                document.getElementById('console-steps-title').textContent = "Flow Steps (Forward Pass):";
-                document.getElementById('console-vals-title').textContent = "Vector Mathematical State:";
-                document.getElementById('lbl-inspect-1').textContent = "Input (x):";
-                document.getElementById('lbl-inspect-2').textContent = "LayerNorm:";
-                document.getElementById('lbl-inspect-3').textContent = "FFN Out:";
-                document.getElementById('lbl-inspect-4').textContent = "Final (y):";
+                document.getElementById('console-steps-title').textContent = "Forward pass — step by step:";
+                document.getElementById('console-vals-title').textContent = "The numbers at each step:";
+                document.getElementById('lbl-inspect-1').textContent = "Input:";
+                document.getElementById('lbl-inspect-2').textContent = "After Norm:";
+                document.getElementById('lbl-inspect-3').textContent = "After FFN:";
+                document.getElementById('lbl-inspect-4').textContent = "Output:";
             } else {
-                document.getElementById('console-steps-title').textContent = "Flow Steps (Backward Pass):";
-                document.getElementById('console-vals-title').textContent = "Gradient Mathematical State:";
-                document.getElementById('lbl-inspect-1').textContent = "Out Grad:";
-                document.getElementById('lbl-inspect-2').textContent = "FFN Grad:";
-                document.getElementById('lbl-inspect-3').textContent = "Skip Grad:";
-                document.getElementById('lbl-inspect-4').textContent = "Input Grad:";
+                document.getElementById('console-steps-title').textContent = "Backward pass — step by step:";
+                document.getElementById('console-vals-title').textContent = "The learning signal at each step:";
+                document.getElementById('lbl-inspect-1').textContent = "From output:";
+                document.getElementById('lbl-inspect-2').textContent = "Via FFN:";
+                document.getElementById('lbl-inspect-3').textContent = "Via skip:";
+                document.getElementById('lbl-inspect-4').textContent = "To input:";
             }
         }
 
@@ -1562,13 +1587,13 @@
             
             if (!state.skip && state.ffnScale === 0.1) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "Signal decay occurred! With no skip connection and dampened weights, the vector values shrank. Information will be lost in deep models.";
+                banner.textContent = "The signal faded away. With no shortcut and a shrinking inner layer, the numbers got tiny — in a deep model the information would be lost. (This is called signal decay.)";
             } else if (maxVal > 5) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "Values exploded (Exploding Values)! Without layer normalization or with large weights, the vector values are growing uncontrollably.";
+                banner.textContent = "The numbers blew up! Without normalization, or with a strong inner layer, the values grow out of control. (This is called exploding values.)";
             } else {
                 banner.classList.add('banner-stable');
-                banner.textContent = "Forward pass successful! Layer Normalization and Skip Connection work together to keep vector values within a stable range.";
+                banner.textContent = "Looks healthy! Normalization and the skip shortcut work together to keep the numbers in a safe range.";
             }
             banner.style.display = 'block';
         }
@@ -1582,11 +1607,11 @@
             updateConsoleHeaders(false);
             const stepList = document.getElementById('console-step-list');
             stepList.innerHTML = `
-                <li id="step-1">1. Output gradient received</li>
-                <li id="step-2">2. Backward flow via Skip Connection</li>
-                <li id="step-3">3. Gradient flow through FFN layer</li>
-                <li id="step-4">4. Backward pass through LayerNorm</li>
-                <li id="step-5">5. Final gradient reaching input layer</li>
+                <li id="step-1">1. Learning signal arrives from the output</li>
+                <li id="step-2">2. Part of it flows back through the shortcut</li>
+                <li id="step-3">3. Part flows back through the inner layer (FFN)</li>
+                <li id="step-4">4. It passes back through normalization</li>
+                <li id="step-5">5. Learning signal reaches the input</li>
             `;
 
             // Reset paths
@@ -1662,13 +1687,13 @@
             
             if (!state.skip && state.ffnScale === 0.1) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "Vanishing Gradient occurred! Without a Skip Connection and due to FFN dampening, the gradient shrank to just 0.10. Early layers won't learn.";
+                banner.textContent = "The learning signal almost vanished — it shrank to just 0.10. Without the shortcut, the earliest layers barely learn. (This is the vanishing gradient problem.)";
             } else if (!state.skip && state.ffnScale === 3.0) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "Exploding Gradient occurred! The gradient grew by 3.0x. In a deep network, this will completely destabilize training.";
+                banner.textContent = "The learning signal exploded — it grew 3× at this step. In a deep network this makes training blow up. (This is the exploding gradient problem.)";
             } else {
                 banner.classList.add('banner-stable');
-                banner.textContent = "Backward pass successful! Thanks to the Skip Connection, a healthy, strong gradient vector has flowed back to complete training.";
+                banner.textContent = "Healthy learning signal! Thanks to the skip shortcut, a strong signal flows all the way back so every layer can keep learning.";
             }
             banner.style.display = 'block';
         }

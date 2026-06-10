@@ -178,6 +178,26 @@
             font-weight: 600;
         }
 
+        .control-hint {
+            font-size: 0.78rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            opacity: 0.8;
+            line-height: 1.45;
+            margin: -0.15rem 0 0.1rem;
+        }
+
+        .sim-tip {
+            background: rgba(56, 189, 248, 0.07);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin: 0.75rem 0 1.25rem;
+        }
+
         .toggle-switch {
             display: flex;
             background: rgba(30, 41, 59, 0.8);
@@ -1130,11 +1150,14 @@
             <h2>Interactive Layer Explorer: Skip Connection & LayerNorm</h2>
             <p>নিচের সিমুলেটরটি ব্যবহার করে আপনি দেখতে পাবেন কীভাবে <strong>Skip Connection</strong> এবং <strong>Layer Normalization</strong> বন্ধ বা চালু রাখলে একটি সাব-লেয়ারের ভেতর দিয়ে সিগন্যাল ও গ্র্যাডিয়েন্ট প্রবাহিত হয়।</p>
 
+            <div class="sim-tip"><strong>যেভাবে ব্যবহার করবেন:</strong> বাঁদিকের সুইচগুলো চালু/বন্ধ করুন, তারপর সংখ্যাগুলোকে লেয়ারের ভেতর দিয়ে পাঠাতে <strong>Run Forward Pass</strong> চাপুন, অথবা শেখার সিগন্যাল (gradient) ফেরত পাঠাতে <strong>Run Backward Pass</strong> চাপুন। ডানদিকের বারগুলো লক্ষ্য করুন — সংখ্যাগুলো কি স্বাভাবিক থাকছে, নাকি অনেক বড় হয়ে যাচ্ছে বা মিলিয়ে যাচ্ছে?</div>
+
             <div class="sim-container">
                 <!-- Controls -->
                 <div class="control-panel">
                     <div class="control-group">
                         <label>Skip Connection</label>
+                        <p class="control-hint">একটি শর্টকাট, যা ইনপুটের একটি কপি করে শেষে আবার যোগ করে দেয়।</p>
                         <div class="toggle-switch" id="skip-toggle">
                             <button class="active" onclick="setSkip(true)">ON</button>
                             <button onclick="setSkip(false)">OFF</button>
@@ -1143,6 +1166,7 @@
 
                     <div class="control-group">
                         <label>Layer Normalization</label>
+                        <p class="control-hint">সংখ্যাগুলোকে পুনরায় স্কেল করে গোছানো রাখে — খুব বড়ও নয়, খুব ছোটও নয়।</p>
                         <div class="toggle-switch" id="ln-toggle">
                             <button class="active" onclick="setLN(true)">ON</button>
                             <button onclick="setLN(false)">OFF</button>
@@ -1150,10 +1174,11 @@
                     </div>
 
                     <div class="control-group">
-                        <label>Sub-Layer Weights</label>
+                        <label>Inner Layer Strength</label>
+                        <p class="control-hint">ভেতরের লেয়ার (FFN) সংখ্যাগুলোকে কতটা জোরে পরিবর্তন করবে।</p>
                         <div class="toggle-switch" id="weight-toggle">
-                            <button class="active" onclick="setWeightScale(0.1)">Dampening (x0.1)</button>
-                            <button onclick="setWeightScale(3.0)">Amplifying (x3.0)</button>
+                            <button class="active" onclick="setWeightScale(0.1)">Shrink (×0.1)</button>
+                            <button onclick="setWeightScale(3.0)">Grow (×3.0)</button>
                         </div>
                     </div>
 
@@ -1194,14 +1219,14 @@
                         <g id="node-ln" class="node-group">
                             <rect x="210" y="120" width="180" height="45" rx="8" class="graph-node" />
                             <text x="300" y="139" class="node-text">Layer Normalization</text>
-                            <text x="300" y="155" id="lbl-ln-status" class="node-subtext" style="font-size: 10px;">Status: Active</text>
+                            <text x="300" y="155" id="lbl-ln-status" class="node-subtext" style="font-size: 10px;">চালু — সংখ্যা রিস্কেল করা</text>
                         </g>
 
                         <!-- Sub-layer / FFN Node -->
                         <g id="node-ffn" class="node-group">
                             <rect x="210" y="200" width="180" height="45" rx="8" class="graph-node" />
-                            <text x="300" y="219" class="node-text">Sub-Layer (FFN)</text>
-                            <text x="300" y="235" id="lbl-ffn-status" class="node-subtext" style="font-size: 10px;">Weight Scale: 0.1x</text>
+                            <text x="300" y="219" class="node-text">Inner Layer (FFN)</text>
+                            <text x="300" y="235" id="lbl-ffn-status" class="node-subtext" style="font-size: 10px;">সিগন্যাল ছোট হয়ে 0.1×</text>
                         </g>
 
                         <!-- Addition Node (circle) -->
@@ -1224,39 +1249,39 @@
                     <div class="console-grid">
                         <!-- Left: Checklist -->
                         <div class="console-steps">
-                            <h4 id="console-steps-title">প্রবাহের ধাপসমূহ (Forward Pass):</h4>
+                            <h4 id="console-steps-title">ফরওয়ার্ড পাস — ধাপে ধাপে:</h4>
                             <ul id="console-step-list">
-                                <li id="step-1">1. ইনপুট ভেক্টর রিসিভ করা হয়েছে</li>
-                                <li id="step-2">2. লেয়ার নরমালাইজেশন প্রয়োগ</li>
-                                <li id="step-3">3. সাব-লেয়ার প্রসেসিং (FFN)</li>
-                                <li id="step-4">4. স্কিপ কানেকশন অ্যাডিশন</li>
-                                <li id="step-5">5. ফাইনাল আউটপুট তৈরি</li>
+                                <li id="step-1">1. ইনপুট সংখ্যাগুলো ভেতরে আসে</li>
+                                <li id="step-2">2. নরমালাইজ — সংখ্যাগুলো গোছানো হয়</li>
+                                <li id="step-3">3. ভেতরের লেয়ার (FFN) সেগুলো রূপান্তর করে</li>
+                                <li id="step-4">4. শর্টকাট কপিটি আবার যোগ হয়</li>
+                                <li id="step-5">5. আউটপুট প্রস্তুত</li>
                             </ul>
                         </div>
                         <!-- Right: Values & Mini Vectors -->
                         <div class="console-values">
-                            <h4 id="console-vals-title">ভেক্টরের গাণিতিক অবস্থা:</h4>
+                            <h4 id="console-vals-title">প্রতি ধাপে সংখ্যাগুলো:</h4>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-1">Input (x):</span>
+                                <span class="val-lbl" id="lbl-inspect-1">ইনপুট:</span>
                                 <div id="inspect-1" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-2">LayerNorm:</span>
+                                <span class="val-lbl" id="lbl-inspect-2">নরমালাইজ পরে:</span>
                                 <div id="inspect-2" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-3">FFN Out:</span>
+                                <span class="val-lbl" id="lbl-inspect-3">FFN পরে:</span>
                                 <div id="inspect-3" class="val-box"></div>
                             </div>
                             <div class="val-inspect-row">
-                                <span class="val-lbl" id="lbl-inspect-4">Final (y):</span>
+                                <span class="val-lbl" id="lbl-inspect-4">আউটপুট:</span>
                                 <div id="inspect-4" class="val-box"></div>
                             </div>
                         </div>
                     </div>
                     <!-- Live feedback message -->
                     <div class="summary-banner" id="sim-summary-banner">
-                        স্ট্যাবল ফরওয়ার্ড পাস এবং হেলদি ব্যাকওয়ার্ড গ্র্যাডিয়েন্ট। এটি একটি আদর্শ ট্রান্সফরমার ব্লকের আচরণ!
+                        একটি স্থিতিশীল ফরওয়ার্ড পাস এবং ফিরে আসা একটি হেলদি শেখার সিগন্যাল (gradient) — একটি ট্রান্সফরমার ব্লকের আচরণ ঠিক এমনই হওয়া উচিত!
                     </div>
                 </div>
             </div>
@@ -1385,8 +1410,8 @@
         }
 
         function updateLabelDisplays() {
-            document.getElementById('lbl-ln-status').textContent = state.ln ? "Status: Active (LN)" : "Status: Bypassed";
-            document.getElementById('lbl-ffn-status').textContent = `Weight Scale: ${state.ffnScale}x (${state.ffnScale === 0.1 ? 'Dampening' : 'Amplifying'})`;
+            document.getElementById('lbl-ln-status').textContent = state.ln ? "চালু — সংখ্যা রিস্কেল করা" : "বন্ধ — এড়িয়ে যাওয়া";
+            document.getElementById('lbl-ffn-status').textContent = state.ffnScale === 0.1 ? "সিগন্যাল ছোট হয়ে 0.1×" : "সিগন্যাল বড় হয়ে 3×";
             
             // Stylize nodes in SVG graph based on activation
             const lnNode = document.getElementById('node-ln').querySelector('rect');
@@ -1422,11 +1447,11 @@
             updateConsoleHeaders(true);
             const stepList = document.getElementById('console-step-list');
             stepList.innerHTML = `
-                <li id="step-1">1. ইনপুট ভেক্টর রিসিভ করা হয়েছে</li>
-                <li id="step-2">2. লেয়ার নরমালাইজেশন প্রয়োগ</li>
-                <li id="step-3">3. সাব-লেয়ার প্রসেসিং (FFN)</li>
-                <li id="step-4">4. স্কিপ কানেকশন অ্যাডিশন</li>
-                <li id="step-5">5. ফাইনাল আউটপুট তৈরি</li>
+                <li id="step-1">1. ইনপুট সংখ্যাগুলো ভেতরে আসে</li>
+                <li id="step-2">2. নরমালাইজ — সংখ্যাগুলো গোছানো হয়</li>
+                <li id="step-3">3. ভেতরের লেয়ার (FFN) সেগুলো রূপান্তর করে</li>
+                <li id="step-4">4. শর্টকাট কপিটি আবার যোগ হয়</li>
+                <li id="step-5">5. আউটপুট প্রস্তুত</li>
             `;
 
             // Clear vectors
@@ -1441,19 +1466,19 @@
 
         function updateConsoleHeaders(isForward) {
             if (isForward) {
-                document.getElementById('console-steps-title').textContent = "প্রবাহের ধাপসমূহ (Forward Pass):";
-                document.getElementById('console-vals-title').textContent = "ভেক্টরের গাণিতিক অবস্থা:";
-                document.getElementById('lbl-inspect-1').textContent = "Input (x):";
-                document.getElementById('lbl-inspect-2').textContent = "LayerNorm:";
-                document.getElementById('lbl-inspect-3').textContent = "FFN Out:";
-                document.getElementById('lbl-inspect-4').textContent = "Final (y):";
+                document.getElementById('console-steps-title').textContent = "ফরওয়ার্ড পাস — ধাপে ধাপে:";
+                document.getElementById('console-vals-title').textContent = "প্রতি ধাপে সংখ্যাগুলো:";
+                document.getElementById('lbl-inspect-1').textContent = "ইনপুট:";
+                document.getElementById('lbl-inspect-2').textContent = "নরমালাইজ পরে:";
+                document.getElementById('lbl-inspect-3').textContent = "FFN পরে:";
+                document.getElementById('lbl-inspect-4').textContent = "আউটপুট:";
             } else {
-                document.getElementById('console-steps-title').textContent = "প্রবাহের ধাপসমূহ (Backward Pass):";
-                document.getElementById('console-vals-title').textContent = "গ্র্যাডিয়েন্ট গাণিতিক অবস্থা:";
-                document.getElementById('lbl-inspect-1').textContent = "Out Grad:";
-                document.getElementById('lbl-inspect-2').textContent = "FFN Grad:";
-                document.getElementById('lbl-inspect-3').textContent = "Skip Grad:";
-                document.getElementById('lbl-inspect-4').textContent = "Input Grad:";
+                document.getElementById('console-steps-title').textContent = "ব্যাকওয়ার্ড পাস — ধাপে ধাপে:";
+                document.getElementById('console-vals-title').textContent = "প্রতি ধাপে শেখার সিগন্যাল:";
+                document.getElementById('lbl-inspect-1').textContent = "আউটপুট থেকে:";
+                document.getElementById('lbl-inspect-2').textContent = "FFN দিয়ে:";
+                document.getElementById('lbl-inspect-3').textContent = "শর্টকাট দিয়ে:";
+                document.getElementById('lbl-inspect-4').textContent = "ইনপুটে:";
             }
         }
 
@@ -1562,13 +1587,13 @@
             
             if (!state.skip && state.ffnScale === 0.1) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "সিগন্যাল ক্ষয় (Signal Decay) ঘটেছে! কোনো স্কিপ কানেকশন না থাকায় এবং ওয়েট ড্যাম্পেনিং হওয়ায় ভেক্টরের মান ছোট হয়ে গেছে। গভীর মডেলে তথ্য হারিয়ে যাবে।";
+                banner.textContent = "সিগন্যাল মিলিয়ে গেছে। কোনো শর্টকাট না থাকায় এবং ভেতরের লেয়ার সংকুচিত হওয়ায় সংখ্যাগুলো খুব ছোট হয়ে গেছে — গভীর মডেলে এই তথ্য হারিয়ে যেত। (একে বলে signal decay।)";
             } else if (maxVal > 5) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "মান অত্যধিক বড় হয়ে গেছে (Exploding Values)! লেয়ার নরমালাইজেশন ছাড়া বা অতিরিক্ত বড় ওয়েটের কারণে ভেক্টরের মান অনিয়ন্ত্রিতভাবে বাড়ছে।";
+                banner.textContent = "সংখ্যাগুলো অনেক বড় হয়ে গেছে! নরমালাইজেশন ছাড়া, বা ভেতরের লেয়ার খুব শক্তিশালী হলে, মানগুলো নিয়ন্ত্রণের বাইরে বেড়ে যায়। (একে বলে exploding values।)";
             } else {
                 banner.classList.add('banner-stable');
-                banner.textContent = "ফরওয়ার্ড পাস সফল! লেয়ার নরমালাইজেশন এবং স্কিপ কানেকশন একসাথে কাজ করে ভেক্টরের মানকে একটি স্থিতিশীল সীমার মধ্যে রেখেছে।";
+                banner.textContent = "দেখতে সুস্থ! নরমালাইজেশন এবং স্কিপ শর্টকাট একসাথে কাজ করে সংখ্যাগুলোকে নিরাপদ সীমার মধ্যে রাখে।";
             }
             banner.style.display = 'block';
         }
@@ -1582,11 +1607,11 @@
             updateConsoleHeaders(false);
             const stepList = document.getElementById('console-step-list');
             stepList.innerHTML = `
-                <li id="step-1">1. আউটপুট গ্র্যাডিয়েন্ট রিসিভ করা হয়েছে</li>
-                <li id="step-2">2. স্কিপ কানেকশন দিয়ে ব্যাকওয়ার্ড ফ্লো</li>
-                <li id="step-3">3. FFN লেয়ারের ভেতর দিয়ে গ্র্যাডিয়েন্ট ফ্লো</li>
-                <li id="step-4">4. লেয়ার নরমালাইজেশনের মধ্য দিয়ে ব্যাকওয়ার্ড</li>
-                <li id="step-5">5. ইনপুট লেয়ারে পৌঁছানো ফাইনাল গ্র্যাডিয়েন্ট</li>
+                <li id="step-1">1. আউটপুট থেকে শেখার সিগন্যাল আসে</li>
+                <li id="step-2">2. এর কিছু অংশ শর্টকাট দিয়ে ফিরে যায়</li>
+                <li id="step-3">3. কিছু অংশ ভেতরের লেয়ার (FFN) দিয়ে ফিরে যায়</li>
+                <li id="step-4">4. নরমালাইজেশনের মধ্য দিয়ে ফিরে যায়</li>
+                <li id="step-5">5. শেখার সিগন্যাল ইনপুটে পৌঁছায়</li>
             `;
 
             // Reset paths
@@ -1662,13 +1687,13 @@
             
             if (!state.skip && state.ffnScale === 0.1) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "ভ্যানিশিং গ্র্যাডিয়েন্ট (Vanishing Gradient) ঘটেছে! Skip Connection না থাকায় এবং FFN-এর সঙ্কোচনের কারণে গ্র্যাডিয়েন্ট কমে মাত্র ০.১০ হয়ে গেছে। গভীর লেয়ারগুলো শিখবে না।";
+                banner.textContent = "শেখার সিগন্যাল প্রায় মিলিয়ে গেছে — কমে মাত্র 0.10 হয়েছে। শর্টকাট না থাকায় শুরুর দিকের লেয়ারগুলো প্রায় শেখেই না। (একে বলে vanishing gradient সমস্যা।)";
             } else if (!state.skip && state.ffnScale === 3.0) {
                 banner.classList.add('banner-warning');
-                banner.textContent = "এক্সপ্লোডিং গ্র্যাডিয়েন্ট (Exploding Gradient) ঘটেছে! গ্র্যাডিয়েন্ট বেড়ে ৩.০০ গুণ হয়েছে। গভীর নেটওয়ার্কের কারণে এটি ট্রেনিংকে সম্পূর্ণরূপে ধসিয়ে দেবে।";
+                banner.textContent = "শেখার সিগন্যাল বিস্ফোরিত হয়েছে — এই ধাপে 3× বেড়ে গেছে। গভীর নেটওয়ার্কে এটি ট্রেনিংকে ধসিয়ে দেয়। (একে বলে exploding gradient সমস্যা।)";
             } else {
                 banner.classList.add('banner-stable');
-                banner.textContent = "ব্যাকওয়ার্ড পাস সফল! Skip Connection-এর কল্যাণে একটি স্বাস্থ্যকর শক্তিশালী গ্র্যাডিয়েন্ট ভেক্টরে ফিরে এসেছে, যা ট্রেনিং সফলভাবে সম্পন্ন করবে।";
+                banner.textContent = "হেলদি শেখার সিগন্যাল! স্কিপ শর্টকাটের কল্যাণে একটি শক্তিশালী সিগন্যাল পুরো পথ ফিরে আসে, যাতে প্রতিটি লেয়ার শিখতে পারে।";
             }
             banner.style.display = 'block';
         }
