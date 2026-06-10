@@ -743,7 +743,7 @@
     <nav class="site-nav" id="site-nav" aria-label="Site navigation">
         <div class="site-nav-inner">
             <a class="site-nav-brand" href="../index.html">
-                <span class="site-nav-logo">🧠</span>
+                <span class="site-nav-logo">T</span>
                 <span class="site-nav-brand-name">Transformer Hub</span>
             </a>
             <button class="site-nav-toggle" id="siteNavToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="siteNavMenu">☰</button>
@@ -761,7 +761,7 @@
                     <a class="site-nav-link" id="nextLessonBtn" rel="next"><span data-bn="পরের" data-en="Next">Next</span> <span class="site-nav-caret">›</span></a>
                 </div>
                 <div class="site-nav-controls">
-                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language">🌐 <span id="langToggleLabel">EN</span></button>
+                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language"><span id="langToggleLabel">EN</span></button>
                 </div>
             </div>
         </div>
@@ -1417,7 +1417,7 @@
             if (data.idx === 0 || data.idx === 3) {
                 explanationText += `
                     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 0.75rem; margin-top: 0.75rem;">
-                        <strong>💡 Special Observation:</strong> <br>
+                        <strong>Special Observation:</strong> <br>
                         Note that the input sentence contains two occurrences of <strong>"The" / "the"</strong> (index 0 and index 3).
                         Both have the <strong>exact same Word Vector (W)</strong> [0.15, -0.62, 0.48, -0.09, 0.35, -0.21]. However, because they are at different positions, their <strong>Position Vectors (P) are different</strong>.
                         Consequently, their final <strong>Combined Vectors (C) are completely distinct</strong>! This allows the model to know which word came first and which came later, despite processing them in parallel.
@@ -1444,11 +1444,11 @@
             if (status === 'correct') {
                 element.classList.add('correct');
                 feedbackBox.classList.add('success');
-                feedbackBox.innerHTML = `✅ ${feedback}`;
+                feedbackBox.innerHTML = `${feedback}`;
             } else {
                 element.classList.add('incorrect');
                 feedbackBox.classList.add('error');
-                feedbackBox.innerHTML = `❌ ${feedback}`;
+                feedbackBox.innerHTML = `${feedback}`;
             }
         }
 

@@ -888,7 +888,7 @@
     <nav class="site-nav" id="site-nav" aria-label="Site navigation">
         <div class="site-nav-inner">
             <a class="site-nav-brand" href="../index.html">
-                <span class="site-nav-logo">🧠</span>
+                <span class="site-nav-logo">T</span>
                 <span class="site-nav-brand-name">Transformer Hub</span>
             </a>
             <button class="site-nav-toggle" id="siteNavToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="siteNavMenu">☰</button>
@@ -906,7 +906,7 @@
                     <a class="site-nav-link" id="nextLessonBtn" rel="next"><span data-bn="পরের" data-en="Next">Next</span> <span class="site-nav-caret">›</span></a>
                 </div>
                 <div class="site-nav-controls">
-                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language">🌐 <span id="langToggleLabel">EN</span></button>
+                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language"><span id="langToggleLabel">EN</span></button>
                 </div>
             </div>
         </div>
@@ -1003,9 +1003,9 @@
             <p>একটি সাধারণ ইংরেজি শব্দ যেমন <span class="tech-term">bank</span> বিবেচনা করুন। এর নিচে দেওয়া দুটি একদম ভিন্ন অর্থ হতে পারে:</p>
             <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--accent-cyan);">
                 <p style="margin-bottom: 0.5rem;"><strong>বাক্য ১:</strong> "I deposited my money at the <span class="highlight">bank</span>." <br>
-                👉 এখানে <span class="highlight">bank</span> মানে অর্থনৈতিক ব্যাংক (Financial Institution)।</p>
+                → এখানে <span class="highlight">bank</span> মানে অর্থনৈতিক ব্যাংক (Financial Institution)।</p>
                 <p style="margin: 0;"><strong>বাক্য ২:</strong> "We sat on the muddy <span class="highlight">bank</span> of the river." <br>
-                👉 এখানে <span class="highlight">bank</span> মানে নদীর তীর বা পাড় (Riverbank)।</p>
+                → এখানে <span class="highlight">bank</span> মানে নদীর তীর বা পাড় (Riverbank)।</p>
             </div>
             <p>মানুষ হিসেবে আমরা পুরো বাক্যটি পড়ে নিমেষেই এই পার্থক্য বুঝে যাই। কিন্তু কম্পিউটার কীভাবে বুঝবে? কম্পিউটারের কাছে তো প্রতিটি শব্দ কেবল একটি নির্জীব সংখ্যা বা তালিকা (<span class="tech-term">Embedding Vector</span>)।</p>
             <p>Transformer-এর পূর্বে জনপ্রিয় আর্কিটেকচারগুলো (যেমন <span class="tech-term">RNN</span> বা <span class="tech-term">LSTM</span>) শব্দগুলোকে ক্রমানুসারে (one-by-one) প্রসেস করত। ফলে বাক্যটি বেশি লম্বা হলে প্রথম দিকের শব্দের অর্থ বা প্রভাব শেষ পর্যন্ত পৌঁছাত না।</p>
@@ -1019,21 +1019,21 @@
             
             <div class="analogy-grid">
                 <div class="analogy-card">
-                    <div class="analogy-icon">🔍</div>
+                    <div class="analogy-icon">Q</div>
                     <div class="analogy-title">Query (Q)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">আপনি ইউটিউবের সার্চ বক্সে যে বিষয়টি টাইপ করছেন (যেমন: <em>"Deep Learning Course"</em>)। এটি হলো আপনার Query। 
                     <br><br>
                     <strong>শব্দের অর্থ:</strong> "আমি অন্য কোন কোন শব্দের সাথে সবচেয়ে বেশি সম্পর্কিত হতে চাই?"</p>
                 </div>
                 <div class="analogy-card">
-                    <div class="analogy-icon">🏷️</div>
+                    <div class="analogy-icon">K</div>
                     <div class="analogy-title">Key (K)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">ইউটিউবে থাকা ভিডিওগুলোর টাইটেল, ডেসক্রিপশন বা লেবেল। এটি হলো Key। 
                     <br><br>
                     <strong>শব্দের অর্থ:</strong> "অন্যান্য শব্দরা কেন আমার দিকে তাকাবে? আমার কাছে কী ধরনের তথ্য আছে তার পরিচিতি।"</p>
                 </div>
                 <div class="analogy-card">
-                    <div class="analogy-icon">🎞️</div>
+                    <div class="analogy-icon">V</div>
                     <div class="analogy-title">Value (V)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">যখন আপনার Query ও ভিডিওর Key মিলে যায়, তখন আপনি যে মূল ভিডিও বা কনটেন্টটি প্লে করে দেখেন, তা হলো Value।
                     <br><br>
@@ -1045,7 +1045,7 @@
             <!-- Concrete Example -->
             <div style="background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(168,85,247,0.08)); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(34,211,238,0.25); margin-top: 1.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem;">
-                    <span style="font-size: 1.3rem;">💡</span>
+                    
                     <strong style="color: var(--accent-cyan); font-size: 1.1rem;">চলুন একটি বাস্তব উদাহরণ দেখি</strong>
                 </div>
                 <p style="margin: 0 0 1rem 0;">ধরুন আমাদের কাছে এই বাক্যটি আছে:</p>
@@ -1054,16 +1054,16 @@
 
                 <div style="display: flex; flex-direction: column; gap: 0.7rem;">
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-cyan);">
-                        <span style="font-size: 0.95rem;">🔍 <strong>Query:</strong> "it" শব্দটি প্রশ্ন করে — <em>"আমি আসলে বাক্যের কোন শব্দটিকে বোঝাচ্ছি?"</em></span>
+                        <span style="font-size: 0.95rem;"><strong>Query:</strong> "it" শব্দটি প্রশ্ন করে — <em>"আমি আসলে বাক্যের কোন শব্দটিকে বোঝাচ্ছি?"</em></span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-purple);">
-                        <span style="font-size: 0.95rem;">🏷️ <strong>Key:</strong> এই প্রশ্নটি বাক্যের প্রতিটি শব্দের Key-এর সাথে মেলানো হয় (the, cat, drank, milk, ...)।</span>
+                        <span style="font-size: 0.95rem;"><strong>Key:</strong> এই প্রশ্নটি বাক্যের প্রতিটি শব্দের Key-এর সাথে মেলানো হয় (the, cat, drank, milk, ...)।</span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-purple);">
-                        <span style="font-size: 0.95rem;">⚖️ <strong>Match (Attention Weight):</strong> "it"-এর Query সবচেয়ে বেশি মিলে যায় <strong>cat</strong>-এর Key-এর সাথে — কারণ "hungry" (ক্ষুধার্ত) হওয়াটা cat-এর সাথে যায়, milk-এর সাথে নয়। তাই <strong>cat</strong> সবচেয়ে বেশি মনোযোগ (Attention Weight) পায়।</span>
+                        <span style="font-size: 0.95rem;"><strong>Match (Attention Weight):</strong> "it"-এর Query সবচেয়ে বেশি মিলে যায় <strong>cat</strong>-এর Key-এর সাথে — কারণ "hungry" (ক্ষুধার্ত) হওয়াটা cat-এর সাথে যায়, milk-এর সাথে নয়। তাই <strong>cat</strong> সবচেয়ে বেশি মনোযোগ (Attention Weight) পায়।</span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-green);">
-                        <span style="font-size: 0.95rem;">🎞️ <strong>Value:</strong> ফলে "it" শব্দটি মূলত <strong>cat</strong>-এর Value (অর্থ) টেনে নেয়। এখন মডেল বুঝে গেছে — এই বাক্যে <strong>"it" = "the cat"</strong>!</span>
+                        <span style="font-size: 0.95rem;"><strong>Value:</strong> ফলে "it" শব্দটি মূলত <strong>cat</strong>-এর Value (অর্থ) টেনে নেয়। এখন মডেল বুঝে গেছে — এই বাক্যে <strong>"it" = "the cat"</strong>!</span>
                     </div>
                 </div>
             </div>

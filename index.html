@@ -1328,7 +1328,7 @@
     <!-- Sidebar Menu -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <div class="sidebar-brand-logo">🧠</div>
+            <div class="sidebar-brand-logo">T</div>
             <div class="sidebar-brand-name">Transformer Hub</div>
         </div>
 
@@ -1381,7 +1381,7 @@
                 <p id="page-subheading">স্বাগতম! ট্রান্সফরমার আর্কিটেকচার শেখার যাত্রা শুরু হোক।</p>
             </div>
             <div class="header-controls">
-                <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLanguage()">🌐 English</button>
+                <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLanguage()">English</button>
             </div>
         </header>
 
@@ -1411,7 +1411,7 @@
                         <h3 id="total-glossary-count">২৫+</h3>
                         <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="total-glossary-desc">সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ</p>
                     </div>
-                    <div style="font-size: 3rem;">📖</div>
+                    
                 </div>
 
                 <!-- Final Quiz status Card -->
@@ -1421,14 +1421,14 @@
                         <h3 id="dash-quiz-status">Not Attempted</h3>
                         <p style="margin-top:0.5rem; text-transform:none; font-weight:normal; font-size:0.85rem;" id="dash-quiz-score-sub">নিজের অর্জিত জ্ঞান যাচাই করুন</p>
                     </div>
-                    <div style="font-size: 3rem;" id="dash-quiz-badge">🎖️</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);" id="dash-quiz-badge">—</div>
                 </div>
             </div>
 
             <!-- Mission Overview Card -->
             <div class="card">
                 <div class="mission-header">
-                    <h2 id="mission-card-title"><span class="card-header-icon">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)</h2>
+                    <h2 id="mission-card-title">Learning Mission (আমাদের উদ্দেশ্য)</h2>
                     <span class="goal-tag" id="mission-tracker-badge" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: var(--accent-green);">Interactive Tracker</span>
                 </div>
                 <p id="mission-card-desc">LLM (Large Language Model) এর "behind the scene" বা ভেতরের মেকানিজম স্পষ্টভাবে বোঝা। কোনো জটিল গাণিতিক ফর্মুলা বা কোডিং জটলা ছাড়া <strong>Conceptual Intuition</strong> নিজের আয়ত্তে আনা, যাতে পরবর্তীতে যেকোনো advanced LLM concept সহজে ধরতে পারেন।</p>
@@ -1474,12 +1474,19 @@
 
             <!-- Quick Start Box -->
             <div class="card" id="quick-start-card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.08), rgba(168, 85, 247, 0.08)); border-color: rgba(6, 182, 212, 0.25);">
-                <h2 id="quick-start-title"><span class="card-header-icon">🚀</span> Quick Start Guide</h2>
+                <h2 id="quick-start-title">Quick Start Guide</h2>
                 <p id="quick-start-desc">শেখ শুরু করার জন্য <strong>"Syllabus (লেসন ম্যাপ)"</strong> ট্যাবে চলে যান। সেখানে সিরিয়ালি সাজানো লেসনগুলো পড়তে পারবেন। প্রতিটি লেসন পড়ার সময় আপনি তা <strong>"In Progress"</strong> বা <strong>"Completed"</strong> হিসেবে চিহ্নিত করতে পারেন, যা উপরে আপনার ড্যাশবোর্ডের প্রোগ্রেস ও ট্র্যাকার আপডেট করে রাখবে!</p>
                 <div style="margin-top: 1rem; display: flex; gap: 1rem;">
                     <button class="btn btn-primary" id="quick-start-btn-1" onclick="switchTab('lessons')">লেসন ম্যাপে যান</button>
                     <button class="btn btn-secondary" id="quick-start-btn-2" onclick="switchTab('glossary')">শব্দকোষ সার্চ করুন</button>
                 </div>
+            </div>
+
+            <!-- Course Attribution -->
+            <div style="text-align: center; margin-top: 1.5rem; padding: 1.25rem 1rem; border: 1px solid var(--border-color); border-radius: 12px; background: rgba(30, 41, 59, 0.2); position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));"></div>
+                <p style="font-size: 0.85rem; line-height: 1.45; margin-bottom: 0.5rem; color: var(--text-primary); font-weight: 500;">Helping you learn Transformers, the core architecture behind all modern large language models like ChatGPT, Claude, and Gemini.</p>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Course made by <a href="https://web.facebook.com/fahmid.hasan.190797/" target="_blank" style="color: var(--accent-cyan); text-decoration: none; font-weight: 600;">Fahmid Hasan</a></p>
             </div>
         </section>
 
@@ -1497,7 +1504,7 @@
         <section class="view-section" id="view-glossary">
             <div class="glossary-controls">
                 <div class="search-box">
-                    <span class="search-icon">🔍</span>
+                    
                     <input type="text" class="search-input" id="glossary-search" placeholder="পদক্ষেপ বা ইংরেজি Term দিয়ে সার্চ করুন (যেমন: Attention)..." oninput="filterGlossary()">
                 </div>
                 <select class="category-filter" id="glossary-cat-filter" onchange="filterGlossary()">
@@ -1517,7 +1524,7 @@
         <!-- REFERENCES/RESOURCES VIEW -->
         <section class="view-section" id="view-resources">
             <div class="card" style="margin-bottom: 2rem;">
-                <h2 id="resources-intro-title"><span class="card-header-icon">📚</span> সহায়ক রিসোর্স গাইড</h2>
+                <h2 id="resources-intro-title">সহায়ক রিসোর্স গাইড</h2>
                 <p id="resources-intro-desc">ট্রান্সফরমার আর্কিটেকচার নিয়ে ভিজ্যুয়াল অ্যানিমেশন, অরিজিনাল পেপার এবং মডার্ন লার্জ ল্যাঙ্গুয়েজ মডেল শেখার জন্য নিচে চমৎকার কিছু সহায়ক রিসোর্স সাজানো রয়েছে। প্রতিটি রিসোর্সের সংক্ষিপ্ত বিবরণও দেওয়া হলো যাতে আপনি আপনি আপনার সুবিধামতো বেছে নিতে পারেন।</p>
             </div>
             
@@ -1532,7 +1539,7 @@
                 
                 <!-- Quiz Intro Box -->
                 <div class="card quiz-intro-box" id="quiz-intro">
-                    <span class="quiz-intro-icon">🎖️</span>
+                    
                     <h2 id="quiz-intro-title" style="border:none; padding:0; display:block; text-align:center; font-size:1.75rem; margin-bottom:1rem;">Transformer Architecture Assessment</h2>
                     <p id="quiz-intro-desc" style="max-width:550px; margin:0 auto 2rem auto; color:var(--text-secondary);">
                         ৬টি লেসন শেষ করার পর আপনার অর্জিত জ্ঞান যাচাইয়ের জন্য প্রস্তুত? ৫টি বহুনির্বাচনী প্রশ্নের সঠিক উত্তর দিয়ে সফলতার সাথে উত্তীর্ণ হয়ে অর্জন করুন আপনার <strong>"Transformer Hub Completion Certificate"</strong>!
@@ -2281,7 +2288,7 @@
                 "total-glossary-count": "২৫+",
                 "total-glossary-desc": "সহজ বাংলা ব্যাখ্যাসহ গুরুত্বপূর্ণ পদ",
                 "final-assessment-lbl": "Final Assessment",
-                "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission (আমাদের উদ্দেশ্য)",
+                "mission-card-title": "Learning Mission (আমাদের উদ্দেশ্য)",
                 "mission-tracker-badge": "Interactive Tracker",
                 "mission-card-desc": "LLM (Large Language Model) এর \"behind the scene\" বা ভেতরের মেকানিজম স্পষ্টভাবে বোঝা। কোনো জটিল গাণিতিক ফর্মুলা বা কোডিং জটলা ছাড়া <strong>Conceptual Intuition</strong> নিজের আয়ত্তে আনা, যাতে পরবর্তীতে যেকোনো advanced LLM concept সহজে ধরতে পারেন।",
                 "goal-text-0": "<strong>Big Picture Pipeline:</strong> একটি মানুষের লেখা বাক্য বা প্রম্পট কীভাবে ধাপে ধাপে প্রসেস হয়ে পরবর্তী শব্দ অনুমান করে, তার সামগ্রিক উচ্চস্তরের (High-Level) রূপরেখা বোঝা।",
@@ -2289,13 +2296,13 @@
                 "goal-text-2": "<strong>Core Attention Intuition:</strong> Self-Attention, Query (Q), Key (K), Value (V) এবং Softmax-এর ভেতরের মেকানিজম অনুধাবন করা।",
                 "goal-text-3": "<strong>Multi-Head Stacking:</strong> একাধিক মনোযোগ হেড কেন লাগে, Dimension Splitting কী এবং Residual Skip Connections ও LayerNorm কীভাবে ট্রেনিং স্থিতিশীল করে তা বোঝা।",
                 "goal-text-4": "<strong>LLM Gen Architecture:</strong> Modern Decoder-Only Transformers (যেমন GPT, LLaMA) কেন ব্যবহৃত হয় এবং Causal Masking কী তা জানা।",
-                "quick-start-title": "<span class=\"card-header-icon\">🚀</span> Quick Start Guide",
+                "quick-start-title": "Quick Start Guide",
                 "quick-start-desc": "শেখ শুরু করার জন্য <strong>\"Syllabus (লেসন ম্যাপ)\"</strong> ট্যাবে চলে যান। সেখানে সিরিয়ালি সাজানো লেসনগুলো পড়তে পারবেন। প্রতিটি লেসন পড়ার সময় আপনি তা <strong>\"In Progress\"</strong> বা <strong>\"Completed\"</strong> হিসেবে চিহ্নিত করতে পারেন, যা উপরে আপনার ড্যাশবোর্ডের প্রোগ্রেস ও ট্র্যাকার আপডেট করে রাখবে!",
                 "quick-start-btn-1": "লেসন ম্যাপে যান",
                 "quick-start-btn-2": "শব্দকোষ সার্চ করুন",
                 "glossary-search-placeholder": "পদক্ষেপ বা ইংরেজি Term দিয়ে সার্চ করুন (যেমন: Attention)...",
                 "glossary-cat-all-opt": "সব ক্যাটাগরি",
-                "resources-intro-title": "<span class=\"card-header-icon\">📚</span> সহায়ক রিসোর্স গাইড",
+                "resources-intro-title": "সহায়ক রিসোর্স গাইড",
                 "resources-intro-desc": "ট্রান্সফরমার আর্কিটেকচার নিয়ে ভিজ্যুয়াল অ্যানিমেশন, অরিজিনাল পেপার এবং মডার্ন লার্জ ল্যাঙ্গুয়েজ মডেল শেখার জন্য নিচে চমৎকার কিছু সহায়ক রিসোর্স সাজানো রয়েছে। প্রতিটি রিসোর্সের সংক্ষিপ্ত বিবরণও দেওয়া হলো যাতে আপনি আপনি আপনার সুবিধামতো বেছে নিতে পারেন।",
                 "quiz-intro-title": "Transformer Architecture Assessment",
                 "quiz-intro-desc": "৬টি লেসন শেষ করার পর আপনার অর্জিত জ্ঞান যাচাইয়ের জন্য প্রস্তুত? ৫টি বহুনির্বাচনী প্রশ্নের সঠিক উত্তর দিয়ে সফলতার সাথে উত্তীর্ণ হয়ে অর্জন করুন আপনার <strong>\"Transformer Hub Completion Certificate\"</strong>!",
@@ -2318,7 +2325,7 @@
                 "total-glossary-count": "25+",
                 "total-glossary-desc": "Key terms with simple explanations",
                 "final-assessment-lbl": "Final Assessment",
-                "mission-card-title": "<span class=\"card-header-icon\">🎯</span> Learning Mission",
+                "mission-card-title": "Learning Mission",
                 "mission-tracker-badge": "Interactive Tracker",
                 "mission-card-desc": "To clearly understand the \"behind the scenes\" mechanisms of Large Language Models (LLMs). Master the <strong>conceptual intuition</strong> without complex mathematical derivations or coding details, allowing you to easily grasp advanced LLM concepts later.",
                 "goal-text-0": "<strong>Big Picture Pipeline:</strong> Get the high-level overview of how a human sentence or prompt flows step-by-step through the model to predict the next word.",
@@ -2326,13 +2333,13 @@
                 "goal-text-2": "<strong>Core Attention Intuition:</strong> Understand the internal mechanisms of Self-Attention, Query (Q), Key (K), Value (V), and Softmax.",
                 "goal-text-3": "<strong>Multi-Head Stacking:</strong> Understand why multiple attention heads are needed, what Dimension Splitting is, and how Residual Skip Connections and LayerNorm stabilize training.",
                 "goal-text-4": "<strong>LLM Gen Architecture:</strong> Know why modern Decoder-Only Transformers (like GPT, LLaMA) are used and what Causal Masking does.",
-                "quick-start-title": "<span class=\"card-header-icon\">🚀</span> Quick Start Guide",
+                "quick-start-title": "Quick Start Guide",
                 "quick-start-desc": "Go to the <strong>\"Syllabus (Lessons Map)\"</strong> tab to start learning. You can read the lessons sequentially and mark them as <strong>\"In Progress\"</strong> or <strong>\"Completed\"</strong> to update your progress metrics and mission tracker.",
                 "quick-start-btn-1": "Go to Lessons Map",
                 "quick-start-btn-2": "Search Glossary",
                 "glossary-search-placeholder": "Search by term or definition (e.g. Attention)...",
                 "glossary-cat-all-opt": "All Categories",
-                "resources-intro-title": "<span class=\"card-header-icon\">📚</span> Reference Resources Guide",
+                "resources-intro-title": "Reference Resources Guide",
                 "resources-intro-desc": "A curated list of reference resources to learn the Transformer architecture, visual animations, original papers, and modern LLMs. Brief descriptions are provided to help you choose.",
                 "quiz-intro-title": "Transformer Architecture Assessment",
                 "quiz-intro-desc": "Ready to test your knowledge after completing the 6 modules? Answer 5 multiple-choice questions correctly to earn your <strong>\"Transformer Hub Completion Certificate\"</strong>!",
@@ -2462,7 +2469,7 @@
                 else if (status === 'in-progress') nodeClass = 'in-progress';
 
                 const isEn = (currentLang === 'en');
-                const quickReadText = isEn ? "Quick Read 🧠" : "Quick Read 🧠";
+                const quickReadText = isEn ? "Quick Read" : "Quick Read";
                 const optNotStarted = isEn ? "Not Started" : "শুরু করা হয়নি";
                 const optInProgress = isEn ? "In Progress" : "চলমান";
                 const optCompleted = isEn ? "Completed" : "সম্পন্ন";
@@ -2543,7 +2550,7 @@
             const isEn = (currentLang === 'en');
             let remainingText = '';
             if (completed === total) {
-                remainingText = isEn ? 'Excellent! All lessons completed! 🎉' : 'অসাধারণ! সবগুলো লেসন সম্পন্ন হয়েছে! 🎉';
+                remainingText = isEn ? 'Excellent! All lessons completed!' : 'অসাধারণ! সবগুলো লেসন সম্পন্ন হয়েছে!';
             } else {
                 remainingText = isEn ? `${completed} completed, ${total - completed} remaining` : `${completed} সম্পন্ন, ${total - completed}টি বাকি`;
             }
@@ -2557,12 +2564,12 @@
             if (quizScore !== null) {
                 statusEl.innerText = isEn ? `Certified (${quizScore}/5)` : `Certified (${quizScore}/5)`;
                 scoreSubEl.innerText = isEn ? `Latest Score: ${Math.round((quizScore/5)*100)}% • Quiz Completed` : `সর্বশেষ স্কোর: ${Math.round((quizScore/5)*100)}% • কুইজ সম্পন্ন`;
-                badgeEl.innerText = "🏆";
+                badgeEl.innerText = "★";
                 badgeEl.style.filter = "drop-shadow(0 0 10px rgba(16, 185, 129, 0.4))";
             } else {
                 statusEl.innerText = isEn ? "Not Attempted" : "অংশগ্রহণ করা হয়নি";
                 scoreSubEl.innerText = isEn ? "Complete the quiz to earn your certificate" : "কুইজ দিয়ে সার্টিফিকেট অর্জন করুন";
-                badgeEl.innerText = "🎖️";
+                badgeEl.innerText = "—";
                 badgeEl.style.filter = "none";
             }
         }
@@ -2786,7 +2793,7 @@
             const nextBtn = document.getElementById('quiz-next-btn');
             if (nextBtn) {
                 if (idx === activeQuizQuestions.length - 1) {
-                    nextBtn.innerText = isEn ? "View Results 🎖️" : "ফলাফল দেখুন 🎖️";
+                    nextBtn.innerText = isEn ? "View Results" : "ফলাফল দেখুন";
                 } else {
                     nextBtn.innerText = isEn ? "Next Question" : "পরবর্তী প্রশ্ন";
                 }
@@ -2892,7 +2899,7 @@
             // 1. Update language button text
             const langBtn = document.getElementById('lang-toggle-btn');
             if (langBtn) {
-                langBtn.innerText = currentLang === 'bn' ? '🌐 English' : '🌐 বাংলা';
+                langBtn.innerText = currentLang === 'bn' ? 'English' : 'বাংলা';
             }
 
             // 2. Set active data arrays

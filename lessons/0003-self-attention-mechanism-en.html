@@ -839,7 +839,7 @@
     <nav class="site-nav" id="site-nav" aria-label="Site navigation">
         <div class="site-nav-inner">
             <a class="site-nav-brand" href="../index.html">
-                <span class="site-nav-logo">🧠</span>
+                <span class="site-nav-logo">T</span>
                 <span class="site-nav-brand-name">Transformer Hub</span>
             </a>
             <button class="site-nav-toggle" id="siteNavToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="siteNavMenu">☰</button>
@@ -857,7 +857,7 @@
                     <a class="site-nav-link" id="nextLessonBtn" rel="next"><span data-bn="পরের" data-en="Next">Next</span> <span class="site-nav-caret">›</span></a>
                 </div>
                 <div class="site-nav-controls">
-                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language">🌐 <span id="langToggleLabel">EN</span></button>
+                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language"><span id="langToggleLabel">EN</span></button>
                 </div>
             </div>
         </div>
@@ -954,9 +954,9 @@
             <p>Consider a common English word like <span class="tech-term">bank</span>. It can have two completely different meanings:</p>
             <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--accent-cyan);">
                 <p style="margin-bottom: 0.5rem;"><strong>Sentence 1:</strong> "I deposited my money at the <span class="highlight">bank</span>." <br>
-                👉 Here, <span class="highlight">bank</span> refers to a financial institution (Financial Institution).</p>
+                → Here, <span class="highlight">bank</span> refers to a financial institution (Financial Institution).</p>
                 <p style="margin: 0;"><strong>Sentence 2:</strong> "We sat on the muddy <span class="highlight">bank</span> of the river." <br>
-                👉 Here, <span class="highlight">bank</span> refers to the side of a river (Riverbank).</p>
+                → Here, <span class="highlight">bank</span> refers to the side of a river (Riverbank).</p>
             </div>
             <p>As humans, we read the entire sentence and instantly understand the difference. But how does a computer understand? To a computer, each word is just a lifeless list of numbers (<span class="tech-term">Embedding Vector</span>).</p>
             <p>Popular architectures before the Transformer (such as <span class="tech-term">RNNs</span> or <span class="tech-term">LSTMs</span>) processed words sequentially (one by one). Consequently, if a sentence was too long, the context of the early words would fail to reach the end.</p>
@@ -970,21 +970,21 @@
             
             <div class="analogy-grid">
                 <div class="analogy-card">
-                    <div class="analogy-icon">🔍</div>
+                    <div class="analogy-icon">Q</div>
                     <div class="analogy-title">Query (Q)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The search term you type into the YouTube search bar (e.g., <em>"Deep Learning Course"</em>). This is your Query. 
                     <br><br>
                     <strong>Word Perspective:</strong> "Which other words in the sentence do I need to relate to?"</p>
                 </div>
                 <div class="analogy-card">
-                    <div class="analogy-icon">🏷️</div>
+                    <div class="analogy-icon">K</div>
                     <div class="analogy-title">Key (K)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The titles, tags, or descriptions of the videos hosted on YouTube. This is the Key.
                     <br><br>
                     <strong>Word Perspective:</strong> "Why should other words pay attention to me? This is a label of what information I contain."</p>
                 </div>
                 <div class="analogy-card">
-                    <div class="analogy-icon">🎞️</div>
+                    <div class="analogy-icon">V</div>
                     <div class="analogy-title">Value (V)</div>
                     <p style="font-size: 0.9rem; color: #cbd5e1; margin: 0;">The actual video content that you play once your Query matches a video's Key. This is the Value.
                     <br><br>
@@ -996,7 +996,7 @@
             <!-- Concrete Example -->
             <div style="background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(168,85,247,0.08)); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(34,211,238,0.25); margin-top: 1.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem;">
-                    <span style="font-size: 1.3rem;">💡</span>
+                    
                     <strong style="color: var(--accent-cyan); font-size: 1.1rem;">Let's See a Real Example</strong>
                 </div>
                 <p style="margin: 0 0 1rem 0;">Suppose we have this sentence:</p>
@@ -1005,16 +1005,16 @@
 
                 <div style="display: flex; flex-direction: column; gap: 0.7rem;">
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-cyan);">
-                        <span style="font-size: 0.95rem;">🔍 <strong>Query:</strong> the word "it" asks — <em>"Which word in the sentence am I actually referring to?"</em></span>
+                        <span style="font-size: 0.95rem;"><strong>Query:</strong> the word "it" asks — <em>"Which word in the sentence am I actually referring to?"</em></span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-purple);">
-                        <span style="font-size: 0.95rem;">🏷️ <strong>Key:</strong> this question is compared against the Key of every word in the sentence (the, cat, drank, milk, ...).</span>
+                        <span style="font-size: 0.95rem;"><strong>Key:</strong> this question is compared against the Key of every word in the sentence (the, cat, drank, milk, ...).</span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-purple);">
-                        <span style="font-size: 0.95rem;">⚖️ <strong>Match (Attention Weight):</strong> the Query of "it" matches the Key of <strong>cat</strong> the most — because being "hungry" fits a cat, not milk. So <strong>cat</strong> receives the highest attention (Attention Weight).</span>
+                        <span style="font-size: 0.95rem;"><strong>Match (Attention Weight):</strong> the Query of "it" matches the Key of <strong>cat</strong> the most — because being "hungry" fits a cat, not milk. So <strong>cat</strong> receives the highest attention (Attention Weight).</span>
                     </div>
                     <div style="background: rgba(15, 23, 42, 0.4); padding: 0.9rem 1.1rem; border-radius: 8px; border-left: 3px solid var(--accent-green);">
-                        <span style="font-size: 0.95rem;">🎞️ <strong>Value:</strong> as a result, "it" pulls in the Value (meaning) of <strong>cat</strong>. Now the model understands — in this sentence, <strong>"it" = "the cat"</strong>!</span>
+                        <span style="font-size: 0.95rem;"><strong>Value:</strong> as a result, "it" pulls in the Value (meaning) of <strong>cat</strong>. Now the model understands — in this sentence, <strong>"it" = "the cat"</strong>!</span>
                     </div>
                 </div>
             </div>

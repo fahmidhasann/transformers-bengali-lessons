@@ -803,7 +803,7 @@
     <nav class="site-nav" id="site-nav" aria-label="Site navigation">
         <div class="site-nav-inner">
             <a class="site-nav-brand" href="../index.html">
-                <span class="site-nav-logo">🧠</span>
+                <span class="site-nav-logo">T</span>
                 <span class="site-nav-brand-name">Transformer Hub</span>
             </a>
             <button class="site-nav-toggle" id="siteNavToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="siteNavMenu">☰</button>
@@ -821,7 +821,7 @@
                     <a class="site-nav-link" id="nextLessonBtn" rel="next"><span data-bn="পরের" data-en="Next">Next</span> <span class="site-nav-caret">›</span></a>
                 </div>
                 <div class="site-nav-controls">
-                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language">🌐 <span id="langToggleLabel">EN</span></button>
+                    <button class="site-nav-icon-btn" id="langToggleBtn" type="button" title="Switch language"><span id="langToggleLabel">EN</span></button>
                 </div>
             </div>
         </div>
@@ -1477,7 +1477,7 @@
             if (data.idx === 0 || data.idx === 3) {
                 explanationText += `
                     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid var(--accent-cyan); border-radius: 6px; padding: 0.75rem; margin-top: 0.75rem;">
-                        <strong>💡 বিশেষ পর্যবেক্ষণ:</strong> <br>
+                        <strong>বিশেষ পর্যবেক্ষণ:</strong> <br>
                         লক্ষ্য করুন, ইনপুট বাক্যে দুটি <strong>"The" / "the"</strong> রয়েছে। প্রথমটির ইনডেক্স 0 এবং দ্বিতীয়টির ইনডেক্স 3। 
                         দুটিরই <strong>Word Vector (W) হুবহু একই</strong> [0.15, -0.62, 0.48, -0.09, 0.35, -0.21]। কিন্তু ভিন্ন ভিন্ন পজিশন ইনডেক্স হওয়ার কারণে তাদের <strong>Position Vector (P) ভিন্ন ভিন্ন</strong> এসেছে। 
                         ফলাফলস্বরূপ, তাদের চূড়ান্ত <strong>Combined Vector (C) সম্পূর্ণ আলাদা</strong> হয়ে গেছে! এর ফলে সমান্তরালভাবে প্রসেস করার পরও মডেলটি জানে কোন শব্দটি আগে আর কোনটি পরে বসেছে।
@@ -1504,11 +1504,11 @@
             if (status === 'correct') {
                 element.classList.add('correct');
                 feedbackBox.classList.add('success');
-                feedbackBox.innerHTML = `✅ ${feedback}`;
+                feedbackBox.innerHTML = `${feedback}`;
             } else {
                 element.classList.add('incorrect');
                 feedbackBox.classList.add('error');
-                feedbackBox.innerHTML = `❌ ${feedback}`;
+                feedbackBox.innerHTML = `${feedback}`;
             }
         }
 
