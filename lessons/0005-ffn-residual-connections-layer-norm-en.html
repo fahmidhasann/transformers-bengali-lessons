@@ -1079,7 +1079,7 @@
         <!-- Residual Connections Card -->
         <div class="card">
             <h2>2. Residual (Skip) Connections</h2>
-            <p>When we build deep neural networks (e.g., LLaMA or GPT models have 32 to 80+ layers), the main challenges are information loss and gradient stability. As the signal propagates through many layers, gradients can be repeatedly multiplied and shrink so small that early layers stop learning. This is known as the <span class="tech-term">Vanishing Gradient Problem</span>.</p>
+            <p>When we build deep neural networks (e.g., LLaMA or GPT models have 32 to 80+ layers — here each <em>layer</em> means a complete <span class="tech-term">Transformer Block</span> containing Self-Attention, FFN, and Layer Norm together), the main challenges are information loss and gradient stability. As the signal propagates through many layers, gradients can be repeatedly multiplied and shrink so small that early layers stop learning. This is known as the <span class="tech-term">Vanishing Gradient Problem</span>.</p>
             
             <p><strong>The Solution: Direct Bypass Roads</strong></p>
             <p>To solve this, the input of each sub-layer is added directly to its output. This is called a <span class="tech-term">Residual Connection</span> or <span class="tech-term">Skip Connection</span>:</p>
